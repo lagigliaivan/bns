@@ -8,7 +8,7 @@ import (
 )
 
 type CatalogDB struct {
-	db sql.DB
+	db *sql.DB
 }
 
 func (catDb *CatalogDB) init() {
@@ -19,8 +19,7 @@ func (catDb *CatalogDB) init() {
 	catDb.db = db
 }
 
-func (* CatalogDB) GetItem(id int64) (domain.Item){
-
-
-	return nil
+func (catDb * CatalogDB) GetItem(id string) (domain.Item){
+	item := domain.NewItem(id)
+	return *item
 }

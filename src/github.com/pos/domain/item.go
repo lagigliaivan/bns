@@ -1,4 +1,4 @@
-package item
+package domain
 
 type Item struct {
 	id string
@@ -7,8 +7,12 @@ type Item struct {
 	quantity int32
 }
 
-func New(id string) *Item {
+func NewItem(id string) *Item {
 	p := new(Item)
 	p.id = id
 	return p
+}
+
+func (item *Item) GetId() string {
+	return item.id;
 }
