@@ -1,4 +1,4 @@
-package api
+package main
 
 import (
 	"log"
@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+
 	router := mux.NewRouter();
 	db := infrastructure.CatalogDB{}
 	root := Service{"api - > root", db}
