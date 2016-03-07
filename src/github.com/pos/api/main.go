@@ -15,7 +15,7 @@ func main() {
 	foo := Service{"api -> foo", db}
 
 	router.HandleFunc("/", root.HandleRoot)
-	router.HandleFunc("/catalog/products/{id}", foo.HandleProducts)
+	router.HandleFunc("/catalog/products/{id}", foo.HandlePutItem)
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

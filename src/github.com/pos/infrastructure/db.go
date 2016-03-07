@@ -1,15 +1,16 @@
 package infrastructure
 
 import (
-	"github.com/pos/domain"
 	"database/sql"
 	_"github.com/go-sql-driver/mysql"
 //	"fmt"
 	"fmt"
+	"github.com/pos/dto"
 )
 
 type DB interface {
-	GetItem(string) (domain.Item)
+	GetItem(string) (dto.Item)
+	SaveItem(dto.Item) int
 }
 
 type CatalogDB struct {
@@ -24,7 +25,13 @@ func (catDb *CatalogDB) init() {
 	catDb.db = db
 }
 
-func (catDb CatalogDB) GetItem(id string) (domain.Item){
-	item := domain.NewItem(id)
-	return *item
+func (catDb CatalogDB) GetItem(id string) (dto.Item){
+	item := dto.Item{}
+	item.Id = id
+	return item
+}
+
+func (catDb CatalogDB) SaveItem(dto.Item) int {
+
+	return 0
 }
