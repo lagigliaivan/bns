@@ -9,13 +9,17 @@ import (
 
 func main() {
 
-	router := mux.NewRouter();
-	db := infrastructure.CatalogDB{}
-	root := Service{"api - > root", db}
-	foo := Service{"api -> foo", db}
 
-	router.HandleFunc("/", root.HandleRoot)
-	router.HandleFunc("/catalog/products/{id}", foo.HandlePutItem)
+
+
+	router := mux.NewRouter();
+
+	db := infrastructure.CatalogDB{}
+	service := NewService(db)
+
+	router.HandleFunc("/catalog/products/{id}", service.HandleRequest)
+
+	router.Methods("GET", "PUT")
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
