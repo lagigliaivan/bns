@@ -12,10 +12,10 @@ func init() {
 
 func Test_Return_An_Error_When_ItemId_Does_NOT_Exist (t *testing.T) {
 
-	service := Service{"get_item_service_test", db};
-	item := service.GetItem("2")
+	service := NewService(db);
+	item := service.GetItem("1021")
 
-	if item.Id == "2" {
+	if item.Id == "1021" {
 		t.Fail()
 	}
 }
@@ -26,7 +26,7 @@ func Test_Return_An_ItemId_Just_Saved (t *testing.T) {
 	price := float32(10)
 	descr := "milk 100 cm3"
 
-	service := Service{"get_item_service_test", db};
+	service := NewService(db);
 
 	service.PutItem(id, descr, price)
 
