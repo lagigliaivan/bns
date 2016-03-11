@@ -8,6 +8,7 @@ import (
 	"github.com/pos/infrastructure"
 	"encoding/json"
 	"github.com/pos/dto"
+	"io/ioutil"
 )
 
 type Service struct {
@@ -51,16 +52,15 @@ func (service Service) HandleGetItem(w http.ResponseWriter, r *http.Request) {
 	prodId := vars["id"]
 	item := service.GetItem(prodId)
 	strB, _ := json.Marshal(item)
-	//fmt.Printf("ProductId: %s %s", item.Id, string(strB))
+
 	fmt.Fprintf(w, "%s", strB)
 }
 //PUT catalog/prod/{id}
 func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 
-	body := r.Body
-	p := make([]byte, 1000)
-	body.Read(p)
-	fmt.Fprintf(w, "%s", p)
+	body, err := ioutil.ReadAll(r.Body)
+
+	fmt.Fprintf(w, "%s %q", body, err)
 
 	//	r.Method
 	//vars := mux.Vars(r)
