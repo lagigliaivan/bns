@@ -3,7 +3,6 @@ package infrastructure
 import (
 	"database/sql"
 	_"github.com/go-sql-driver/mysql"
-//	"fmt"
 	"fmt"
 	"github.com/pos/dto"
 )

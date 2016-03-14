@@ -10,8 +10,6 @@ import (
 func main() {
 
 
-
-
 	router := mux.NewRouter();
 
 	db := infrastructure.CatalogDB{}
@@ -23,4 +21,3 @@ func main() {
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
-
