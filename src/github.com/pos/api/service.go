@@ -86,21 +86,20 @@ func (service Service) HandleGetItem(w http.ResponseWriter, r *http.Request) {
 }
 //PUT catalog/products/{id}
 func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
+
 	vars := service.GetRequestParameters(r)
 	item_id := vars["id"]
-
 	body, _ := ioutil.ReadAll(r.Body)
+	item := dto.Item{item_id, "", 0}
 
-	item := new(dto.Item)
-
-	if err := json.Unmarshal(body, item); err != nil {
+	if err := json.Unmarshal(body, &item); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprint(w, "The request contains a wrong format: %s ", err)
 		log.Printf("PUT item_id: %s .The request contains a wrong format %s", item.Id, err)
 		return
 	}
-	item.Id = item_id
-	service.PutItem(item.Id, item.Desc, item.Price)
+
+	service.PutItem(item)
 	w.WriteHeader(http.StatusCreated)
 
 }
@@ -111,13 +110,12 @@ func (service Service) GetItem(id string) dto.Item {
 	return  item;
 }
 
-func (service Service) PutItem(id string, desc string, price float32) dto.Item {
+func (service Service) PutItem(item dto.Item) int {
 
-	itemDto := dto.Item{id, desc, price};
-	service.db.SaveItem(itemDto)
-	log.Printf("PUT item_id: %s returned OK", itemDto.Id)
+	service.db.SaveItem(item)
+	log.Printf("PUT item_id: %s returned OK", item.Id)
 
-	return itemDto
+	return 0
 }
 
 //This function returns a map containing all the path params contained in the request URL.
