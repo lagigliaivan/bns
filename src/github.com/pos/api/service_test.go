@@ -28,10 +28,10 @@ func Test_returns_404_when_item_does_not_exist(t *testing.T){
 	defer ts.Close()
 
 	item_to_be_added := createItem()
+
+	//GETting URL
 	url := getServiceURLToBeTested(ts.URL, item_to_be_added.Id);
-
 	res, err := http.Get(url)
-
 	if (err != nil) || (res.StatusCode != http.StatusNotFound) {
 		Log("GET", url, res.StatusCode, http.StatusOK)
 		t.Fail()
@@ -49,8 +49,8 @@ func Test_returns_200_when_item_exists(t *testing.T){
 	ts := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
 	defer ts.Close()
 
+	//GETting URL
 	url := getServiceURLToBeTested(ts.URL, item_to_be_added.Id);
-
 	res, err := http.Get(url)
 	if (err != nil) || (res.StatusCode != http.StatusOK)  {
 		Log("GET", url, res.StatusCode, http.StatusOK)
