@@ -3,14 +3,12 @@ package main
 import (
 
 	"fmt"
-	//"html"
 	"net/http"
 	"github.com/gorilla/mux"
 	"github.com/pos/infrastructure"
 	"encoding/json"
 	"github.com/pos/dto"
 	"io/ioutil"
-	//log "github.com/Sirupsen/logrus"
 	"log"
 )
 
@@ -84,7 +82,15 @@ func (service Service) HandleGetItem(w http.ResponseWriter, r *http.Request) {
 	log.Printf("GET item_id: %s returned OK", item.Id)
 
 }
-//PUT catalog/products/{id}
+// @Title Get Users Information
+// @Description Get Users Information
+// @Accept json
+// @Param userId path int true "User ID"
+// @Success 200 {object} string "Success"
+// @Failure 401 {object} string "Access denied"
+// @Failure 404 {object} string "Not Found"
+// @Resource /users
+// @Router /v1/users/:userId.json [get]//PUT catalog/products/{id}
 func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 
 	vars := service.GetRequestParameters(r)

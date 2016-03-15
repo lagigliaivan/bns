@@ -1,11 +1,11 @@
 package main
 
 import (
+	"log"
 	"testing"
 	"github.com/pos/infrastructure"
 	"net/http"
 	"net/http/httptest"
-	"log"
 	"strings"
 	"bytes"
 	"fmt"
@@ -20,56 +20,56 @@ func init() {
 	db = infrastructure.NewMemDb()
 }
 
-//TESTs to check GET /catalog/products/{id} results
+//TEStestingServer to check GET /catalog/productestingServer/{id} resultestingServer
 func Test_returns_404_when_item_does_not_exist(t *testing.T){
 
 	service := NewService(db)
-	ts := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
-	defer ts.Close()
+	testingServer := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
+	defer testingServer.Close()
 
-	item_to_be_added := createItem()
+	itemToBeAdded := createItemDto()
 
 	//GETting URL
-	url := getServiceURLToBeTested(ts.URL, item_to_be_added.Id);
+	url := getURLToBeTested(testingServer.URL, itemToBeAdded.Id);
 	res, err := http.Get(url)
 	if (err != nil) || (res.StatusCode != http.StatusNotFound) {
-		Log("GET", url, res.StatusCode, http.StatusOK)
+		debug("GET", url, res.StatusCode, http.StatusOK)
 		t.Fail()
 	}
 }
 
 func Test_returns_200_when_item_exists(t *testing.T){
 
-	item_to_be_added := createItem()
+	itemToBeAdded := createItemDto()
 
 	service := NewService(db)
-	service.PutItem(item_to_be_added)
-	service.GetRequestParameters = getItemIdFromURL(item_to_be_added.Id)
+	service.PutItem(itemToBeAdded)
+	service.GetRequestParameters = returnItemIdFromURL(itemToBeAdded.Id)
 
-	ts := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
-	defer ts.Close()
+	testingServer := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
+	defer testingServer.Close()
 
 	//GETting URL
-	url := getServiceURLToBeTested(ts.URL, item_to_be_added.Id);
+	url := getURLToBeTested(testingServer.URL, itemToBeAdded.Id);
 	res, err := http.Get(url)
 	if (err != nil) || (res.StatusCode != http.StatusOK)  {
-		Log("GET", url, res.StatusCode, http.StatusOK)
+		debug("GET", url, res.StatusCode, http.StatusOK)
 		t.Fail()
 	}
 }
 
-//TESTs to check PUT /catalog/products/{id} results
+//TEStestingServer to check PUT /catalog/productestingServer/{id} resultestingServer
 func Test_returns_201_when_item_is_created (t *testing.T) {
 
-	item_to_be_added := createItem()
+	itemToBeAdded := createItemDto()
 	service := NewService(db)
 
-	ts := httptest.NewServer(http.HandlerFunc(service.HandlePutItem))
-	defer ts.Close()
+	testingServer := httptest.NewServer(http.HandlerFunc(service.HandlePutItem))
+	defer testingServer.Close()
+	url := getURLToBeTested(testingServer.URL, itemToBeAdded.Id);
 
-	url := getServiceURLToBeTested(ts.URL, item_to_be_added.Id);
-	body_as_string := getRequestBody(item_to_be_added)
-	body := strings.NewReader(body_as_string)
+	bodyAsString := getRequestBody(itemToBeAdded)
+	body := strings.NewReader(bodyAsString)
 	req,err := http.NewRequest("PUT", url, body)
 
 	if err != nil {
@@ -80,45 +80,44 @@ func Test_returns_201_when_item_is_created (t *testing.T) {
 	res, err := http.DefaultClient.Do(req)
 
 	if (err != nil) || (res.StatusCode != http.StatusCreated)  {
-		Log("PUT", url, res.StatusCode, http.StatusCreated)
+		debug("PUT", url, res.StatusCode, http.StatusCreated)
 		t.Fail()
 	}
 }
 
 func Test_returns_the_item_after_it_is_created(t *testing.T){
 
-	item_to_be_added := createItem()
+	itemToBeAdded := createItemDto()
 
 	service := NewService(db)
+	service.GetRequestParameters = returnItemIdFromURL(itemToBeAdded.Id)
 
-	service.GetRequestParameters = getItemIdFromURL(item_to_be_added.Id)
+	testingServerPUT := httptest.NewServer(http.HandlerFunc(service.HandlePutItem))
+	defer testingServerPUT.Close()
 
-	tsPUT := httptest.NewServer(http.HandlerFunc(service.HandlePutItem))
-	defer tsPUT.Close()
-
-	url := getServiceURLToBeTested(tsPUT.URL, item_to_be_added.Id);
-
-	body_as_string := getRequestBody(item_to_be_added)
-
-	body := strings.NewReader(body_as_string)
+	//PUTting Item
+	url := getURLToBeTested(testingServerPUT.URL, itemToBeAdded.Id);
+	bodyAsString := getRequestBody(itemToBeAdded)
+	body := strings.NewReader(bodyAsString)
 	req,err := http.NewRequest("PUT", url, body)
 	if err != nil {
 		log.Printf("Error when creating PUT request %d.", err)
 		t.Fail()
 	}
-	res, err := http.DefaultClient.Do(req)
 
+	res, err := http.DefaultClient.Do(req)
 	if (err != nil) || (res.StatusCode != http.StatusCreated)  {
-		Log("PUT", url, res.StatusCode, http.StatusCreated)
+		debug("PUT", url, res.StatusCode, http.StatusCreated)
 		t.Fail()
 	}
 
-	tsGET := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
-	defer tsGET.Close()
-	url = getServiceURLToBeTested(tsGET.URL, item_to_be_added.Id);
+	//GETting Item
+	testingServerGET := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
+	defer testingServerGET.Close()
+	url = getURLToBeTested(testingServerGET.URL, itemToBeAdded.Id);
 	res, err = http.Get(url)
 	if (err != nil) || (res.StatusCode != http.StatusOK)  {
-		Log("GET", url, res.StatusCode, http.StatusOK)
+		debug("GET", url, res.StatusCode, http.StatusOK)
 		t.Fail()
 	}
 }
@@ -133,21 +132,21 @@ func Test_returns_an_error_when_item_does_NOT_exist (t *testing.T) {
 	}
 }
 
-func Test_return_an_item_just_saved (t *testing.T) {
+func Test_returns_an_item_just_saved (t *testing.T) {
 
-	item_to_be_added := createItem()
+	itemToBeAdded := createItemDto()
 
 	service := NewService(db);
-	service.PutItem(item_to_be_added)
+	service.PutItem(itemToBeAdded)
 
-	item := service.GetItem(item_to_be_added.Id)
+	item := service.GetItem(itemToBeAdded.Id)
 
-	if item.Id != item_to_be_added.Id || item.Desc != item_to_be_added.Desc || item.Price != item_to_be_added.Price {
+	if item.Id != itemToBeAdded.Id || item.Desc != itemToBeAdded.Desc || item.Price != itemToBeAdded.Price {
 		t.Fail()
 	}
 }
 
-func Test_return_an_empty_item_if_it_does_not_exist(t *testing.T){
+func Test_returns_an_empty_item_if_it_does_not_exist(t *testing.T){
 
 	service := NewService(db);
 	item := service.GetItem("non_existing_item")
@@ -157,7 +156,19 @@ func Test_return_an_empty_item_if_it_does_not_exist(t *testing.T){
 	}
 }
 
-func Log(method string, url string, expectedStatusCode int, receivedStatusCode int){
+func Test_returns_no_error_when_adding_an_item(t *testing.T){
+
+	service := NewService(db);
+	item := createItemDto()
+	err := service.PutItem(item)
+
+	if err != 0 {
+		t.Fail()
+	}
+}
+
+//Auxiliary functions
+func debug(method string, url string, expectedStatusCode int, receivedStatusCode int){
 
 	var buf bytes.Buffer
 	logger := log.New(&buf, "logger: ", log.Lshortfile)
@@ -165,7 +176,7 @@ func Log(method string, url string, expectedStatusCode int, receivedStatusCode i
 	fmt.Print(&buf)
 }
 
-func createItem() dto.Item {
+func createItemDto() dto.Item {
 
 	id := "2"
 	price := float32(10)
@@ -179,7 +190,7 @@ func getRequestBody(item dto.Item) string {
 	return body
 }
 
-func getItemIdFromURL(item_id string) func (r *http.Request) map[string]string {
+func returnItemIdFromURL(item_id string) func (r *http.Request) map[string]string {
 
 	f := func (r *http.Request) map[string]string {
 		req_vars := make(map[string]string)
@@ -192,8 +203,8 @@ func getItemIdFromURL(item_id string) func (r *http.Request) map[string]string {
 }
 
 //API to be tested
-func getServiceURLToBeTested(base_url, item_id string) string {
+func getURLToBeTested(base_url, item_id string) string {
 
-	catalog_api := "/catalog/products/"
+	catalog_api := "/catalog/productestingServer/"
 	return base_url + catalog_api + item_id;
 }
