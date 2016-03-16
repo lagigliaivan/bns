@@ -10,11 +10,19 @@ type Item struct {
 	Price float32
 }
 
-func (itemDto Item) GetDto(item domain.Item) Item {
+func (dto Item) GetDto(item domain.Item) Item {
 
-	itemDto.Id = item.GetId()
-	itemDto.Desc = item.GetDescription()
-	itemDto.Price = item.GetPrice()
+	dto.Id = item.GetId()
+	dto.Desc = item.GetDescription()
+	dto.Price = item.GetPrice()
 
-	return itemDto
+	return dto
+}
+
+func (dto Item) IsEmpty() bool{
+	return dto.Id == ""
+}
+
+func (dto Item) IsNOTEmpty() bool{
+	return !(dto.Id == "")
 }

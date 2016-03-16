@@ -29,7 +29,7 @@ func main() {
 	router.HandleFunc("/catalog/products/{id}", service.HandleRequest)
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("../../../swaggerui/")))
 	http.Handle("/", router)
-	router.Methods("GET", "PUT")
+	router.Methods(http.MethodGet, http.MethodPut, http.MethodPost)
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

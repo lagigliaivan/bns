@@ -40,6 +40,7 @@ func NewService(db infrastructure.DB) *Service{
 	service.error = "ERROR"
 	service.header_handler[http.MethodGet] = service.HandleGetItem
 	service.header_handler[http.MethodPut] = service.HandlePutItem
+	service.header_handler[http.MethodPost] = service.HandlePostItem
 	service.header_handler[service.error]  = service.HandleError
 
 	return service
@@ -94,18 +95,46 @@ func (service Service) HandleGetItem(w http.ResponseWriter, r *http.Request) {
 func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 
 	vars := service.GetRequestParameters(r)
-	item_id := vars["id"]
+	itemId := vars["id"]
+
+	if service.GetItem(itemId).IsEmpty(){
+		w.WriteHeader(http.StatusNotFound)
+		log.Printf("PUT itemId: %s Not found", itemId)
+		return
+	}
+
 	body, _ := ioutil.ReadAll(r.Body)
 	item := new(dto.Item)
 
 	if err := json.Unmarshal(body, item); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "The request contains a wrong format: %s ", err)
-		log.Printf("PUT item_id: %s .The request contains a wrong format %s", item.Id, err)
+		log.Printf("PUT itemId: %s .The request contains a wrong format %s", item.Id, err)
 		return
 	}
-	item.Id = item_id
-	service.PutItem(*item)
+	item.Id = itemId
+	service.AddUpdateItem(*item)
+	w.WriteHeader(http.StatusCreated)
+
+}
+
+func (service Service) HandlePostItem(w http.ResponseWriter, r *http.Request){
+
+	body, _ := ioutil.ReadAll(r.Body)
+	item := new(dto.Item)
+
+	if err := json.Unmarshal(body, item); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("POST itemId: %s .The request contains a wrong format %s", item.Id, err)
+		return
+	}
+
+	if service.GetItem(item.Id).IsNOTEmpty(){
+		w.WriteHeader(http.StatusForbidden)
+		log.Printf("POST itemId: %s Already exists", item.Id)
+		return
+	}
+
+	service.AddUpdateItem(*item)
 	w.WriteHeader(http.StatusCreated)
 
 }
@@ -116,7 +145,7 @@ func (service Service) GetItem(id string) dto.Item {
 	return  item;
 }
 
-func (service Service) PutItem(item dto.Item) int {
+func (service Service) AddUpdateItem(item dto.Item) int {
 	if item.Id == "" {
 		log.Printf("Error at trying to save an empty item.")
 		return -1
@@ -134,4 +163,3 @@ func (service Service) PutItem(item dto.Item) int {
 func getPathParams(r *http.Request) map[string]string {
 	return mux.Vars(r)
 }
-
