@@ -96,16 +96,16 @@ func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 	vars := service.GetRequestParameters(r)
 	item_id := vars["id"]
 	body, _ := ioutil.ReadAll(r.Body)
-	item := dto.Item{item_id, "", 0}
+	item := new(dto.Item)
 
-	if err := json.Unmarshal(body, &item); err != nil {
+	if err := json.Unmarshal(body, item); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprint(w, "The request contains a wrong format: %s ", err)
 		log.Printf("PUT item_id: %s .The request contains a wrong format %s", item.Id, err)
 		return
 	}
-
-	service.PutItem(item)
+	item.Id = item_id
+	service.PutItem(*item)
 	w.WriteHeader(http.StatusCreated)
 
 }
@@ -117,6 +117,10 @@ func (service Service) GetItem(id string) dto.Item {
 }
 
 func (service Service) PutItem(item dto.Item) int {
+	if item.Id == "" {
+		log.Printf("Error at trying to save an empty item.")
+		return -1
+	}
 
 	service.db.SaveItem(item)
 	log.Printf("PUT item_id: %s returned OK", item.Id)

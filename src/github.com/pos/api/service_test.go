@@ -10,6 +10,10 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/pos/dto"
+	"io/ioutil"
+	"encoding/json"
+//	"reflect"
+	"io"
 )
 
 //DB MOCK
@@ -20,7 +24,7 @@ func init() {
 	db = infrastructure.NewMemDb()
 }
 
-//TEStestingServer to check GET /catalog/productestingServer/{id} resultestingServer
+//Testing service to check GET /catalog/productestingServer/{id}
 func Test_returns_404_when_item_does_not_exist(t *testing.T){
 
 	service := NewService(db)
@@ -31,8 +35,9 @@ func Test_returns_404_when_item_does_not_exist(t *testing.T){
 
 	//GETting URL
 	url := getURLToBeTested(testingServer.URL, itemToBeAdded.Id);
+
 	res, err := http.Get(url)
-	if (err != nil) || (res.StatusCode != http.StatusNotFound) {
+	if !isHTTPStatus(http.StatusNotFound, res, err){
 		debug("GET", url, res.StatusCode, http.StatusOK)
 		t.Fail()
 	}
@@ -51,8 +56,9 @@ func Test_returns_200_when_item_exists(t *testing.T){
 
 	//GETting URL
 	url := getURLToBeTested(testingServer.URL, itemToBeAdded.Id);
+
 	res, err := http.Get(url)
-	if (err != nil) || (res.StatusCode != http.StatusOK)  {
+	if !isHTTPStatus(http.StatusOK, res, err){
 		debug("GET", url, res.StatusCode, http.StatusOK)
 		t.Fail()
 	}
@@ -68,24 +74,49 @@ func Test_returns_201_when_item_is_created (t *testing.T) {
 	defer testingServer.Close()
 	url := getURLToBeTested(testingServer.URL, itemToBeAdded.Id);
 
-	bodyAsString := getRequestBody(itemToBeAdded)
-	body := strings.NewReader(bodyAsString)
-	req,err := http.NewRequest("PUT", url, body)
+	res, err := httpPut(url, itemToBeAdded)
 
-	if err != nil {
-		log.Printf("Error when creating PUT request %d.", err)
-		t.Fail()
-	}
-
-	res, err := http.DefaultClient.Do(req)
-
-	if (err != nil) || (res.StatusCode != http.StatusCreated)  {
+	if !isHTTPStatus(http.StatusCreated, res, err){
 		debug("PUT", url, res.StatusCode, http.StatusCreated)
 		t.Fail()
 	}
 }
 
-func Test_returns_the_item_after_it_is_created(t *testing.T){
+func Test_returns_200_when_item_is_updated (t *testing.T) {
+
+	itemToBeAdded := createItemDto()
+	service := NewService(db)
+
+	testingServer := httptest.NewServer(http.HandlerFunc(service.HandlePutItem))
+	defer testingServer.Close()
+	url := getURLToBeTested(testingServer.URL, itemToBeAdded.Id);
+
+	res, err := httpPut(url, itemToBeAdded)
+
+	if !isHTTPStatus(http.StatusOK, res, err){
+		debug("PUT", url, res.StatusCode, http.StatusOK)
+		t.Fail()
+	}
+	//GET Item
+	testingServerGET := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
+	defer testingServerGET.Close()
+
+	res, err = http.Get(url)
+
+	if !isHTTPStatus(http.StatusOK, res, err){
+		debug("GET", url, res.StatusCode, http.StatusOK)
+		t.Fail()
+	}
+
+	if !areItemsEquals(itemToBeAdded, createItemFromJson(res.Body)){
+		log.Printf("Error when GETting item to contrast it with the saved one")
+		t.Fail()
+	}
+
+
+}
+
+func Test_returns_the_same_item_after_it_is_created(t *testing.T){
 
 	itemToBeAdded := createItemDto()
 
@@ -95,29 +126,30 @@ func Test_returns_the_item_after_it_is_created(t *testing.T){
 	testingServerPUT := httptest.NewServer(http.HandlerFunc(service.HandlePutItem))
 	defer testingServerPUT.Close()
 
-	//PUTting Item
+	//PUT Item
 	url := getURLToBeTested(testingServerPUT.URL, itemToBeAdded.Id);
-	bodyAsString := getRequestBody(itemToBeAdded)
-	body := strings.NewReader(bodyAsString)
-	req,err := http.NewRequest("PUT", url, body)
-	if err != nil {
-		log.Printf("Error when creating PUT request %d.", err)
-		t.Fail()
-	}
 
-	res, err := http.DefaultClient.Do(req)
-	if (err != nil) || (res.StatusCode != http.StatusCreated)  {
+	res, err := httpPut(url, itemToBeAdded)
+
+	if !isHTTPStatus(http.StatusCreated, res, err){
 		debug("PUT", url, res.StatusCode, http.StatusCreated)
 		t.Fail()
 	}
 
-	//GETting Item
+	//GET Item
 	testingServerGET := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
 	defer testingServerGET.Close()
 	url = getURLToBeTested(testingServerGET.URL, itemToBeAdded.Id);
+
 	res, err = http.Get(url)
-	if (err != nil) || (res.StatusCode != http.StatusOK)  {
+
+	if !isHTTPStatus(http.StatusOK, res, err){
 		debug("GET", url, res.StatusCode, http.StatusOK)
+		t.Fail()
+	}
+
+	if !areItemsEquals(itemToBeAdded, createItemFromJson(res.Body)){
+		log.Printf("Error when GETting item to contrast it with the saved one")
 		t.Fail()
 	}
 }
@@ -167,7 +199,7 @@ func Test_returns_no_error_when_adding_an_item(t *testing.T){
 	}
 }
 
-//Auxiliary functions
+//Test auxiliary functions
 func debug(method string, url string, expectedStatusCode int, receivedStatusCode int){
 
 	var buf bytes.Buffer
@@ -186,7 +218,7 @@ func createItemDto() dto.Item {
 }
 
 func getRequestBody(item dto.Item) string {
-	body := "{\"description\":\"" + item.Desc + "\", \"price\":" + fmt.Sprintf("%.2f", item.Price) + "}"
+	body := "{\"desc\":\"" + item.Desc + "\", \"price\":" + fmt.Sprintf("%.2f", item.Price) + "}"
 	return body
 }
 
@@ -207,4 +239,43 @@ func getURLToBeTested(base_url, item_id string) string {
 
 	catalog_api := "/catalog/productestingServer/"
 	return base_url + catalog_api + item_id;
+}
+
+func httpPut(url string, item dto.Item) (resp * http.Response, err error) {
+
+	bodyAsString := getRequestBody(item)
+	body := strings.NewReader(bodyAsString)
+	req, err := http.NewRequest("PUT", url, body)
+	if err != nil {
+		log.Printf("Error when creating PUT request %d.", err)
+		return nil, err
+	}
+	resp, err = http.DefaultClient.Do(req)
+	return resp, err
+}
+
+
+func isHTTPStatus(httpStatus int, res *http.Response, err error ) bool {
+	return !( (err != nil) || (res.StatusCode != httpStatus) )
+}
+
+func areItemsEquals(item, item2 dto.Item) bool{
+
+	return !((item.Id != item2.Id) || (item.Desc != item2.Desc) || (item.Price != item2.Price))
+}
+
+func createItemFromJson(itemAsJson io.ReadCloser) dto.Item {
+
+	item := new(dto.Item)
+	response, err := ioutil.ReadAll(itemAsJson)
+
+	if err != nil {
+		log.Printf("Error when reading Json from response")
+	}
+
+	if err := json.Unmarshal(response, item); err != nil {
+		log.Printf("Error when unmarshaling Json to dto.Item")
+	}
+
+	return *item
 }
