@@ -19,6 +19,9 @@ import (
 //DB MOCK
 var db infrastructure.Mem_DB
 
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+}
 
 //Testing service to check GET /catalog/productestingServer/{id}
 func Test_returns_404_when_item_does_not_exist(t *testing.T){
@@ -44,7 +47,10 @@ func Test_returns_200_when_item_exists(t *testing.T){
 	itemToBeAdded := createItemDto()
 
 	service := NewService(infrastructure.NewMemDb())
+
+	//Adding ITEM without calling RESTapi. Calling a service function directly
 	service.AddUpdateItem(itemToBeAdded)
+
 	service.GetRequestParameters = returnItemIdFromURL(itemToBeAdded.Id)
 
 	testingServer := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
@@ -80,12 +86,15 @@ func Test_returns_201_when_item_is_created (t *testing.T) {
 
 func Test_returns_200_when_item_is_updated (t *testing.T) {
 
+	//POST Item
 	itemToBeAdded := createItemDto()
 	service := NewService(infrastructure.NewMemDb())
+	service.GetRequestParameters = returnItemIdFromURL(itemToBeAdded.Id)
 
 	testingServer := httptest.NewServer(http.HandlerFunc(service.HandlePostItem))
 	defer testingServer.Close()
 	url := getURLToBeTested(testingServer.URL);
+
 
 	res, err := httpPost(url, itemToBeAdded)
 
@@ -94,8 +103,11 @@ func Test_returns_200_when_item_is_updated (t *testing.T) {
 		t.FailNow()
 	}
 
+	//PUT Item
 	testingServer = httptest.NewServer(http.HandlerFunc(service.HandlePutItem))
 	defer testingServer.Close()
+
+
 	url = getURLToBeTested(testingServer.URL, itemToBeAdded.Id);
 
 	itemToBeAdded.Desc = "Description updated"
@@ -107,6 +119,7 @@ func Test_returns_200_when_item_is_updated (t *testing.T) {
 		debug(http.MethodPut, url, res.StatusCode, http.StatusOK)
 		t.FailNow()
 	}
+
 	//GET Item
 	testingServerGET := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
 	defer testingServerGET.Close()
@@ -228,15 +241,23 @@ func createItemDto() dto.Item {
 }
 
 func getRequestBody(item dto.Item) string {
-	body := "{\"id\":\"" + item.Id + "\", \"desc\":\"" + item.Desc + "\", \"price\":" + fmt.Sprintf("%.2f", item.Price) + "}"
+
+	body := "{\"id\":\"" + item.Id + "\", \"description\":\"" + item.Desc + "\", \"price\":" + fmt.Sprintf("%.2f", item.Price) + "}"
+	log.Printf("json: %s", body)
 	return body
 }
 
-func returnItemIdFromURL(item_id string) func (r *http.Request) map[string]string {
+//This function is a callback to return the item id from URL. When running normal, this ID is taken from the URL but
+//this process is resolved by the multiplexer (gorilla.mux)
+func returnItemIdFromURL(itemId string) func (r *http.Request) map[string]string {
+
+	if itemId == ""{
+		log.Printf("ItemId to be return is empty.")
+	}
 
 	f := func (r *http.Request) map[string]string {
 		req_vars := make(map[string]string)
-		req_vars["id"]= item_id
+		req_vars["id"]= itemId
 		log.Printf("Returning itemid:%s from a testing callback.", req_vars["id"])
 		return req_vars
 	}
@@ -246,6 +267,7 @@ func returnItemIdFromURL(item_id string) func (r *http.Request) map[string]strin
 
 //API to be tested
 func getURLToBeTested(base_url string, params ... string) string {
+
 	var p string
 
 	for _, v := range params {
@@ -253,6 +275,9 @@ func getURLToBeTested(base_url string, params ... string) string {
 	}
 
 	catalog_api := "/catalog/products/"
+
+	p = strings.TrimSuffix(p, "/")
+
 	return base_url + catalog_api + p;
 }
 
@@ -260,11 +285,13 @@ func httpPut(url string, item dto.Item) (resp * http.Response, err error) {
 
 	bodyAsString := getRequestBody(item)
 	body := strings.NewReader(bodyAsString)
+
 	req, err := http.NewRequest("PUT", url, body)
 	if err != nil {
 		log.Printf("Error when creating PUT request %d.", err)
 		return nil, err
 	}
+
 	resp, err = http.DefaultClient.Do(req)
 	return resp, err
 }
@@ -282,7 +309,10 @@ func httpPost(url string, item dto.Item) (*http.Response, error){
 		log.Printf("Error when creating POST request %d.", err)
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Length", fmt.Sprintf("%d", len(bodyAsString)))
 	resp, err := http.DefaultClient.Do(req)
+
 	return resp, err
 }
 

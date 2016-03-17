@@ -5,9 +5,9 @@ import (
 )
 
 type Item struct {
-	Id    string
-	Desc  string
-	Price float32
+	Id string  `json:"id"`
+	Desc  string `json:"description"`
+	Price float32 `json:"price"`
 }
 
 func (dto Item) GetDto(item domain.Item) Item {

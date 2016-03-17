@@ -103,17 +103,25 @@ func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	body, _ := ioutil.ReadAll(r.Body)
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Fatalf("PUT itemId %s : Problem while reading body: %s Body: %s",itemId, err, body)
+		return
+	}
+
 	item := new(dto.Item)
 
-	if err := json.Unmarshal(body, item); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(&item); err != nil {
+
+	//if err := json.Unmarshal(body, item); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("PUT itemId: %s .The request contains a wrong format %s", item.Id, err)
+		log.Printf("PUT itemId %s. The request contains a wrong format: %s Body: %s",itemId, err, body)
 		return
 	}
 	item.Id = itemId
 	service.AddUpdateItem(*item)
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 
 }
 

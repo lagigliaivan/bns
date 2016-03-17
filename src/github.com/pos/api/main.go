@@ -23,10 +23,14 @@ func main() {
 	)*/
 	router := mux.NewRouter();
 
-	db := infrastructure.CatalogDB{}
+	//db := infrastructure.CatalogDB{}
+	db := infrastructure.NewMemDb()
 	service := NewService(db)
 
 	router.HandleFunc("/catalog/products/{id}", service.HandleRequest)
+	router.HandleFunc("/catalog/products/", service.HandleRequest)
+
+
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("../../../swaggerui/")))
 	http.Handle("/", router)
 	router.Methods(http.MethodGet, http.MethodPut, http.MethodPost)
