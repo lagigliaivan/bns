@@ -117,11 +117,10 @@ func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 	if err := json.Unmarshal(body, item); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Printf("PUT itemId %s. The request contains a wrong format: %s Body: %s", itemId, err, body)
-	//	return
+		return
 	}
-	log.Printf("%+v", item)
 	item.Id = itemId
-	//service.AddUpdateItem(*item)
+	service.AddUpdateItem(*item)
 	w.WriteHeader(http.StatusOK)
 
 }

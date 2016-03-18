@@ -302,7 +302,8 @@ func getURLToBeTested(base_url string, params ... string) string {
 
 func httpPut(url string, item dto.Item) (resp * http.Response, err error) {
 
-	bodyAsString := getRequestBody(item)
+	bodyAsString := "{\"description\":\"" + item.Desc + "\", \"price\": 23}"
+	log.Printf("body: %s", bodyAsString)
 	body := strings.NewReader(bodyAsString)
 
 	req, err := http.NewRequest("PUT", url, body)
