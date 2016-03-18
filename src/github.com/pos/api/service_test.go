@@ -252,8 +252,8 @@ func debug(method string, url string, expectedStatusCode int, receivedStatusCode
 
 func createItemDto() dto.Item {
 
-	id := "2"
-	price := float32(10)
+	id := "12345"
+	price := float32(10.1)
 	descr := "milk 100 cm3"
 
 	return dto.Item{id, descr, price}
@@ -261,8 +261,7 @@ func createItemDto() dto.Item {
 
 func getRequestBody(item dto.Item) string {
 
-	body := "{\"id\":\"" + item.Id + "\", \"description\":\"" + item.Desc + "\", \"price\":" + fmt.Sprintf("%.2f", item.Price) + "}"
-	log.Printf("json: %s", body)
+	body := "{\"id\":\"" + item.Id + "\", \"description\":\"" + item.Desc + "\", \"price\":" + fmt.Sprintf("%.1f", item.Price) + "}"
 	return body
 }
 

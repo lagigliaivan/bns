@@ -1,7 +1,6 @@
 package main
 
 import (
-
 	"fmt"
 	"net/http"
 	"github.com/gorilla/mux"
@@ -11,9 +10,11 @@ import (
 	"io/ioutil"
 	"log"
 )
+
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
+
 type GetPathParams func (*http.Request) map[string]string
 
 type Service struct {
@@ -25,15 +26,6 @@ type Service struct {
 }
 
 func NewService(db infrastructure.DB) *Service{
-
-	// Log as JSON instead of the default ASCII formatter.
-	//log.SetFormatter(&log.JSONFormatter{})
-
-	// Output to stderr instead of stdout, could also be a file.
-	//log.SetOutput(os.Stderr)
-
-	// Only log the warning severity or above.
-	//log.SetLevel(log.DebugLevel)
 
 	service := new(Service)
 	service.GetRequestParameters = getPathParams
@@ -106,6 +98,7 @@ func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
+
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Fatalf("PUT itemId %s : Problem while reading body: %s Body: %s",itemId, err, body)
@@ -113,7 +106,6 @@ func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 	}
 
 	item := new(dto.Item)
-
 	if err := json.Unmarshal(body, item); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Printf("PUT itemId %s. The request contains a wrong format: %s Body: %s", itemId, err, body)
@@ -145,6 +137,7 @@ func (service Service) HandlePostItem(w http.ResponseWriter, r *http.Request){
 	if service.GetItem(item.Id).IsNOTEmpty(){
 		w.WriteHeader(http.StatusForbidden)
 		log.Printf("POST itemId: %s Already exists", item.Id)
+		w.Write([]byte("Id already exists"))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -161,6 +154,7 @@ func (service Service) GetItem(id string) dto.Item {
 }
 
 func (service Service) AddUpdateItem(item dto.Item) int {
+
 	if item.Id == "" {
 		log.Printf("Error at trying to save an empty item.")
 		return -1
