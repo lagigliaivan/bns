@@ -11,7 +11,9 @@ import (
 	"io/ioutil"
 	"log"
 )
-
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+}
 type GetPathParams func (*http.Request) map[string]string
 
 type Service struct {
@@ -112,15 +114,14 @@ func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 
 	item := new(dto.Item)
 
-	if err = json.NewDecoder(r.Body).Decode(&item); err != nil {
-
-	//if err := json.Unmarshal(body, item); err != nil {
+	if err := json.Unmarshal(body, item); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("PUT itemId %s. The request contains a wrong format: %s Body: %s",itemId, err, body)
-		return
+		log.Printf("PUT itemId %s. The request contains a wrong format: %s Body: %s", itemId, err, body)
+	//	return
 	}
+	log.Printf("%+v", item)
 	item.Id = itemId
-	service.AddUpdateItem(*item)
+	//service.AddUpdateItem(*item)
 	w.WriteHeader(http.StatusOK)
 
 }
@@ -136,9 +137,16 @@ func (service Service) HandlePostItem(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
+	if item.IsEmpty() {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("id must not be empty."))
+		return
+	}
+
 	if service.GetItem(item.Id).IsNOTEmpty(){
 		w.WriteHeader(http.StatusForbidden)
 		log.Printf("POST itemId: %s Already exists", item.Id)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 

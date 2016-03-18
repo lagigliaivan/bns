@@ -138,7 +138,26 @@ func Test_returns_200_when_item_is_updated (t *testing.T) {
 
 
 }
+func Test_returns_400_when_post_is_sent_without_itemid(t *testing.T){
 
+	itemToBeAdded := createItemDto()
+	itemToBeAdded.Id = ""
+
+	service := NewService(infrastructure.NewMemDb())
+
+	testingServerPUT := httptest.NewServer(http.HandlerFunc(service.HandlePostItem))
+	defer testingServerPUT.Close()
+
+	//POST Item
+	url := getURLToBeTested(testingServerPUT.URL);
+
+	res, err := httpPost(url, itemToBeAdded)
+
+	if !isHTTPStatus(http.StatusBadRequest, res, err){
+		debug(http.MethodPost, url, res.StatusCode, http.StatusBadRequest)
+		t.FailNow()
+	}
+}
 func Test_returns_the_same_item_after_it_is_created(t *testing.T){
 
 	itemToBeAdded := createItemDto()
