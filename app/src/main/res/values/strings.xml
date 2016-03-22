@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">BuyItNow</string>
+    <string name="add_item">Add Item</string>
+    <string name="read_bar_code">Read bar code</string>
+</resources>
