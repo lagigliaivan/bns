@@ -44,16 +44,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         List<String> weekForecast = new ArrayList<String>(Arrays.asList(data));
 
         setContentView(R.layout.activity_main);
-        ListView view =  (ListView) findViewById(R.id.item_list_view);
 
+        ListView view =  (ListView) findViewById(R.id.item_list_view);
         FrameLayout footerLayout = (FrameLayout) getLayoutInflater().inflate(R.layout.footer, null);
         Button btnPostYourEnquiry = (Button) footerLayout.findViewById(R.id.add_item_button);
-
-
         btnPostYourEnquiry.setOnClickListener(this);
-
         view.addHeaderView(footerLayout);
-
 
         ArrayAdapter<String> mForecastAdapter =
                 new ArrayAdapter<String>(
@@ -67,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    private void connect(){
+    private List getAllItems(){
 
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
@@ -93,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             StringBuffer buffer = new StringBuffer();
             if (inputStream == null) {
                 // Nothing to do.
-                return;
+                return new ArrayList();
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
 
@@ -107,14 +103,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (buffer.length() == 0) {
                 // Stream was empty.  No point in parsing.
-                return ;
+                return new ArrayList();
             }
             forecastJsonStr = buffer.toString();
         } catch (IOException e) {
             Log.e("PlaceholderFragment", "Error ", e);
             // If the code didn't successfully get the weather data, there's no point in attemping
             // to parse it.
-            return;
+            return new ArrayList();
         } finally{
             if (urlConnection != null) {
                 urlConnection.disconnect();
@@ -128,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        return;
+        return new ArrayList();
     }
 
 
