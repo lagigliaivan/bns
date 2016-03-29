@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.android.sunshine.app.MainActivity"
+    tools:context="ar.com.bestprice.buyitnow.MainActivity"
     android:orientation="vertical">
 
 
@@ -13,14 +13,14 @@
         android:layout_height="wrap_content"
         android:clickable="true"
         android:visibility="visible"
-        tools:context="com.example.android.sunshine.app.MainActivity"/>
+        tools:context="ar.com.bestprice.buyitnow.MainActivity"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/item_text_view"
         android:layout_gravity="left|right"
-        tools:context="com.example.android.sunshine.app.MainActivity"
+        tools:context="car.com.bestprice.buyitnow.MainActivity"
         android:onClick="onClick"
         style="@style/Animation.AppCompat.DropDownUp" />
 

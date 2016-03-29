@@ -2,16 +2,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.android.sunshine.app.AddItemActivity">
+    tools:context="ar.com.bestprice.buyitnow.MainActivity">
 
     <Button
-        tools:context="com.example.android.sunshine.app.AddItemActivity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/add_item"
-        android:id="@+id/button"
+        android:id="@+id/add_item_button"
         android:clickable="true"
-        android:onClick="onClickButton"
+        android:onClick="onClick"
         android:layout_gravity="right" />
 
 </FrameLayout>

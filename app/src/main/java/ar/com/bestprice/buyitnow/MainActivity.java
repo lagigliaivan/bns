@@ -22,8 +22,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ar.com.bestprice.buyitnow.barcodereader.BarcodeCaptureActivity;
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,11 +47,10 @@ public class MainActivity extends AppCompatActivity {
         ListView view =  (ListView) findViewById(R.id.item_list_view);
 
         FrameLayout footerLayout = (FrameLayout) getLayoutInflater().inflate(R.layout.footer, null);
-        Button btnPostYourEnquiry = (Button) footerLayout.findViewById(R.id.button);
+        Button btnPostYourEnquiry = (Button) footerLayout.findViewById(R.id.add_item_button);
 
-        Activity cameraActivity = new AddItemActivity();
 
-        btnPostYourEnquiry.setOnClickListener((View.OnClickListener)cameraActivity);
+        btnPostYourEnquiry.setOnClickListener(this);
 
         view.addHeaderView(footerLayout);
 
@@ -130,18 +131,19 @@ public class MainActivity extends AppCompatActivity {
         return;
     }
 
+
+    private static final int RC_BARCODE_CAPTURE = 9001;
     public void onClick(View view) {
-        System.out.println(((TextView)view).getText());
+        if(view.getId() == R.id.add_item_button) {
+            Intent intent = new Intent(this.getApplicationContext(), BarcodeCaptureActivity.class);
+            intent.putExtra(BarcodeCaptureActivity.AutoFocus, true);
+            intent.putExtra(BarcodeCaptureActivity.UseFlash, false);
+            startActivityForResult(intent, RC_BARCODE_CAPTURE);
+        }else{
+            System.out.println(((TextView) view).getText());
+        }
     }
 
-    public void onClickButton(View view){
-        Intent intent = new Intent(this, AddItemActivity.class);
-        //EditText editText = (EditText) findViewById(R.id.gridLayout);
-        //String message = editText.getText().toString();
-        //intent.putExtra(EXTRA_MESSAGE, message);
-
-
-    }
 
     @Override
     protected void onStart() {
