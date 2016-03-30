@@ -77,6 +77,17 @@ func (service Service) HandleGetItem(w http.ResponseWriter, r *http.Request) {
 	log.Printf("GET item_id: %s returned OK", item.Id)
 
 }
+
+func (service Service) HandleGetItems(w http.ResponseWriter, r *http.Request) {
+
+	items := service.GetItems()
+
+	itemsAsJson, _ := json.Marshal(items)
+
+	fmt.Fprintf(w, "%s", itemsAsJson)
+	log.Printf("GET items returned OK %s", itemsAsJson)
+
+}
 // @Title Get Users Information
 // @Description Get Users Information
 // @Accept json
@@ -150,6 +161,12 @@ func (service Service) HandlePostItem(w http.ResponseWriter, r *http.Request){
 func (service Service) GetItem(id string) dto.Item {
 	log.Printf("Getting item_id: %s from DB", id)
 	item := service.db.GetItem(id)
+	return  item;
+}
+
+func (service Service) GetItems() []dto.Item {
+	log.Printf("Getting items: %s from DB")
+	item := service.db.GetItems()
 	return  item;
 }
 

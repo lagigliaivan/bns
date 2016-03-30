@@ -8,7 +8,8 @@ import (
 )
 
 type DB interface {
-	GetItem(string) (dto.Item)
+	GetItem(string) dto.Item
+	GetItems() []dto.Item
 	SaveItem(dto.Item) int
 }
 
@@ -16,7 +17,7 @@ type CatalogDB struct {
 	db *sql.DB
 }
 
-func (catDb *CatalogDB) init() {
+func (catDb CatalogDB) init() {
 	db, err := sql.Open("mysql", "user:password@/dbname")
 	if err != nil {
 		panic(fmt.Sprintf("Error when opening database connection: %v", err))
@@ -28,6 +29,10 @@ func (catDb CatalogDB) GetItem(id string) (dto.Item){
 	item := dto.Item{}
 	item.Id = id
 	return item
+}
+
+func (catDb CatalogDB) GetItems() []dto.Item{
+	return nil
 }
 
 func (catDb CatalogDB) SaveItem(dto.Item) int {

@@ -25,6 +25,18 @@ func (db Mem_DB) GetItem(id string) (dto.Item)  {
 	return db.m[id]
 }
 
+func (db Mem_DB) GetItems() ([]dto.Item){
+
+	//items := make([]dto.Item, len(db.m))
+	var items []dto.Item
+
+	for _, item := range db.m {
+		items = append(items, item)
+	}
+
+	return items
+}
+
 func (db Mem_DB) SaveItem(item dto.Item) int  {
 	db.lock.Lock()
 	defer db.lock.Unlock()

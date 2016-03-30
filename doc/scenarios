@@ -1,0 +1,24 @@
+scenario #1
+
+A user adds several just purchased products to its account by reading their barcode. Once the barcode is read, then,
+if product does not exist on the DB, the user can add it along with a picture, purchased price, descriptions and
+geographical reference where it was acquired (latitude and longitude of the supermarket).
+
+if product does exist, then, the user just need to add the price it was acquired.
+
+After all the products where added, then the user may decided to get the amount of money spent in a specific range of time.
+  e.g. Get me the amount of money spend between 11/29/2016 and  12/29/2016
+
+scenario #2
+
+A user wants to know where to get the best price of a product according to its location.
+The product can be obtained either by its barcode id or by its description.
+In case the user types an incomplete description of the product, then several other products may appear for the user
+to select one of them.
+
+scenario #3
+
+A user wants to know what are their usually bought products. After knowing a ranking about its most bought products,
+then he may want to be suggested about where that pack (group of most usually bought products) can be conveniently
+acquired according to its location.
+
