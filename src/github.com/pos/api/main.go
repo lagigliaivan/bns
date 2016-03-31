@@ -27,12 +27,12 @@ func main() {
 	db := infrastructure.NewMemDb()
 	service := NewService(db)
 
-	router.HandleFunc("/catalog/products/{id}", service.HandleRequest)
-	router.HandleFunc("/catalog/products/", service.HandleRequest)
+	router.HandleFunc("/catalog/products/{id}", service.HandleRequestProductId)
+	router.HandleFunc("/catalog/products/", service.HandleRequestProducts)
 
 
-	router.PathPrefix("/").Handler(http.FileServer(http.Dir("../../../swaggerui/")))
-	http.Handle("/", router)
+	//router.PathPrefix("/").Handler(http.FileServer(http.Dir("../../../swaggerui/")))
+	//http.Handle("/", router)
 	router.Methods(http.MethodGet, http.MethodPut, http.MethodPost)
 
 	log.Fatal(http.ListenAndServe(":8080", router))

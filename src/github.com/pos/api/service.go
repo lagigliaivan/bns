@@ -19,23 +19,30 @@ type GetPathParams func (*http.Request) map[string]string
 
 type Service struct {
 	GetRequestParameters GetPathParams
-	error string
-	name string
-	db infrastructure.DB
-	header_handler map[string] func(http.ResponseWriter,*http.Request)
+	error                string
+	name                 string
+	db                   infrastructure.DB
+	productIdsHandler    map[string] func(http.ResponseWriter,*http.Request)
+	productsHandler	     map[string] func(http.ResponseWriter,*http.Request)
 }
 
 func NewService(db infrastructure.DB) *Service{
 
 	service := new(Service)
 	service.GetRequestParameters = getPathParams
-	service.header_handler = make(map[string] func(http.ResponseWriter,*http.Request))
 	service.db = db
 	service.error = "ERROR"
-	service.header_handler[http.MethodGet] = service.HandleGetItem
-	service.header_handler[http.MethodPut] = service.HandlePutItem
-	service.header_handler[http.MethodPost] = service.HandlePostItem
-	service.header_handler[service.error]  = service.HandleError
+
+	service.productIdsHandler = make(map[string] func(http.ResponseWriter,*http.Request))
+	service.productIdsHandler[http.MethodGet] = service.HandleGetItem
+	service.productIdsHandler[http.MethodPut] = service.HandlePutItem
+	//service.productIdsHandler[http.MethodPost] = service.HandlePostItem
+	service.productIdsHandler[service.error]  = service.HandleError
+
+	service.productsHandler = make(map[string] func(http.ResponseWriter,*http.Request))
+	service.productsHandler[http.MethodPost] = service.HandlePostItem
+	service.productsHandler[http.MethodGet] = service.HandleGetItems
+	service.productsHandler[service.error]  = service.HandleError
 
 	return service
 }
@@ -47,15 +54,29 @@ func (service Service) HandleError(w http.ResponseWriter, r *http.Request) {
 
 //Handle request of type GET and PUT against /catalog/products/{id}
 //This method derives to another different handler according to the HTTP method.
-func (service Service) HandleRequest(w http.ResponseWriter, r *http.Request){
+func (service Service) HandleRequestProductId(w http.ResponseWriter, r *http.Request){
 
-	handler := service.header_handler[r.Method]
+	handler := service.productIdsHandler[r.Method]
 	if handler == nil {
-		service.header_handler[service.error] (w, r)
+		service.productIdsHandler[service.error] (w, r)
 	}else {
 		handler(w, r)
 	}
 }
+
+
+//Handle request of type GET and PUT against /catalog/products/{id}
+//This method derives to another different handler according to the HTTP method.
+func (service Service) HandleRequestProducts(w http.ResponseWriter, r *http.Request){
+
+	handler := service.productsHandler[r.Method]
+	if handler == nil {
+		service.productsHandler[service.error] (w, r)
+	}else {
+		handler(w, r)
+	}
+}
+
 
 //URL catalog/products/{id}
 func (service Service) HandleGetItem(w http.ResponseWriter, r *http.Request) {

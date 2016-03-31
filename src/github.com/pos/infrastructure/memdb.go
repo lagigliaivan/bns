@@ -27,8 +27,7 @@ func (db Mem_DB) GetItem(id string) (dto.Item)  {
 
 func (db Mem_DB) GetItems() ([]dto.Item){
 
-	//items := make([]dto.Item, len(db.m))
-	var items []dto.Item
+	var items []dto.Item = make([]dto.Item, 0)
 
 	for _, item := range db.m {
 		items = append(items, item)
