@@ -12,7 +12,6 @@ import (
 	"github.com/pos/dto"
 	"io/ioutil"
 	"encoding/json"
-//	"reflect"
 	"io"
 	"reflect"
 )
@@ -186,6 +185,7 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 	testingServerGET := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
 	defer testingServerGET.Close()
 
+	url = getURLToBeTested(testingServerGET.URL, itemToBeAdded.Id);
 	res, err = httpGet(url)
 
 	if !isHTTPStatus(http.StatusOK, res, err){
@@ -395,7 +395,7 @@ func getURLToBeTested(base_url string, params ... string) string {
 
 func httpPut(url string, item dto.Item) (resp * http.Response, err error) {
 
-	bodyAsString := "{\"description\":\"" + item.Desc + "\", \"price\": 23}"
+	bodyAsString := getRequestBody(item)
 	log.Printf("body: %s", bodyAsString)
 	body := strings.NewReader(bodyAsString)
 
