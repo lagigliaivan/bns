@@ -48,7 +48,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 "Sun 6/29 - Sunny - 20/7"
         };
 
-        List<String> weekForecast = new ArrayList<String>(Arrays.asList(data));
+        //List<String> items = new ArrayList<>(Arrays.asList(data));
+        List<String> items = getAllItems();
 
         setContentView(R.layout.activity_main);
 
@@ -59,11 +60,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         view.addHeaderView(footerLayout);
 
         ArrayAdapter<String> mForecastAdapter =
-                new ArrayAdapter<String>(
+                new ArrayAdapter<>(
                         view.getContext(), // The current context (this activity)
                         R.layout.activity_main, // The name of the layout ID.
                         R.id.item_text_view, // The ID of the textview to populate.
-                        weekForecast);
+                        items);
 
         view.setAdapter(mForecastAdapter);
 
