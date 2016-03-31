@@ -3,11 +3,15 @@ package ar.com.bestprice.buyitnow;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.StrictMode;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -24,6 +28,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import com.google.gson.Gson;
+
 
 import ar.com.bestprice.buyitnow.barcodereader.BarcodeCaptureActivity;
 
@@ -36,6 +42,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+        StrictMode.setThreadPolicy(policy);
+
         super.onCreate(savedInstanceState);
 
         String[] data = {
@@ -49,27 +59,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         };
 
         //List<String> items = new ArrayList<>(Arrays.asList(data));
-        List<String> items = getAllItems();
+        List<Item> items = getAllItems();
+        //getAllItems();
 
         setContentView(R.layout.activity_main);
 
-        ListView view =  (ListView) findViewById(R.id.item_list_view);
+        createData(items);
+        ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
+        //ListView view =  (ListView) findViewById(R.id.item_list_view);
         FrameLayout footerLayout = (FrameLayout) getLayoutInflater().inflate(R.layout.footer, null);
-        Button btnPostYourEnquiry = (Button) footerLayout.findViewById(R.id.add_item_button);
+        FloatingActionButton btnPostYourEnquiry = (FloatingActionButton) footerLayout.findViewById(R.id.add_item_button);
         btnPostYourEnquiry.setOnClickListener(this);
-        view.addHeaderView(footerLayout);
+        listView.addFooterView(footerLayout);
 
-        ArrayAdapter<String> mForecastAdapter =
+        MyExpandableListAdapter adapter = new MyExpandableListAdapter(this, groups);
+        listView.setAdapter(adapter);
+
+       /* ArrayAdapter<String> mForecastAdapter =
                 new ArrayAdapter<>(
                         view.getContext(), // The current context (this activity)
                         R.layout.activity_main, // The name of the layout ID.
                         R.id.item_text_view, // The ID of the textview to populate.
                         items);
 
-        view.setAdapter(mForecastAdapter);
+        view.setAdapter(mForecastAdapter);*/
 
     }
 
+    SparseArray<Group> groups = new SparseArray<>();
+    public void createData( List<Item> items) {
+
+        for (int j = 0; j < 5; j++) {
+
+            Group group = new Group("Fecha " + j);
+            for (int i = 0; i < items.size(); i++) {
+                group.children.add(items.get(i));
+            }
+            groups.append(j, group);
+        }
+    }
 
     private List getAllItems(){
 
@@ -79,13 +107,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         BufferedReader reader = null;
 
         // Will contain the raw JSON response as a string.
-        String forecastJsonStr = null;
+        String items = null;
 
         try {
-            // Construct the URL for the OpenWeatherMap query
-            // Possible parameters are avaiable at OWM's forecast API page, at
             // http://openweathermap.org/API#forecast
-            URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7");
+            URL url = new URL("http://10.33.117.120:8080/catalog/products/");
 
             // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
@@ -113,7 +139,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // Stream was empty.  No point in parsing.
                 return new ArrayList();
             }
-            forecastJsonStr = buffer.toString();
+
+
+            items = buffer.toString();
+            Gson gson = new Gson();
+
+            ArrayList it = gson.fromJson(items, ArrayList.class);
+            return it;
+
         } catch (IOException e) {
             Log.e("PlaceholderFragment", "Error ", e);
             // If the code didn't successfully get the weather data, there's no point in attemping
@@ -132,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        return new ArrayList();
+
     }
 
 

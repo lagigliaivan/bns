@@ -4,13 +4,15 @@
     android:layout_height="match_parent"
     tools:context="ar.com.bestprice.buyitnow.MainActivity">
 
-    <Button
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/add_item_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/add_item"
-        android:id="@+id/add_item_button"
         android:clickable="true"
         android:onClick="onClick"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@android:drawable/ic_input_add"
+        android:text="@string/add_item"
         android:layout_gravity="right" />
 
 </FrameLayout>

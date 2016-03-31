@@ -6,38 +6,4 @@
     android:id="@+id/gridLayout"
     tools:context="ar.com.bestprice.buyitnow.MainActivity">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/read_bar_code"
-        android:id="@+id/button2"
-        android:layout_row="0"
-        android:layout_column="20" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
-        android:id="@+id/textView"
-        android:layout_row="1"
-        android:layout_column="17" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="ID"
-        android:id="@+id/textView2"
-        android:layout_row="1"
-        android:layout_column="19" />
-
-    <EditText
-        android:layout_width="126dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/editText"
-        android:layout_row="2"
-        android:layout_column="17"
-        android:inputType="text" />
-
 </GridLayout>
