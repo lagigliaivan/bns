@@ -1,0 +1,32 @@
+{ "items":[
+    {
+            "id": "2",
+            "description": "first product",
+            "price": 2.0
+    },
+    {
+            "id": "21231",
+            "description": "one description product",
+            "price": 2.0
+    },
+    {
+            "id": "2231331",
+            "description": "product different from the previous one",
+            "price": 6462.0
+    },
+    {
+            "id": "242424",
+            "desc": "pretty similar",
+            "price": 22.0
+    },
+    {
+            "id": "75757652",
+            "description": "general product",
+            "price": 12.0
+    },
+    {
+            "id": "285437363",
+            "description": "what is this",
+            "price": 234.0
+    }
+]}

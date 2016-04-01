@@ -36,7 +36,6 @@ func NewService(db infrastructure.DB) *Service{
 	service.productIdsHandler = make(map[string] func(http.ResponseWriter,*http.Request))
 	service.productIdsHandler[http.MethodGet] = service.HandleGetItem
 	service.productIdsHandler[http.MethodPut] = service.HandlePutItem
-	//service.productIdsHandler[http.MethodPost] = service.HandlePostItem
 	service.productIdsHandler[service.error]  = service.HandleError
 
 	service.productsHandler = make(map[string] func(http.ResponseWriter,*http.Request))
@@ -84,7 +83,7 @@ func (service Service) HandleGetItem(w http.ResponseWriter, r *http.Request) {
 	vars := service.GetRequestParameters(r)
 
 	prodId := vars["id"]
-	item := service.GetItem(prodId)
+	item := service.getItem(prodId)
 
 	if item.Id == "" {
 		w.WriteHeader(http.StatusNotFound)
@@ -101,9 +100,15 @@ func (service Service) HandleGetItem(w http.ResponseWriter, r *http.Request) {
 
 func (service Service) HandleGetItems(w http.ResponseWriter, r *http.Request) {
 
-	items := service.GetItems()
+	items := service.getItems()
 
-	itemsAsJson, _ := json.Marshal(items)
+	itemsContainer := dto.NewContainer()
+
+	for _, item := range items {
+		itemsContainer.Add(item)
+	}
+
+	itemsAsJson, _ := json.Marshal(itemsContainer)
 
 	fmt.Fprintf(w, "%s", itemsAsJson)
 	log.Printf("GET items returned OK %s", itemsAsJson)
@@ -123,7 +128,7 @@ func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 	vars := service.GetRequestParameters(r)
 	itemId := vars["id"]
 
-	if service.GetItem(itemId).IsEmpty(){
+	if service.getItem(itemId).IsEmpty(){
 		w.WriteHeader(http.StatusNotFound)
 		log.Printf("PUT itemId: %s Not found", itemId)
 		return
@@ -144,7 +149,7 @@ func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	item.Id = itemId
-	service.AddUpdateItem(*item)
+	service.addUpdateItem(*item)
 	w.WriteHeader(http.StatusOK)
 
 }
@@ -152,46 +157,52 @@ func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 func (service Service) HandlePostItem(w http.ResponseWriter, r *http.Request){
 
 	body, _ := ioutil.ReadAll(r.Body)
-	item := new(dto.Item)
 
-	if err := json.Unmarshal(body, item); err != nil {
+
+
+	items := new(dto.ItemsContainer)
+
+	if err := json.Unmarshal(body, items); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("POST itemId: %s .The request contains a wrong format %s", item.Id, err)
+		log.Printf("POST items. The request contains a wrong format %s", err)
 		return
 	}
 
-	if item.IsEmpty() {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("id must not be empty."))
-		return
+	for _, item := range items.GetItems() {
+
+		if item.Id == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("id must not be empty."))
+			return
+		}
+
+		if service.getItem(item.Id).IsNOTEmpty() {
+			w.WriteHeader(http.StatusForbidden)
+			log.Printf("POST itemId: %s Already exists", item.Id)
+			w.Write([]byte("Id already exists"))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		service.addUpdateItem(item)
 	}
 
-	if service.GetItem(item.Id).IsNOTEmpty(){
-		w.WriteHeader(http.StatusForbidden)
-		log.Printf("POST itemId: %s Already exists", item.Id)
-		w.Write([]byte("Id already exists"))
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	service.AddUpdateItem(*item)
 	w.WriteHeader(http.StatusCreated)
 
 }
 
-func (service Service) GetItem(id string) dto.Item {
+func (service Service) getItem(id string) dto.Item {
 	log.Printf("Getting item_id: %s from DB", id)
 	item := service.db.GetItem(id)
 	return  item;
 }
 
-func (service Service) GetItems() []dto.Item {
-	log.Printf("Getting items: %s from DB")
-	item := service.db.GetItems()
-	return  item;
+func (service Service) getItems() []dto.Item {
+	log.Printf("Getting items from DB")
+	items := service.db.GetItems()
+	return  items;
 }
 
-func (service Service) AddUpdateItem(item dto.Item) int {
+func (service Service) addUpdateItem(item dto.Item) int {
 
 	if item.Id == "" {
 		log.Printf("Error at trying to save an empty item.")

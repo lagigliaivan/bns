@@ -21,30 +21,33 @@ func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
-var setOfItems = []dto.Item{
+var (
+	setOfItems = []dto.Item{
 
-	{
-		Id: "1",
-		Desc: "first product",
-		Price: 2.0,
-	},
-	{
-		Id: "2",
-		Desc: "second product",
-		Price: 34.0,
-	},
-	{
-		Id: "3",
-		Desc: "third product",
-		Price: 332.0,
-	},
-	{
-		Id: "4",
-		Desc: "forth product",
-		Price: 22.0,
-	},
-}
+		{
+			Id: "1",
+			Description: "first product",
+			Price: 2.0,
+		},
+		{
+			Id: "2",
+			Description: "second product",
+			Price: 34.0,
+		},
+		{
+			Id: "3",
+			Description: "third product",
+			Price: 332.0,
+		},
+		{
+			Id: "4",
+			Description: "forth product",
+			Price: 22.0,
+		},
+	}
 
+	postItems = dto.ItemsContainer{Items:setOfItems}
+)
 
 //Testing service to check GET /catalog/product/{id}
 func Test_GET_item_returns_404_when_it_does_not_exist(t *testing.T){
@@ -72,7 +75,7 @@ func Test_GET_item_returns_200_when_it_exists(t *testing.T){
 	service := NewService(infrastructure.NewMemDb())
 
 	//Adding ITEM without calling RESTapi. Calling a service function directly
-	service.AddUpdateItem(itemToBeAdded)
+	service.addUpdateItem(itemToBeAdded)
 
 	service.GetRequestParameters = returnItemIdFromURL(itemToBeAdded.Id)
 
@@ -92,14 +95,18 @@ func Test_GET_item_returns_200_when_it_exists(t *testing.T){
 //Testing server to check POST /catalog/product/{id}
 func Test_POST_item_returns_201_when_it_is_successfully_created (t *testing.T) {
 
-	itemToBeAdded := createItemDto()
+
 	service := NewService(infrastructure.NewMemDb())
 
 	testingServer := httptest.NewServer(http.HandlerFunc(service.HandlePostItem))
 	defer testingServer.Close()
 	url := getURLToBeTested(testingServer.URL);
 
-	res, err := httpPost(url, itemToBeAdded)
+	itemToBeAdded := createItemDto()
+	items := dto.NewContainer()
+	items.Add(itemToBeAdded)
+
+	res, err := httpPost(url, items)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		debug(http.MethodPost, url, res.StatusCode, http.StatusCreated)
@@ -120,7 +127,10 @@ func Test_POST_GET_returns_the_same_item_after_it_is_created(t *testing.T){
 	//POST Item
 	url := getURLToBeTested(testingServerPOST.URL);
 
-	res, err := httpPost(url, itemToBeAdded)
+
+	items := dto.NewContainer()
+	items.Add(itemToBeAdded)
+	res, err := httpPost(url, items)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		debug(http.MethodPost, url, res.StatusCode, http.StatusCreated)
@@ -139,10 +149,11 @@ func Test_POST_GET_returns_the_same_item_after_it_is_created(t *testing.T){
 		t.FailNow()
 	}
 
-	if !areItemsEquals(itemToBeAdded, createItemFromJson(res.Body)){
+	if !reflect.DeepEqual(itemToBeAdded, createItemFromJson(res.Body)) {
 		log.Printf("Error when GETting item to contrast it with the saved one")
 		t.FailNow()
 	}
+
 }
 
 func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
@@ -157,7 +168,10 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 	url := getURLToBeTested(testingServer.URL);
 
 
-	res, err := httpPost(url, itemToBeAdded)
+	items := dto.NewContainer()
+	items.Add(itemToBeAdded)
+
+	res, err := httpPost(url, items)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		debug(http.MethodPut, url, res.StatusCode, http.StatusCreated)
@@ -171,7 +185,7 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 
 	url = getURLToBeTested(testingServer.URL, itemToBeAdded.Id);
 
-	itemToBeAdded.Desc = "Description updated"
+	itemToBeAdded.Description = "Description updated"
 	itemToBeAdded.Price = float32(21)
 
 	res, err = httpPut(url, itemToBeAdded)
@@ -193,7 +207,7 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 		t.FailNow()
 	}
 
-	if !areItemsEquals(itemToBeAdded, createItemFromJson(res.Body)){
+	if !reflect.DeepEqual(itemToBeAdded, createItemFromJson(res.Body)) {
 		log.Printf("Error when GETting item to contrast it with the saved one")
 		t.FailNow()
 	}
@@ -201,7 +215,7 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 
 }
 
-func Test_PUT_item_returns_400_when_body_is_sent_without_item_id(t *testing.T){
+func Test_POST_item_returns_400_when_body_is_sent_without_item_id(t *testing.T){
 
 	itemToBeAdded := createItemDto()
 	itemToBeAdded.Id = ""
@@ -214,7 +228,10 @@ func Test_PUT_item_returns_400_when_body_is_sent_without_item_id(t *testing.T){
 	//POST Item
 	url := getURLToBeTested(testingServerPUT.URL);
 
-	res, err := httpPost(url, itemToBeAdded)
+	items := dto.NewContainer()
+	items.Add(itemToBeAdded)
+
+	res, err := httpPost(url, items)
 
 	if !isHTTPStatus(http.StatusBadRequest, res, err){
 		debug(http.MethodPost, url, res.StatusCode, http.StatusBadRequest)
@@ -232,39 +249,38 @@ func Test_GET_items_returns_a_list_of_items(t *testing.T){
 	//POST Items for later being retrieved.
 	url := getURLToBeTested(server.URL);
 
-	for _, product := range setOfItems {
+	res, err := httpPost(url, postItems)
 
-		res, err := httpPost(url, product)
-
-		if !isHTTPStatus(http.StatusCreated, res, err){
-			debug(http.MethodPost, url, res.StatusCode, http.StatusCreated)
-			t.FailNow()
-		}
+	if !isHTTPStatus(http.StatusCreated, res, err){
+		debug(http.MethodPost, url, res.StatusCode, http.StatusCreated)
+		t.FailNow()
 	}
+
 
 	server = httptest.NewServer(http.HandlerFunc(service.HandleGetItems))
 
-	//POST Items for later being retrieved.
+	//GET Items
 	url = getURLToBeTested(server.URL);
+	defer server.Close()
 
-	res, err := httpGet(url)
+	res, err = httpGet(url)
 
 	if err != nil {
 		log.Printf("ERROR")
 		t.FailNow()
 	}
 
-	items := make([]dto.Item, 4)
+	items := dto.NewContainer()
 
 	body, err := ioutil.ReadAll(res.Body)
 
 	if err := json.Unmarshal(body, &items); err != nil {
 
-		log.Printf("Error when reading response")
+		log.Printf("Error when reading response %s", err)
 		t.FailNow()
 	}
 
-	if len(items) != len(setOfItems){
+	if len(items.GetItems()) != len(setOfItems){
 		log.Printf("Error: Expected items quantity is different from the received one")
 		t.FailNow()
 
@@ -272,7 +288,7 @@ func Test_GET_items_returns_a_list_of_items(t *testing.T){
 
 	itemsFound := 0
 
-	for _, i := range items {
+	for _, i := range items.GetItems() {
 
 		for _, x := range setOfItems {
 			if x.Id == i.Id && reflect.DeepEqual(x, i){
@@ -293,7 +309,7 @@ func Test_GET_items_returns_a_list_of_items(t *testing.T){
 func Test_returns_an_error_when_item_does_NOT_exist (t *testing.T) {
 
 	service := NewService(infrastructure.NewMemDb());
-	item := service.GetItem("1021")
+	item := service.getItem("1021")
 
 	if item.Id == "1021" {
 		t.FailNow()
@@ -305,11 +321,11 @@ func Test_returns_an_item_just_saved (t *testing.T) {
 	itemToBeAdded := createItemDto()
 
 	service := NewService(infrastructure.NewMemDb());
-	service.AddUpdateItem(itemToBeAdded)
+	service.addUpdateItem(itemToBeAdded)
 
-	item := service.GetItem(itemToBeAdded.Id)
+	item := service.getItem(itemToBeAdded.Id)
 
-	if item.Id != itemToBeAdded.Id || item.Desc != itemToBeAdded.Desc || item.Price != itemToBeAdded.Price {
+	if item.Id != itemToBeAdded.Id || item.Description != itemToBeAdded.Description || item.Price != itemToBeAdded.Price {
 		t.FailNow()
 	}
 }
@@ -317,7 +333,7 @@ func Test_returns_an_item_just_saved (t *testing.T) {
 func Test_returns_an_empty_item_if_it_does_not_exist(t *testing.T){
 
 	service := NewService(infrastructure.NewMemDb());
-	item := service.GetItem("non_existing_item")
+	item := service.getItem("non_existing_item")
 
 	if item.Id != "" {
 		t.FailNow()
@@ -328,7 +344,7 @@ func Test_returns_no_error_when_adding_an_item(t *testing.T){
 
 	service := NewService(infrastructure.NewMemDb());
 	item := createItemDto()
-	err := service.AddUpdateItem(item)
+	err := service.addUpdateItem(item)
 
 	if err != 0 {
 		t.FailNow()
@@ -353,11 +369,6 @@ func createItemDto() dto.Item {
 	return dto.Item{id, descr, price}
 }
 
-func getRequestBody(item dto.Item) string {
-
-	body := "{\"id\":\"" + item.Id + "\", \"description\":\"" + item.Desc + "\", \"price\":" + fmt.Sprintf("%.1f", item.Price) + "}"
-	return body
-}
 
 //This function is a callback to return the item id from URL. When running normal, this ID is taken from the URL but
 //this process is resolved by the multiplexer (gorilla.mux)
@@ -395,7 +406,7 @@ func getURLToBeTested(base_url string, params ... string) string {
 
 func httpPut(url string, item dto.Item) (resp * http.Response, err error) {
 
-	bodyAsString := getRequestBody(item)
+	bodyAsString := item.ToJsonString()
 	log.Printf("body: %s", bodyAsString)
 	body := strings.NewReader(bodyAsString)
 
@@ -413,17 +424,15 @@ func httpGet(url string) (*http.Response, error){
 	return http.Get(url)
 }
 
-func httpPost(url string, item dto.Item) (*http.Response, error){
+func httpPost(url string, items dto.ItemsContainer) (*http.Response, error){
 
-	bodyAsString := getRequestBody(item)
-	body := strings.NewReader(bodyAsString)
+	body := strings.NewReader(items.ToJsonString())
 	req, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
 		log.Printf("Error when creating POST request %d.", err)
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Content-Length", fmt.Sprintf("%d", len(bodyAsString)))
+
 	resp, err := http.DefaultClient.Do(req)
 
 	return resp, err
@@ -433,10 +442,6 @@ func isHTTPStatus(httpStatus int, res *http.Response, err error ) bool {
 	return !( (err != nil) || (res.StatusCode != httpStatus) )
 }
 
-func areItemsEquals(item, item2 dto.Item) bool{
-
-	return !((item.Id != item2.Id) || (item.Desc != item2.Desc) || (item.Price != item2.Price))
-}
 
 func createItemFromJson(itemAsJson io.ReadCloser) dto.Item {
 
