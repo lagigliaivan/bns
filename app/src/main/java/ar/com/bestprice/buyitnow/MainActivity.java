@@ -1,6 +1,5 @@
 package ar.com.bestprice.buyitnow;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -9,15 +8,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
+import com.google.gson.Gson;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,19 +22,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import com.google.gson.Gson;
-
 
 import ar.com.bestprice.buyitnow.barcodereader.BarcodeCaptureActivity;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private TextView statusMessage;
-    private TextView barcodeValue;
+
     private static final String TAG = "BarcodeMain";
 
     @Override
@@ -48,41 +40,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         super.onCreate(savedInstanceState);
 
-        String[] data = {
-                "Mon 6/23 - Sunny - 31/17",
-                "Tue 6/24 - Foggy - 21/8",
-                "Wed 6/25 - Cloudy - 22/17",
-                "Thurs 6/26 - Rainy - 18/11",
-                "Fri 6/27 - Foggy - 21/10",
-                "Sat 6/28 - TRAPPED IN WEATHERSTATION - 23/18",
-                "Sun 6/29 - Sunny - 20/7"
-        };
-
-        //List<String> items = new ArrayList<>(Arrays.asList(data));
-        List<Item> items = getAllItems();
-        //getAllItems();
+        Items items = getAllItems();
 
         setContentView(R.layout.activity_main);
 
-        createData(items);
+        createData(items.getItems());
         ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
-        //ListView view =  (ListView) findViewById(R.id.item_list_view);
-        FrameLayout footerLayout = (FrameLayout) getLayoutInflater().inflate(R.layout.footer, null);
+       FrameLayout footerLayout = (FrameLayout) getLayoutInflater().inflate(R.layout.footer, null);
         FloatingActionButton btnPostYourEnquiry = (FloatingActionButton) footerLayout.findViewById(R.id.add_item_button);
         btnPostYourEnquiry.setOnClickListener(this);
         listView.addFooterView(footerLayout);
 
         MyExpandableListAdapter adapter = new MyExpandableListAdapter(this, groups);
         listView.setAdapter(adapter);
-
-       /* ArrayAdapter<String> mForecastAdapter =
-                new ArrayAdapter<>(
-                        view.getContext(), // The current context (this activity)
-                        R.layout.activity_main, // The name of the layout ID.
-                        R.id.item_text_view, // The ID of the textview to populate.
-                        items);
-
-        view.setAdapter(mForecastAdapter);*/
 
     }
 
@@ -99,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private List getAllItems(){
+    private Items getAllItems(){
 
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
@@ -123,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             StringBuffer buffer = new StringBuffer();
             if (inputStream == null) {
                 // Nothing to do.
-                return new ArrayList();
+                return new Items();
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
 
@@ -137,21 +107,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (buffer.length() == 0) {
                 // Stream was empty.  No point in parsing.
-                return new ArrayList();
+                return new Items();
             }
 
 
             items = buffer.toString();
             Gson gson = new Gson();
 
-            ArrayList it = gson.fromJson(items, ArrayList.class);
+            Items it = gson.fromJson(items, Items.class);
             return it;
 
         } catch (IOException e) {
             Log.e("PlaceholderFragment", "Error ", e);
             // If the code didn't successfully get the weather data, there's no point in attemping
             // to parse it.
-            return new ArrayList();
+            return new Items();
         } finally{
             if (urlConnection != null) {
                 urlConnection.disconnect();
@@ -235,16 +205,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (resultCode == CommonStatusCodes.SUCCESS) {
                 if (data != null) {
                     Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
+
                     //statusMessage.setText(R.string.barcode_success);
                     //barcodeValue.setText(barcode.displayValue);
                     Log.d(TAG, "Barcode read: " + barcode.displayValue);
+                    Intent intent = new Intent(this.getApplicationContext(), AddItemActivity.class);
+                    intent.putExtra("BarCode", barcode);
+                    startActivityForResult(intent, 12);
                 } else {
                     //statusMessage.setText(R.string.barcode_failure);
                     Log.d(TAG, "No barcode captured, intent data is null");
                 }
             } else {
-                //statusMessage.setText(String.format(getString(R.string.barcode_error),
-                //        CommonStatusCodes.getStatusCodeString(resultCode)));
+                Log.d(TAG, "Exiting from CRUD");
             }
         }
         else {

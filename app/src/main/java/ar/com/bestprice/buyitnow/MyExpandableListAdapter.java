@@ -40,17 +40,18 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
     @Override
     public View getChildView(int groupPosition, final int childPosition,
                              boolean isLastChild, View convertView, ViewGroup parent) {
-        final LinkedTreeMap children = (LinkedTreeMap) getChild(groupPosition, childPosition);
+
+        final Item children = (Item) getChild(groupPosition, childPosition);
 
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.listrow_details, null);
         }
         TextView text = (TextView) convertView.findViewById(R.id.textView1);
-        text.setText(children.toString());
+        text.setText( children.getDescription());
         convertView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(activity, children.toString(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, children.getDescription(), Toast.LENGTH_SHORT).show();
             }
         });
         return convertView;
