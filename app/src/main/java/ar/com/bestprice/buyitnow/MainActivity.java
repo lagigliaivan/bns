@@ -81,7 +81,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         try {
             // http://openweathermap.org/API#forecast
-            URL url = new URL("http://10.33.117.120:8080/catalog/products/");
+            //URL url = new URL("http://10.33.117.120:8080/catalog/products/");
+            URL url = new URL("http://192.168.0.7:8080/catalog/products/");
 
             // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
@@ -140,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private static final int RC_BARCODE_CAPTURE = 9001;
+
     public void onClick(View view) {
         if(view.getId() == R.id.add_item_button) {
             Intent intent = new Intent(this.getApplicationContext(), BarcodeCaptureActivity.class);
@@ -209,9 +211,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     //statusMessage.setText(R.string.barcode_success);
                     //barcodeValue.setText(barcode.displayValue);
                     Log.d(TAG, "Barcode read: " + barcode.displayValue);
+
                     Intent intent = new Intent(this.getApplicationContext(), AddItemActivity.class);
-                    intent.putExtra("BarCode", barcode);
-                    startActivityForResult(intent, 12);
+                    intent.putExtra("BarCode", barcode.displayValue);
+                    startActivity(intent);
+                    //startActivityForResult(intent, 12);
                 } else {
                     //statusMessage.setText(R.string.barcode_failure);
                     Log.d(TAG, "No barcode captured, intent data is null");

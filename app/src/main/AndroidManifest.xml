@@ -26,6 +26,8 @@
         </activity>
         <activity android:name="ar.com.bestprice.buyitnow.barcodereader.BarcodeCaptureActivity"
             android:label="Read Barcode"/>
+        <activity android:name="ar.com.bestprice.buyitnow.AddItemActivity"
+            android:label="Add item"/>
     </application>
 
 </manifest>

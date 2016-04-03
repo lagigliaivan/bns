@@ -55,7 +55,7 @@ import ar.com.bestprice.buyitnow.R;
  * rear facing camera. During detection overlay graphics are drawn to indicate the position,
  * size, and ID of each barcode.
  */
-public final class BarcodeCaptureActivity extends AppCompatActivity {
+public final class  BarcodeCaptureActivity extends AppCompatActivity {
     private static final String TAG = "Barcode-reader";
 
     // intent request code to handle updating play services if needed.
