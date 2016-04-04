@@ -240,30 +240,19 @@ func Test_POST_item_returns_400_when_body_is_sent_without_item_id(t *testing.T){
 }
 
 func Test_GET_items_returns_a_list_of_items(t *testing.T){
-
 	service := NewService(infrastructure.NewMemDb())
 
-	server := httptest.NewServer(http.HandlerFunc(service.HandlePostItem))
-	defer server.Close()
-
-	//POST Items for later being retrieved.
-	url := getURLToBeTested(server.URL);
-
-	res, err := httpPost(url, postItems)
-
-	if !isHTTPStatus(http.StatusCreated, res, err){
-		debug(http.MethodPost, url, res.StatusCode, http.StatusCreated)
-		t.FailNow()
+	if httpPOST(*service) != nil {
+		t.FailNow();
 	}
 
-
-	server = httptest.NewServer(http.HandlerFunc(service.HandleGetItems))
+	server := httptest.NewServer(http.HandlerFunc(service.HandleGetItems))
 
 	//GET Items
-	url = getURLToBeTested(server.URL);
+	url := getURLToBeTested(server.URL);
 	defer server.Close()
 
-	res, err = httpGet(url)
+	res, err := httpGet(url)
 
 	if err != nil {
 		log.Printf("ERROR")
@@ -302,6 +291,17 @@ func Test_GET_items_returns_a_list_of_items(t *testing.T){
 		log.Printf("Error: Some items are missing")
 		t.FailNow()
 	}
+
+}
+
+func Test_POSTing_Date_Is_Stored_When_Item_Is_Saved(t *testing.T) {
+
+	service := NewService(infrastructure.NewMemDb())
+
+	if httpPOST(*service) != nil {
+		t.FailNow();
+	}
+
 
 }
 
@@ -352,6 +352,24 @@ func Test_returns_no_error_when_adding_an_item(t *testing.T){
 }
 
 //Tests auxiliary functions
+
+func httpPOST(service Service) error{
+
+	server := httptest.NewServer(http.HandlerFunc(service.HandlePostItem))
+	defer server.Close()
+
+	//POST Items for later being retrieved.
+	url := getURLToBeTested(server.URL);
+
+	res, err := httpPost(url, postItems)
+
+	if !isHTTPStatus(http.StatusCreated, res, err){
+		debug(http.MethodPost, url, res.StatusCode, http.StatusCreated)
+		return err
+	}
+
+	return nil
+}
 func debug(method string, url string, expectedStatusCode int, receivedStatusCode int){
 
 	var buf bytes.Buffer

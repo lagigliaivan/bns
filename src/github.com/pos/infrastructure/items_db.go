@@ -11,6 +11,7 @@ type DB interface {
 	GetItem(string) dto.Item
 	GetItems() []dto.Item
 	SaveItem(dto.Item) int
+	GetPurchases() []dto.Purchase
 }
 
 type CatalogDB struct {
