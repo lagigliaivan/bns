@@ -17,6 +17,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by ivan on 01/04/16.
@@ -42,8 +45,12 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
 
+        EditText id = (EditText)findViewById(R.id.editText);
+        EditText description = (EditText)findViewById(R.id.editText2);
+        EditText price = (EditText)findViewById(R.id.editText3);
+
         // Will contain the raw JSON response as a string.
-        String items = null;
+
         try {
             // http://openweathermap.org/API#forecast
             //URL url = new URL("http://10.33.117.120:8080/catalog/products/");
@@ -56,27 +63,40 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
 
             urlConnection.connect();
 
+            Item item = new Item();
+            item.setId(id.getText().toString());
+            item.setDescription(description.getText().toString());
+            item.setPrice(Float.valueOf(price.getText().toString()));
+
+            List<Item> list = new ArrayList<>();
+            list.add(item);
+
+            Items items = new Items();
+            items.setItems(list);
+
+            Gson gson = new Gson();
+
+            String it = gson.toJson(items);
+
             OutputStream os = urlConnection.getOutputStream();
             BufferedWriter writer = new BufferedWriter(
                     new OutputStreamWriter(os, "UTF-8"));
             //writer.write(getPostDataString(postDataParams));
-
+            writer.write(it);
             writer.flush();
             writer.close();
             os.close();
 
-            Gson gson = new Gson();
-
-            String it = gson.toJson(new Items());
-
 
             int responseCode = urlConnection.getResponseCode();
+
+            finish();
 
         } catch (IOException e) {
             Log.e("PlaceholderFragment", "Error ", e);
             // If the code didn't successfully get the weather data, there's no point in attemping
             // to parse it.
-           
+
         } finally{
             if (urlConnection != null) {
                 urlConnection.disconnect();
