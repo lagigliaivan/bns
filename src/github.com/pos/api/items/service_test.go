@@ -1,4 +1,4 @@
-package main
+package items
 
 import (
 	"log"
@@ -9,7 +9,7 @@ import (
 	"strings"
 	"bytes"
 	"fmt"
-	"github.com/pos/dto"
+	"github.com/pos/dto/item"
 	"io/ioutil"
 	"encoding/json"
 	"io"
@@ -22,7 +22,7 @@ func init() {
 }
 
 var (
-	setOfItems = []dto.Item{
+	setOfItems = []item.Item{
 
 		{
 			Id: "1",
@@ -46,7 +46,7 @@ var (
 		},
 	}
 
-	postItems = dto.ItemsContainer{Items:setOfItems}
+	postItems = item.Container{Items:setOfItems}
 )
 
 //Testing service to check GET /catalog/product/{id}
@@ -103,7 +103,7 @@ func Test_POST_item_returns_201_when_it_is_successfully_created (t *testing.T) {
 	url := getURLToBeTested(testingServer.URL);
 
 	itemToBeAdded := createItemDto()
-	items := dto.NewContainer()
+	items := item.NewContainer()
 	items.Add(itemToBeAdded)
 
 	res, err := httpPost(url, items)
@@ -128,7 +128,7 @@ func Test_POST_GET_returns_the_same_item_after_it_is_created(t *testing.T){
 	url := getURLToBeTested(testingServerPOST.URL);
 
 
-	items := dto.NewContainer()
+	items := item.NewContainer()
 	items.Add(itemToBeAdded)
 	res, err := httpPost(url, items)
 
@@ -168,7 +168,7 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 	url := getURLToBeTested(testingServer.URL);
 
 
-	items := dto.NewContainer()
+	items := item.NewContainer()
 	items.Add(itemToBeAdded)
 
 	res, err := httpPost(url, items)
@@ -228,7 +228,7 @@ func Test_POST_item_returns_400_when_body_is_sent_without_item_id(t *testing.T){
 	//POST Item
 	url := getURLToBeTested(testingServerPUT.URL);
 
-	items := dto.NewContainer()
+	items := item.NewContainer()
 	items.Add(itemToBeAdded)
 
 	res, err := httpPost(url, items)
@@ -259,7 +259,7 @@ func Test_GET_items_returns_a_list_of_items(t *testing.T){
 		t.FailNow()
 	}
 
-	items := dto.NewContainer()
+	items := item.NewContainer()
 
 	body, err := ioutil.ReadAll(res.Body)
 
@@ -378,13 +378,13 @@ func debug(method string, url string, expectedStatusCode int, receivedStatusCode
 	fmt.Print(&buf)
 }
 
-func createItemDto() dto.Item {
+func createItemDto() item.Item {
 
 	id := "12345"
 	price := float32(10.1)
 	descr := "milk 100 cm3"
 
-	return dto.Item{id, descr, price}
+	return item.Item{id, descr, price}
 }
 
 
@@ -422,7 +422,7 @@ func getURLToBeTested(base_url string, params ... string) string {
 	return base_url + catalog_api + p;
 }
 
-func httpPut(url string, item dto.Item) (resp * http.Response, err error) {
+func httpPut(url string, item item.Item) (resp * http.Response, err error) {
 
 	bodyAsString := item.ToJsonString()
 	log.Printf("body: %s", bodyAsString)
@@ -442,7 +442,7 @@ func httpGet(url string) (*http.Response, error){
 	return http.Get(url)
 }
 
-func httpPost(url string, items dto.ItemsContainer) (*http.Response, error){
+func httpPost(url string, items item.Container) (*http.Response, error){
 
 	body := strings.NewReader(items.ToJsonString())
 	req, err := http.NewRequest(http.MethodPost, url, body)
@@ -461,9 +461,9 @@ func isHTTPStatus(httpStatus int, res *http.Response, err error ) bool {
 }
 
 
-func createItemFromJson(itemAsJson io.ReadCloser) dto.Item {
+func createItemFromJson(itemAsJson io.ReadCloser) item.Item {
 
-	item := new(dto.Item)
+	item := new(item.Item)
 	response, err := ioutil.ReadAll(itemAsJson)
 
 	if err != nil {
@@ -471,7 +471,7 @@ func createItemFromJson(itemAsJson io.ReadCloser) dto.Item {
 	}
 
 	if err := json.Unmarshal(response, item); err != nil {
-		log.Printf("Error when unmarshaling Json to dto.Item")
+		log.Printf("Error when unmarshaling Json to item.Item")
 	}
 
 	return *item

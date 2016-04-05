@@ -4,15 +4,19 @@ import (
 	"database/sql"
 	_"github.com/go-sql-driver/mysql"
 	"fmt"
-	"github.com/pos/dto"
+	"github.com/pos/dto/item"
 	"time"
+	"github.com/pos/dto/purchase"
 )
 
 type DB interface {
-	GetItem(string) dto.Item
-	GetItems() []dto.Item
-	SaveItem(dto.Item) int
-	GetPurchases(time.Time) []dto.Purchase
+	GetItem(string) item.Item
+	SaveItem(item.Item) int
+	GetItems() []item.Item
+
+	GetPurchase(time.Time) purchase.Purchase
+	SavePurchase(purchase.Purchase) error
+	GetPurchases() []purchase.Purchase
 }
 
 type CatalogDB struct {
@@ -27,17 +31,17 @@ func (catDb CatalogDB) init() {
 	catDb.db = db
 }
 
-func (catDb CatalogDB) GetItem(id string) (dto.Item){
-	item := dto.Item{}
+func (catDb CatalogDB) GetItem(id string) (item.Item){
+	item := item.Item{}
 	item.Id = id
 	return item
 }
 
-func (catDb CatalogDB) GetItems() []dto.Item{
+func (catDb CatalogDB) GetItems() []item.Item{
 	return nil
 }
 
-func (catDb CatalogDB) SaveItem(dto.Item) int {
+func (catDb CatalogDB) SaveItem(item.Item) int {
 
 	return 0
 }

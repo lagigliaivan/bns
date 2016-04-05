@@ -1,4 +1,4 @@
-package main
+package items
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pos/infrastructure"
 	"encoding/json"
-	"github.com/pos/dto"
+	"github.com/pos/dto/item"
 	"io/ioutil"
 	"log"
 )
@@ -102,13 +102,13 @@ func (service Service) HandleGetItems(w http.ResponseWriter, r *http.Request) {
 
 	items := service.getItems()
 
-	itemsContainer := dto.NewContainer()
+	container := item.NewContainer()
 
 	for _, item := range items {
-		itemsContainer.Add(item)
+		container.Add(item)
 	}
 
-	itemsAsJson, _ := json.Marshal(itemsContainer)
+	itemsAsJson, _ := json.Marshal(container)
 
 	fmt.Fprintf(w, "%s", itemsAsJson)
 	log.Printf("GET items returned OK %s", itemsAsJson)
@@ -142,7 +142,7 @@ func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	item := new(dto.Item)
+	item := new(item.Item)
 	if err := json.Unmarshal(body, item); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Printf("PUT itemId %s. The request contains a wrong format: %s Body: %s", itemId, err, body)
@@ -158,9 +158,7 @@ func (service Service) HandlePostItem(w http.ResponseWriter, r *http.Request){
 
 	body, _ := ioutil.ReadAll(r.Body)
 
-
-
-	items := new(dto.ItemsContainer)
+	items := new(item.Container)
 
 	if err := json.Unmarshal(body, items); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -190,19 +188,19 @@ func (service Service) HandlePostItem(w http.ResponseWriter, r *http.Request){
 
 }
 
-func (service Service) getItem(id string) dto.Item {
+func (service Service) getItem(id string) item.Item {
 	log.Printf("Getting item_id: %s from DB", id)
 	item := service.db.GetItem(id)
 	return  item;
 }
 
-func (service Service) getItems() []dto.Item {
+func (service Service) getItems() []item.Item {
 	log.Printf("Getting items from DB")
 	items := service.db.GetItems()
 	return  items;
 }
 
-func (service Service) addUpdateItem(item dto.Item) int {
+func (service Service) addUpdateItem(item item.Item) int {
 
 	if item.Id == "" {
 		log.Printf("Error at trying to save an empty item.")

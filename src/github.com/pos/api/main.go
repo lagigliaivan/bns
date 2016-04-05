@@ -13,6 +13,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pos/infrastructure"
 //	"flag"
+	"github.com/pos/api/items"
+	"github.com/pos/dto/purchase"
+	"github.com/pos/api/purchases"
 )
 
 func main() {
@@ -25,10 +28,15 @@ func main() {
 
 	//db := infrastructure.CatalogDB{}
 	db := infrastructure.NewMemDb()
-	service := NewService(db)
+	itemsService := items.NewService(db)
 
-	router.HandleFunc("/catalog/products/{id}", service.HandleRequestProductId)
-	router.HandleFunc("/catalog/products/", service.HandleRequestProducts)
+	router.HandleFunc("/catalog/products/{id}", itemsService.HandleRequestProductId)
+	router.HandleFunc("/catalog/products/", itemsService.HandleRequestProducts)
+
+	purchasesService := purchases.NewService(db)
+	//router.HandleFunc("/catalog/purchases/{id}", service.HandleRequestProductId)
+	router.HandleFunc("/catalog/purchases/", purchasesService.HandleGetPurchases)
+
 
 
 	//router.PathPrefix("/").Handler(http.FileServer(http.Dir("../../../swaggerui/")))

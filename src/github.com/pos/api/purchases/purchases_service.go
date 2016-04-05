@@ -1,4 +1,4 @@
-package main
+package purchases
 
 import (
 	"fmt"
@@ -6,9 +6,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pos/infrastructure"
 
-	"github.com/pos/dto"
-
 	"log"
+	"github.com/pos/dto/purchase"
+	"github.com/pos/dto/item"
+	"encoding/json"
+	"io/ioutil"
 )
 
 func init() {
@@ -33,10 +35,6 @@ func NewService(db infrastructure.DB) *Service{
 	service.db = db
 	service.error = "ERROR"
 
-	service.productIdsHandler = make(map[string] func(http.ResponseWriter,*http.Request))
-	service.productIdsHandler[http.MethodGet] = service.HandleGetItem
-	service.productIdsHandler[service.error]  = service.HandleError
-
 	service.productsHandler = make(map[string] func(http.ResponseWriter,*http.Request))
 	service.productsHandler[http.MethodGet] = service.HandleGetPurchases
 	service.productsHandler[service.error]  = service.HandleError
@@ -49,78 +47,60 @@ func (service Service) HandleError(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "The request method is not supported for the requested resource")
 }
 
-//Handle request of type GET and PUT against /catalog/products/{id}
-//This method derives to another different handler according to the HTTP method.
-func (service Service) HandleRequestProductId(w http.ResponseWriter, r *http.Request){
-
-	handler := service.productIdsHandler[r.Method]
-	if handler == nil {
-		service.productIdsHandler[service.error] (w, r)
-	}else {
-		handler(w, r)
-	}
-}
-
-
-//Handle request of type GET and PUT against /catalog/products/{id}
-//This method derives to another different handler according to the HTTP method.
-func (service Service) HandleRequestProducts(w http.ResponseWriter, r *http.Request){
-
-	handler := service.productsHandler[r.Method]
-	if handler == nil {
-		service.productsHandler[service.error] (w, r)
-	}else {
-		handler(w, r)
-	}
-}
-
-
-//URL catalog/products/{id}
-func (service Service) HandleGetItem(w http.ResponseWriter, r *http.Request) {
-
-	/*vars := service.GetRequestParameters(r)
-
-	prodId := vars["id"]
-	item := service.getItem(prodId)
-
-	if item.Id == "" {
-		w.WriteHeader(http.StatusNotFound)
-		log.Printf("GET item_id: %s not found", prodId)
-		return
-	}
-
-	strB, _ := json.Marshal(item)
-
-	fmt.Fprintf(w, "%s", strB)
-	log.Printf("GET item_id: %s returned OK", item.Id)*/
-
-}
-
 func (service Service) HandleGetPurchases(w http.ResponseWriter, r *http.Request) {
-	/*
 
+	container := purchase.NewContainer()
 	purchases := service.getPurchases()
 
 	for _, purchase := range purchases {
 		container.Add(purchase)
 	}
 
-	purchasesAsJson, _ := json.Marshal(container)
+	purchasesAsJson, err := json.Marshal(container)
 
-	fmt.Fprintf(w, "%s", pruchasesAsJson)
-	log.Printf("GET items returned OK %s", pruchasesAsJson)
-	*/
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("Error")
+		return
+	}
+
+	fmt.Fprintf(w, "%s", purchasesAsJson)
+	log.Printf("GET items returned OK %s", purchasesAsJson)
 
 }
 
+func (service Service) HandlePostPurchases (w http.ResponseWriter, r *http.Request) {
 
-func (service Service) getPurchases() []dto.Purchase {
+	body, _ := ioutil.ReadAll(r.Body)
+
+	purchases := new(purchase.Container)
+
+	if err := json.Unmarshal(body, purchases); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("POST items. The request contains a wrong format %s", err)
+		return
+	}
+
+	service.savePurchases(purchases.Purchases)
+	w.WriteHeader(http.StatusCreated)
+
+}
+
+func (service Service) getPurchases() []purchase.Purchase {
 	log.Printf("Getting items from DB")
 	purchases := service.db.GetPurchases()
 	return  purchases;
 }
 
-func (service Service) addUpdateItem(item dto.Item) int {
+func (service Service) savePurchases( purchases []purchase.Purchase)  {
+	log.Printf("Saving items in  DB")
+
+	for _, purchase := range purchases {
+		service.db.SavePurchase(purchase)
+	}
+}
+
+func (service Service) addUpdateItem(item item.Item) int {
 
 	if item.Id == "" {
 		log.Printf("Error at trying to save an empty item.")
