@@ -12,9 +12,7 @@ import (
 	"net/http"
 	"github.com/gorilla/mux"
 	"github.com/pos/infrastructure"
-//	"flag"
 	"github.com/pos/api/items"
-	"github.com/pos/dto/purchase"
 	"github.com/pos/api/purchases"
 )
 
@@ -35,7 +33,7 @@ func main() {
 
 	purchasesService := purchases.NewService(db)
 	//router.HandleFunc("/catalog/purchases/{id}", service.HandleRequestProductId)
-	router.HandleFunc("/catalog/purchases/", purchasesService.HandleGetPurchases)
+	router.HandleFunc("/catalog/purchases/", purchasesService.HandleRequestPurchases)
 
 
 

@@ -37,6 +37,7 @@ func NewService(db infrastructure.DB) *Service{
 
 	service.productsHandler = make(map[string] func(http.ResponseWriter,*http.Request))
 	service.productsHandler[http.MethodGet] = service.HandleGetPurchases
+	service.productsHandler[http.MethodPost] = service.HandlePostPurchases
 	service.productsHandler[service.error]  = service.HandleError
 
 	return service
@@ -45,6 +46,15 @@ func NewService(db infrastructure.DB) *Service{
 func (service Service) HandleError(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusMethodNotAllowed)
 	fmt.Fprint(w, "The request method is not supported for the requested resource")
+}
+
+func (service Service) HandleRequestPurchases(w http.ResponseWriter, r *http.Request) {
+	handler := service.productsHandler[r.Method]
+	if handler == nil {
+		service.productsHandler[service.error] (w, r)
+	}else {
+		handler(w, r)
+	}
 }
 
 func (service Service) HandleGetPurchases(w http.ResponseWriter, r *http.Request) {

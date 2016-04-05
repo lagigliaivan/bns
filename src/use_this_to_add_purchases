@@ -1,0 +1,25 @@
+{
+	"purchases": [{
+		"Time": "2016-05-05T18:54:03.5102707-03:00",
+		"items": [{
+				"id": "1",
+				"description": "first product",
+				"price": 2
+			},
+			{
+				"id": "2",
+				"description": "second product",
+				"price": 34
+			},
+			{
+				"id": "3",
+				"description": "third product",
+				"price": 332
+			},
+			{
+				"id": "4",
+				"description": "forth product",
+				"price": 22
+			}]
+        }]
+}
