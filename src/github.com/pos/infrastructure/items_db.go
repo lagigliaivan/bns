@@ -5,13 +5,14 @@ import (
 	_"github.com/go-sql-driver/mysql"
 	"fmt"
 	"github.com/pos/dto"
+	"time"
 )
 
 type DB interface {
 	GetItem(string) dto.Item
 	GetItems() []dto.Item
 	SaveItem(dto.Item) int
-	GetPurchases() []dto.Purchase
+	GetPurchases(time.Time) []dto.Purchase
 }
 
 type CatalogDB struct {

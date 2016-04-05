@@ -13,8 +13,8 @@ type purchases map[time.Time] []dto.Purchase
 type Mem_DB struct {
 	lockI *sync.RWMutex
 	lockP  *sync.RWMutex
-	items
-	purchases
+	items items
+	purchases purchases
 }
 
 func NewMemDb() (Mem_DB) {
