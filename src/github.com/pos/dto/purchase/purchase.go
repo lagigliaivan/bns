@@ -49,3 +49,13 @@ func (container Container) IsEmpty() bool{
 	return false
 
 }
+
+type PurchasesByMonth struct {
+	Month     string  `json:"month"`
+	Purchases []Purchase  `json:"purchases"`
+}
+
+type PurchasesByMonthContainer struct {
+
+	PurchasesByMonth []PurchasesByMonth `json:"purchasesByMonth"`
+}

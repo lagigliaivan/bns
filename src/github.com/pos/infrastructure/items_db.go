@@ -17,6 +17,7 @@ type DB interface {
 	GetPurchase(time.Time) purchase.Purchase
 	SavePurchase(purchase.Purchase) error
 	GetPurchases() []purchase.Purchase
+	GetPurchasesGroupedByMonth() map[time.Month][]purchase.Purchase
 }
 
 type CatalogDB struct {

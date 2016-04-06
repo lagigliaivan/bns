@@ -9,19 +9,21 @@ import (
 )
 
 type items map[string] item.Item
-type purchases map[time.Time] purchase.Purchase
+
 
 type Mem_DB struct {
 	lockI *sync.RWMutex
 	lockP  *sync.RWMutex
 	items items
-	purchases purchases
+	purchases map[time.Time] purchase.Purchase
+	purchasesByMonth map[time.Month] []purchase.Purchase
 }
 
 func NewMemDb() (Mem_DB) {
 	db := Mem_DB{}
 	db.items = make(map[string]item.Item)
 	db.purchases = make(map[time.Time]purchase.Purchase)
+	db.purchasesByMonth = make(map[time.Month][]purchase.Purchase)
 	db.lockP = new(sync.RWMutex)
 	db.lockI = new(sync.RWMutex)
 	return  db
@@ -61,12 +63,23 @@ func (db Mem_DB) GetPurchase(time time.Time) purchase.Purchase  {
 	return purchases
 }
 
-func (db Mem_DB) SavePurchase( purchase purchase.Purchase) error {
+func (db Mem_DB) SavePurchase( p purchase.Purchase) error {
 
 	db.lockP.Lock()
 	defer db.lockP.Unlock()
-	db.purchases[purchase.Time] = purchase
-	log.Printf("SavePurchase time: %s", purchase.Time)
+	db.purchases[p.Time] = p
+	purchases := db.purchasesByMonth[p.Time.Month()]
+
+	if  purchases == nil {
+		purchases = make([]purchase.Purchase, 0)
+	}
+
+	purchases = append(purchases, p)
+
+
+	db.purchasesByMonth[p.Time.Month()] = purchases
+
+	log.Printf("SavePurchase time: %s purchases:%s", p.Time.Month(), purchases)
 	return nil
 }
 
@@ -82,4 +95,9 @@ func (db Mem_DB) GetPurchases() []purchase.Purchase  {
 	}
 
 	return purchases
+}
+
+func (db Mem_DB) GetPurchasesGroupedByMonth() map[time.Month][]purchase.Purchase  {
+
+	return db.purchasesByMonth
 }

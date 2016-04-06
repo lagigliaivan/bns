@@ -11,12 +11,17 @@ import (
 	"github.com/pos/dto/item"
 	"encoding/json"
 	"io/ioutil"
+	"time"
 )
 
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
+const (
+	GROUP_BY = "groupBy"
+	MONTH = "month"
+)
 type GetPathParams func (*http.Request) map[string]string
 
 type Service struct {
@@ -25,7 +30,7 @@ type Service struct {
 	name                 string
 	db                   infrastructure.DB
 	productIdsHandler    map[string] func(http.ResponseWriter,*http.Request)
-	productsHandler	     map[string] func(http.ResponseWriter,*http.Request)
+	purchasesHandler     map[string] func(http.ResponseWriter,*http.Request)
 }
 
 func NewService(db infrastructure.DB) *Service{
@@ -35,10 +40,10 @@ func NewService(db infrastructure.DB) *Service{
 	service.db = db
 	service.error = "ERROR"
 
-	service.productsHandler = make(map[string] func(http.ResponseWriter,*http.Request))
-	service.productsHandler[http.MethodGet] = service.HandleGetPurchases
-	service.productsHandler[http.MethodPost] = service.HandlePostPurchases
-	service.productsHandler[service.error]  = service.HandleError
+	service.purchasesHandler = make(map[string] func(http.ResponseWriter,*http.Request))
+	service.purchasesHandler[http.MethodGet] = service.HandleGetPurchases
+	service.purchasesHandler[http.MethodPost] = service.HandlePostPurchases
+	service.purchasesHandler[service.error]  = service.HandleError
 
 	return service
 }
@@ -49,9 +54,9 @@ func (service Service) HandleError(w http.ResponseWriter, r *http.Request) {
 }
 
 func (service Service) HandleRequestPurchases(w http.ResponseWriter, r *http.Request) {
-	handler := service.productsHandler[r.Method]
+	handler := service.purchasesHandler[r.Method]
 	if handler == nil {
-		service.productsHandler[service.error] (w, r)
+		service.purchasesHandler[service.error] (w, r)
 	}else {
 		handler(w, r)
 	}
@@ -79,6 +84,42 @@ func (service Service) HandleGetPurchases(w http.ResponseWriter, r *http.Request
 
 }
 
+func (service Service) HandleGetPurchasesGroupBy(w http.ResponseWriter, r *http.Request) {
+
+	params := r.URL.Query()
+	var purchasesByMonth map[time.Month][]purchase.Purchase
+
+	for key,_ := range params {
+		if key == GROUP_BY {
+			log.Printf("Returning purchases grouped by month")
+			purchasesByMonth = service.getPurchasesGroupedBy(MONTH)
+			break
+		}
+	}
+
+	pByMonthContainer := purchase.PurchasesByMonthContainer{make([]purchase.PurchasesByMonth, 0)}
+	pByMonth := purchase.PurchasesByMonth{}
+
+	for month, purchases := range purchasesByMonth {
+		pByMonth.Month = month.String()
+		pByMonth.Purchases = purchases
+		pByMonthContainer.PurchasesByMonth = append(pByMonthContainer.PurchasesByMonth,pByMonth)
+	}
+
+
+	log.Printf("purchases: %s", pByMonthContainer)
+	purchasesAsJson, err := json.Marshal(pByMonthContainer)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("Error %s", err)
+		return
+	}
+
+	fmt.Fprintf(w, "%s", purchasesAsJson)
+	log.Printf("GET items returned OK %s", purchasesAsJson)
+}
+
 func (service Service) HandlePostPurchases (w http.ResponseWriter, r *http.Request) {
 
 	body, _ := ioutil.ReadAll(r.Body)
@@ -99,6 +140,11 @@ func (service Service) HandlePostPurchases (w http.ResponseWriter, r *http.Reque
 func (service Service) getPurchases() []purchase.Purchase {
 	log.Printf("Getting items from DB")
 	purchases := service.db.GetPurchases()
+	return  purchases;
+}
+func (service Service) getPurchasesGroupedBy(period string) map[time.Month][]purchase.Purchase {
+	log.Printf("Getting items from DB")
+	purchases := service.db.GetPurchasesGroupedByMonth()
 	return  purchases;
 }
 
