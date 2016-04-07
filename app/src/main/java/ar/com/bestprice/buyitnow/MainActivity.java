@@ -1,8 +1,7 @@
 package ar.com.bestprice.buyitnow;
-
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.StrictMode;
+
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -10,19 +9,17 @@ import android.util.SparseArray;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.FrameLayout;
-import android.widget.TextView;
+
 
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.gson.Gson;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import ar.com.bestprice.buyitnow.barcodereader.BarcodeCaptureActivity;
 import ar.com.bestprice.buyitnow.dto.Item;
@@ -33,36 +30,77 @@ import ar.com.bestprice.buyitnow.dto.PurchasesContainer;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
+    private ExpandableListView listView = null;
 
     private static final String TAG = "BarcodeMain";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-
-        StrictMode.setThreadPolicy(policy);
 
         super.onCreate(savedInstanceState);
-
-        PurchasesContainer purchasesContainer = getAllItems();
-
         setContentView(R.layout.activity_main);
+        renderView();
+    }
 
-        createData(purchasesContainer.getPurchasesByMonth());
-        ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
-        FrameLayout footerLayout = (FrameLayout) getLayoutInflater().inflate(R.layout.footer, null);
-        FloatingActionButton btnPostYourEnquiry = (FloatingActionButton) footerLayout.findViewById(R.id.add_item_button);
-        btnPostYourEnquiry.setOnClickListener(this);
-        listView.addFooterView(footerLayout);
+    private void renderView() {
+        String jsonString = sendHttpRequest();
+        PurchasesContainer purchasesContainer = parseJsonString(jsonString);
 
-        MyExpandableListAdapter adapter = new MyExpandableListAdapter(this, groups);
+        ExpandableListView listView = getListView();
+        MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
         listView.setAdapter(adapter);
+    }
+
+    private MyExpandableListAdapter getListViewAdapter(PurchasesContainer purchasesContainer) {
+        SparseArray<Group> groups = createData(purchasesContainer.getPurchasesByMonth());
+        MyExpandableListAdapter adapter = new MyExpandableListAdapter(this, groups);
+        return adapter;
 
     }
 
-    SparseArray<Group> groups = new SparseArray<>();
-    public void createData( List<PurchasesByMonth> purchasesByMonth) {
+    private String sendHttpRequest() {
 
+        final ExecutorService service = Executors.newFixedThreadPool(1);
+        final Future<String> task;
+        String jsonString = "";
+
+        task = service.submit(new ServiceClient("http://10.33.117.120:8080/catalog/purchases?groupBy=month"));
+        try {
+            jsonString = task.get();
+        } catch (final InterruptedException | ExecutionException ex) {
+            ex.printStackTrace();
+        } finally {
+            service.shutdownNow();
+        }
+
+        return jsonString;
+    }
+
+    private ExpandableListView getListView() {
+
+        if(this.listView == null) {
+            this.listView = (ExpandableListView) findViewById(R.id.listView);
+
+            FrameLayout footerLayout = (FrameLayout) getLayoutInflater().inflate(R.layout.footer, null);
+            FrameLayout headerLayout = (FrameLayout) getLayoutInflater().inflate(R.layout.header, null);
+
+            FloatingActionButton btnAddItem = (FloatingActionButton) footerLayout.findViewById(R.id.add_item_button);
+            btnAddItem.setOnClickListener(this);
+
+            FloatingActionButton btnRefresh = (FloatingActionButton) headerLayout.findViewById(R.id.refresh_button);
+            btnRefresh.setOnClickListener(this);
+
+
+            listView.addHeaderView(headerLayout);
+            listView.addFooterView(footerLayout);
+        }
+
+        return listView;
+    }
+
+    public SparseArray<Group> createData( List<PurchasesByMonth> purchasesByMonth) {
+
+        SparseArray<Group> groups = new SparseArray<>();
         int j = 0;
         for (PurchasesByMonth purchases:purchasesByMonth) {
 
@@ -79,81 +117,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             j++;
         }
 
+        return groups;
 
     }
+    private PurchasesContainer parseJsonString(String json){
 
-    private PurchasesContainer getAllItems(){
-
-
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
-        PurchasesContainer p = null;
-
-        try {
-            // http://openweathermap.org/API#forecast
-            //URL url = new URL("http://10.33.117.120:8080/catalog/products/");
-            //URL url = new URL("http://192.168.0.7:8080/catalog/products/");
-
-
-            URL url = new URL("http://10.33.117.120:8080/catalog/purchases?groupBy=month");
-            // Create the request to OpenWeatherMap, and open the connection
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-
-            // Read the input stream into a String
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-            if (inputStream == null) {
-                // Nothing to do.
-                return new PurchasesContainer();
-            }
-            reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                // But it does make debugging a *lot* easier if you print out the completed
-                // buffer for debugging.
-                buffer.append(line + "\n");
-            }
-
-            if (buffer.length() == 0) {
-                // Stream was empty.  No point in parsing.
-                return new PurchasesContainer();
-            }
-
-
-            String purchases = buffer.toString();
-            Gson gson = new Gson();
-
-            p = gson.fromJson(purchases, PurchasesContainer.class);
-            System.out.println(p);
-
-
-        } catch (IOException e) {
-            Log.e("PlaceholderFragment", "Error ", e);
-            // If the code didn't successfully get the weather data, there's no point in attemping
-            // to parse it.
-
-        } catch (Exception e){
-            Log.e("PlaceholderFragment", "Error", e);
-        }finally{
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e("PlaceholderFragment", "Error closing stream", e);
-                }
-            }
-        }
-
+        Gson gson = new Gson();
+        PurchasesContainer p = gson.fromJson(json, PurchasesContainer.class);
         return p;
     }
-
 
     private static final int RC_BARCODE_CAPTURE = 9001;
 
@@ -164,7 +136,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             intent.putExtra(BarcodeCaptureActivity.UseFlash, false);
             startActivityForResult(intent, RC_BARCODE_CAPTURE);
         }else{
-            System.out.println(((TextView) view).getText());
+            String jsonString = sendHttpRequest();
+            PurchasesContainer purchasesContainer = parseJsonString(jsonString);
+            ExpandableListView listView = getListView();
+            MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
+            listView.setAdapter(adapter);
         }
     }
 

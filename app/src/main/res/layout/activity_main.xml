@@ -16,14 +16,6 @@
         tools:context="ar.com.bestprice.buyitnow.MainActivity">
     </ExpandableListView>
 
-    <!--ListView
-        android:id="@+id/item_list_view"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:visibility="visible"
-        tools:context="ar.com.bestprice.buyitnow.MainActivity"/-->
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
