@@ -7,8 +7,8 @@ import (
 )
 
 type Purchase struct {
-	Time time.Time //DateTime when this purchase was acquired.
-	Items []item.Item
+	Time time.Time `json:"time"`//DateTime when this purchase was acquired.
+	Items []item.Item `json:"items"`
 }
 
 
