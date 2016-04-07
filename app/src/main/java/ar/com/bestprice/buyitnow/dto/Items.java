@@ -1,4 +1,4 @@
-package ar.com.bestprice.buyitnow;
+package ar.com.bestprice.buyitnow.dto;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package ar.com.bestprice.buyitnow;
+package ar.com.bestprice.buyitnow.dto;
 
 /**
  * Created by ivan on 31/03/16.

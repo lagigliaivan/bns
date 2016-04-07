@@ -11,7 +11,8 @@ import android.widget.CheckedTextView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.internal.LinkedTreeMap;
+import ar.com.bestprice.buyitnow.dto.Item;
+import ar.com.bestprice.buyitnow.dto.Purchase;
 
 
 public class MyExpandableListAdapter extends BaseExpandableListAdapter {
@@ -46,12 +47,13 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.listrow_details, null);
         }
+
         TextView text = (TextView) convertView.findViewById(R.id.textView1);
-        text.setText( children.getDescription());
+        text.setText( children.getDescription() + " : $" + children.getPrice() );
         convertView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(activity, children.getDescription(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, children.getDescription() + " : $" + children.getPrice(), Toast.LENGTH_SHORT).show();
             }
         });
         return convertView;

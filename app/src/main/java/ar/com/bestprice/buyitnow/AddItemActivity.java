@@ -11,15 +11,15 @@ import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+
+import ar.com.bestprice.buyitnow.dto.Item;
+import ar.com.bestprice.buyitnow.dto.Items;
 
 /**
  * Created by ivan on 01/04/16.

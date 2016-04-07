@@ -25,6 +25,10 @@ import java.net.URL;
 import java.util.List;
 
 import ar.com.bestprice.buyitnow.barcodereader.BarcodeCaptureActivity;
+import ar.com.bestprice.buyitnow.dto.Item;
+import ar.com.bestprice.buyitnow.dto.Purchase;
+import ar.com.bestprice.buyitnow.dto.PurchasesByMonth;
+import ar.com.bestprice.buyitnow.dto.PurchasesContainer;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
@@ -40,13 +44,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         super.onCreate(savedInstanceState);
 
-        Items items = getAllItems();
+        PurchasesContainer purchasesContainer = getAllItems();
 
         setContentView(R.layout.activity_main);
 
-        createData(items.getItems());
+        createData(purchasesContainer.getPurchasesByMonth());
         ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
-       FrameLayout footerLayout = (FrameLayout) getLayoutInflater().inflate(R.layout.footer, null);
+        FrameLayout footerLayout = (FrameLayout) getLayoutInflater().inflate(R.layout.footer, null);
         FloatingActionButton btnPostYourEnquiry = (FloatingActionButton) footerLayout.findViewById(R.id.add_item_button);
         btnPostYourEnquiry.setOnClickListener(this);
         listView.addFooterView(footerLayout);
@@ -57,33 +61,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     SparseArray<Group> groups = new SparseArray<>();
-    public void createData( List<Item> items) {
+    public void createData( List<PurchasesByMonth> purchasesByMonth) {
 
-        for (int j = 0; j < 5; j++) {
+        int j = 0;
+        for (PurchasesByMonth purchases:purchasesByMonth) {
 
-            Group group = new Group("Fecha " + j);
-            for (int i = 0; i < items.size(); i++) {
-                group.children.add(items.get(i));
+            Group group = new Group(purchases.getMonth().toString());
+
+            for (Purchase purchase : purchases.getPurchases()){
+
+                for(Item item: purchase.getItems()) {
+                    group.children.add(item);
+                }
             }
+
             groups.append(j, group);
+            j++;
         }
+
+
     }
 
-    private Items getAllItems(){
+    private PurchasesContainer getAllItems(){
 
-        // These two need to be declared outside the try/catch
-        // so that they can be closed in the finally block.
+
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
-
-        // Will contain the raw JSON response as a string.
-        String items = null;
+        PurchasesContainer p = null;
 
         try {
             // http://openweathermap.org/API#forecast
             //URL url = new URL("http://10.33.117.120:8080/catalog/products/");
-            URL url = new URL("http://192.168.0.7:8080/catalog/products/");
+            //URL url = new URL("http://192.168.0.7:8080/catalog/products/");
 
+
+            URL url = new URL("http://10.33.117.120:8080/catalog/purchases?groupBy=month");
             // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
@@ -94,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             StringBuffer buffer = new StringBuffer();
             if (inputStream == null) {
                 // Nothing to do.
-                return new Items();
+                return new PurchasesContainer();
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
 
@@ -108,22 +120,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (buffer.length() == 0) {
                 // Stream was empty.  No point in parsing.
-                return new Items();
+                return new PurchasesContainer();
             }
 
 
-            items = buffer.toString();
+            String purchases = buffer.toString();
             Gson gson = new Gson();
 
-            Items it = gson.fromJson(items, Items.class);
-            return it;
+            p = gson.fromJson(purchases, PurchasesContainer.class);
+            System.out.println(p);
+
 
         } catch (IOException e) {
             Log.e("PlaceholderFragment", "Error ", e);
             // If the code didn't successfully get the weather data, there's no point in attemping
             // to parse it.
-            return new Items();
-        } finally{
+
+        } catch (Exception e){
+            Log.e("PlaceholderFragment", "Error", e);
+        }finally{
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }
@@ -136,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-
+        return p;
     }
 
 
