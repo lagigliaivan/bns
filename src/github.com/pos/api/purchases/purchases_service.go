@@ -48,18 +48,36 @@ func NewService(db infrastructure.DB) *Service{
 	return service
 }
 
+func (service Service) ConfigureService(router *mux.Router) {
+	router.HandleFunc("/catalog/purchases", service.HandleRequestPurchases)
+}
+
 func (service Service) HandleError(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusMethodNotAllowed)
 	fmt.Fprint(w, "The request method is not supported for the requested resource")
 }
 
 func (service Service) HandleRequestPurchases(w http.ResponseWriter, r *http.Request) {
-	handler := service.purchasesHandler[r.Method]
-	if handler == nil {
-		service.purchasesHandler[service.error] (w, r)
-	}else {
-		handler(w, r)
+	params := r.URL.Query()
+	log.Printf("len == 0")
+	if len(params) != 0 {
+		log.Printf("len != 0")
+		for key, _ := range params {
+			log.Printf("key: %s", key)
+			if key == GROUP_BY {
+				service.HandleGetPurchasesGroupByMonth(w, r)
+				break
+			}
+		}
+	} else {
+		handler := service.purchasesHandler[r.Method]
+		if handler == nil {
+			service.purchasesHandler[service.error](w, r)
+		}else {
+			handler(w, r)
+		}
 	}
+	//service.purchasesHandler[service.error](w, r)
 }
 
 func (service Service) HandleGetPurchases(w http.ResponseWriter, r *http.Request) {
@@ -80,22 +98,13 @@ func (service Service) HandleGetPurchases(w http.ResponseWriter, r *http.Request
 	}
 
 	fmt.Fprintf(w, "%s", purchasesAsJson)
-	log.Printf("GET items returned OK %s", purchasesAsJson)
-
 }
 
-func (service Service) HandleGetPurchasesGroupBy(w http.ResponseWriter, r *http.Request) {
+func (service Service) HandleGetPurchasesGroupByMonth(w http.ResponseWriter, r *http.Request) {
 
-	params := r.URL.Query()
 	var purchasesByMonth map[time.Month][]purchase.Purchase
 
-	for key,_ := range params {
-		if key == GROUP_BY {
-			log.Printf("Returning purchases grouped by month")
-			purchasesByMonth = service.getPurchasesGroupedBy(MONTH)
-			break
-		}
-	}
+	purchasesByMonth = service.getPurchasesGroupedBy(MONTH)
 
 	pByMonthContainer := purchase.PurchasesByMonthContainer{make([]purchase.PurchasesByMonth, 0)}
 	pByMonth := purchase.PurchasesByMonth{}
@@ -106,8 +115,6 @@ func (service Service) HandleGetPurchasesGroupBy(w http.ResponseWriter, r *http.
 		pByMonthContainer.PurchasesByMonth = append(pByMonthContainer.PurchasesByMonth,pByMonth)
 	}
 
-
-	log.Printf("purchases: %s", pByMonthContainer)
 	purchasesAsJson, err := json.Marshal(pByMonthContainer)
 
 	if err != nil {
@@ -117,7 +124,7 @@ func (service Service) HandleGetPurchasesGroupBy(w http.ResponseWriter, r *http.
 	}
 
 	fmt.Fprintf(w, "%s", purchasesAsJson)
-	log.Printf("GET items returned OK %s", purchasesAsJson)
+
 }
 
 func (service Service) HandlePostPurchases (w http.ResponseWriter, r *http.Request) {
@@ -142,6 +149,7 @@ func (service Service) getPurchases() []purchase.Purchase {
 	purchases := service.db.GetPurchases()
 	return  purchases;
 }
+
 func (service Service) getPurchasesGroupedBy(period string) map[time.Month][]purchase.Purchase {
 	log.Printf("Getting items from DB")
 	purchases := service.db.GetPurchasesGroupedByMonth()

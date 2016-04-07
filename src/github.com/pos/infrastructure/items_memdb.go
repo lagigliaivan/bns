@@ -75,11 +75,8 @@ func (db Mem_DB) SavePurchase( p purchase.Purchase) error {
 	}
 
 	purchases = append(purchases, p)
-
-
 	db.purchasesByMonth[p.Time.Month()] = purchases
 
-	log.Printf("SavePurchase time: %s purchases:%s", p.Time.Month(), purchases)
 	return nil
 }
 

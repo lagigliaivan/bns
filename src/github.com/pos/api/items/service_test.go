@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"io"
 	"reflect"
+	"github.com/gorilla/mux"
 )
 
 
@@ -53,7 +54,11 @@ var (
 func Test_GET_item_returns_404_when_it_does_not_exist(t *testing.T){
 
 	service := NewService(infrastructure.NewMemDb())
-	testingServer := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
+	router := mux.NewRouter();
+	service.ConfigureRouter(router)
+
+	testingServer := httptest.NewServer(router)
+
 	defer testingServer.Close()
 
 	itemToBeAdded := createItemDto()
@@ -71,15 +76,15 @@ func Test_GET_item_returns_404_when_it_does_not_exist(t *testing.T){
 func Test_GET_item_returns_200_when_it_exists(t *testing.T){
 
 	itemToBeAdded := createItemDto()
-
 	service := NewService(infrastructure.NewMemDb())
 
 	//Adding ITEM without calling RESTapi. Calling a service function directly
 	service.addUpdateItem(itemToBeAdded)
 
-	service.GetRequestParameters = returnItemIdFromURL(itemToBeAdded.Id)
+	router := mux.NewRouter();
+	service.ConfigureRouter(router)
 
-	testingServer := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
+	testingServer := httptest.NewServer(router)
 	defer testingServer.Close()
 
 	//GETting URL
@@ -95,18 +100,21 @@ func Test_GET_item_returns_200_when_it_exists(t *testing.T){
 //Testing server to check POST /catalog/product/{id}
 func Test_POST_item_returns_201_when_it_is_successfully_created (t *testing.T) {
 
-
 	service := NewService(infrastructure.NewMemDb())
 
-	testingServer := httptest.NewServer(http.HandlerFunc(service.HandlePostItem))
+	router := mux.NewRouter();
+	service.ConfigureRouter(router)
+
+	testingServer := httptest.NewServer(router)
+
 	defer testingServer.Close()
-	url := getURLToBeTested(testingServer.URL);
 
 	itemToBeAdded := createItemDto()
 	items := item.NewContainer()
 	items.Add(itemToBeAdded)
 
-	res, err := httpPost(url, items)
+	url := getURLToBeTested(testingServer.URL);
+	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		debug(http.MethodPost, url, res.StatusCode, http.StatusCreated)
@@ -119,18 +127,19 @@ func Test_POST_GET_returns_the_same_item_after_it_is_created(t *testing.T){
 	itemToBeAdded := createItemDto()
 
 	service := NewService(infrastructure.NewMemDb())
-	service.GetRequestParameters = returnItemIdFromURL(itemToBeAdded.Id)
+	router := mux.NewRouter();
+	service.ConfigureRouter(router)
 
-	testingServerPOST := httptest.NewServer(http.HandlerFunc(service.HandlePostItem))
-	defer testingServerPOST.Close()
+	server := httptest.NewServer(router)
+	defer server.Close()
 
 	//POST Item
-	url := getURLToBeTested(testingServerPOST.URL);
+	url := getURLToBeTested(server.URL);
 
 
 	items := item.NewContainer()
 	items.Add(itemToBeAdded)
-	res, err := httpPost(url, items)
+	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		debug(http.MethodPost, url, res.StatusCode, http.StatusCreated)
@@ -138,9 +147,8 @@ func Test_POST_GET_returns_the_same_item_after_it_is_created(t *testing.T){
 	}
 
 	//GET Item
-	testingServerGET := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
-	defer testingServerGET.Close()
-	url = getURLToBeTested(testingServerGET.URL, itemToBeAdded.Id);
+
+	url = getURLToBeTested(server.URL, itemToBeAdded.Id);
 
 	res, err = httpGet(url)
 
@@ -161,17 +169,18 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 	//POST Item
 	itemToBeAdded := createItemDto()
 	service := NewService(infrastructure.NewMemDb())
-	service.GetRequestParameters = returnItemIdFromURL(itemToBeAdded.Id)
 
-	testingServer := httptest.NewServer(http.HandlerFunc(service.HandlePostItem))
+	router := mux.NewRouter();
+	service.ConfigureRouter(router)
+
+	testingServer := httptest.NewServer(router)
 	defer testingServer.Close()
 	url := getURLToBeTested(testingServer.URL);
-
 
 	items := item.NewContainer()
 	items.Add(itemToBeAdded)
 
-	res, err := httpPost(url, items)
+	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		debug(http.MethodPut, url, res.StatusCode, http.StatusCreated)
@@ -179,10 +188,6 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 	}
 
 	//PUT Item
-	testingServer = httptest.NewServer(http.HandlerFunc(service.HandlePutItem))
-	defer testingServer.Close()
-
-
 	url = getURLToBeTested(testingServer.URL, itemToBeAdded.Id);
 
 	itemToBeAdded.Description = "Description updated"
@@ -196,10 +201,6 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 	}
 
 	//GET Item
-	testingServerGET := httptest.NewServer(http.HandlerFunc(service.HandleGetItem))
-	defer testingServerGET.Close()
-
-	url = getURLToBeTested(testingServerGET.URL, itemToBeAdded.Id);
 	res, err = httpGet(url)
 
 	if !isHTTPStatus(http.StatusOK, res, err){
@@ -211,8 +212,6 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 		log.Printf("Error when GETting item to contrast it with the saved one")
 		t.FailNow()
 	}
-
-
 }
 
 func Test_POST_item_returns_400_when_body_is_sent_without_item_id(t *testing.T){
@@ -222,16 +221,19 @@ func Test_POST_item_returns_400_when_body_is_sent_without_item_id(t *testing.T){
 
 	service := NewService(infrastructure.NewMemDb())
 
-	testingServerPUT := httptest.NewServer(http.HandlerFunc(service.HandlePostItem))
-	defer testingServerPUT.Close()
+	router := mux.NewRouter();
+	service.ConfigureRouter(router)
+
+	server := httptest.NewServer(router)
+	defer server.Close()
 
 	//POST Item
-	url := getURLToBeTested(testingServerPUT.URL);
+	url := getURLToBeTested(server.URL);
 
 	items := item.NewContainer()
 	items.Add(itemToBeAdded)
 
-	res, err := httpPost(url, items)
+	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
 
 	if !isHTTPStatus(http.StatusBadRequest, res, err){
 		debug(http.MethodPost, url, res.StatusCode, http.StatusBadRequest)
@@ -354,14 +356,16 @@ func Test_returns_no_error_when_adding_an_item(t *testing.T){
 //Tests auxiliary functions
 
 func httpPOST(service Service) error{
+	router := mux.NewRouter();
+	service.ConfigureRouter(router)
 
-	server := httptest.NewServer(http.HandlerFunc(service.HandlePostItem))
+	server := httptest.NewServer(router)
 	defer server.Close()
 
 	//POST Items for later being retrieved.
 	url := getURLToBeTested(server.URL);
 
-	res, err := httpPost(url, postItems)
+	res, err := httpPost(strings.TrimSuffix(url, "/"), postItems)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		debug(http.MethodPost, url, res.StatusCode, http.StatusCreated)

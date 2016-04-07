@@ -23,18 +23,23 @@ func main() {
 	        //apiurl = flag.String("api", "http://127.0.0.1", "The base path URI of the API service")
 	)*/
 	router := mux.NewRouter();
-
+	//router := GetRouter()
 	//db := infrastructure.CatalogDB{}
 	db := infrastructure.NewMemDb()
 	itemsService := items.NewService(db)
+	itemsService.ConfigureRouter(router)
+
+	/*
 
 	router.HandleFunc("/catalog/products/{id}", itemsService.HandleRequestProductId)
-	router.HandleFunc("/catalog/products/", itemsService.HandleRequestProducts)
-
+	router.HandleFunc("/catalog/products", itemsService.HandleRequestProducts)
+*/
 	purchasesService := purchases.NewService(db)
-	//router.HandleFunc("/catalog/purchases/{id}", service.HandleRequestProductId)
-	router.HandleFunc("/catalog/purchases/", purchasesService.HandleRequestPurchases)
+	purchasesService.ConfigureService(router)
 
+	//router.HandleFunc("/catalog/purchases/{id}", service.HandleRequestProductId)
+	/*router.HandleFunc("/catalog/purchases", purchasesService.HandleRequestPurchases)
+*/
 
 
 	//router.PathPrefix("/").Handler(http.FileServer(http.Dir("../../../swaggerui/")))

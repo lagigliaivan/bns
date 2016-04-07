@@ -2,10 +2,8 @@ package purchases
 
 import (
 	"testing"
-
 	"net/http"
 	"log"
-
 	"time"
 	"github.com/pos/infrastructure"
 	"net/http/httptest"
@@ -14,6 +12,7 @@ import (
 	"github.com/pos/dto/item"
 	"io/ioutil"
 	"strings"
+
 )
 
 func init() {
@@ -153,8 +152,7 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 		t.FailNow()
 	}
 
-
-	server = httptest.NewServer(http.HandlerFunc(service.HandleGetPurchasesGroupBy))
+	server = httptest.NewServer(http.HandlerFunc(service.HandleGetPurchasesGroupByMonth))
 	res, err = http.Get(server.URL + "?groupBy=month")
 
 	if !isHTTPStatus(http.StatusOK, res, err){
@@ -169,7 +167,7 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 		t.FailNow()
 	}
 
-	purchases := new(purchase.Container)
+	purchases := new(purchase.PurchasesByMonthContainer)
 
 	if err := json.Unmarshal(body, purchases); err != nil {
 
@@ -177,12 +175,62 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 		t.FailNow()
 	}
 
-	if len(purchases.Purchases) != len(setOfPurchases){
+	if len(purchases.PurchasesByMonth) != 3{
 		log.Printf("Error: Expected items quantity is different from the received one")
 		t.FailNow()
 
 	}
+
+	log.Printf("GET items returned OK %s", body)
 }
+
+func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_By_Month(t *testing.T) {
+
+	service := NewService(infrastructure.NewMemDb())
+	server := httptest.NewServer(http.HandlerFunc(service.HandlePostPurchases))
+	//server := httptest.NewServer(http.HandlerFunc(main.GetRouter()))
+	defer server.Close()
+
+	res, err := httpPost(server.URL, postPurchases)
+
+	if !isHTTPStatus(http.StatusCreated, res, err){
+		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
+		t.FailNow()
+	}
+
+
+	server = httptest.NewServer(http.HandlerFunc(service.HandleGetPurchasesGroupByMonth))
+	res, err = http.Get(server.URL + "?groupBy=ANYTHING")
+
+	if !isHTTPStatus(http.StatusOK, res, err){
+		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
+		t.FailNow()
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		log.Fatal("Error")
+		t.FailNow()
+	}
+
+	purchases := new(purchase.PurchasesByMonthContainer)
+
+	if err := json.Unmarshal(body, purchases); err != nil {
+
+		log.Printf("Error when reading response %s", err)
+		t.FailNow()
+	}
+
+	if len(purchases.PurchasesByMonth) != 3{
+		log.Printf("Error: Expected items quantity is different from the received one")
+		t.FailNow()
+
+	}
+
+	log.Printf("GET items returned OK %s", body)
+}
+
 
 func isHTTPStatus(httpStatus int, res *http.Response, err error ) bool {
 	return !( (err != nil) || (res.StatusCode != httpStatus) )

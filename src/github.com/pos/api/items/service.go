@@ -46,6 +46,12 @@ func NewService(db infrastructure.DB) *Service{
 	return service
 }
 
+func (service Service) ConfigureRouter(router *mux.Router) {
+
+	router.HandleFunc("/catalog/products/{id}", service.HandleRequestProductId)
+	router.HandleFunc("/catalog/products", service.HandleRequestProducts)
+}
+
 func (service Service) HandleError(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusMethodNotAllowed)
 	fmt.Fprint(w, "The request method is not supported for the requested resource")
