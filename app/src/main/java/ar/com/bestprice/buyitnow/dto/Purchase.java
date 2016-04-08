@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class Purchase {
 
-    Date time;
+    String time;
     List<Item> items;
 
     public List<Item> getItems() {
@@ -19,11 +19,11 @@ public class Purchase {
         this.items = items;
     }
 
-    public Date getTime() {
+    public String getTime() {
         return time;
     }
 
-    public void setTime(Date time) {
+    public void setTime(String time) {
         this.time = time;
     }
 }

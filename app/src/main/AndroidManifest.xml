@@ -28,6 +28,10 @@
             android:label="Read Barcode"/>
         <activity android:name="ar.com.bestprice.buyitnow.AddItemActivity"
             android:label="Add item"/>
+        <activity android:name="ar.com.bestprice.buyitnow.AddNewPurchaseActivity"
+            android:label="Add new purchase"/>
+
+
     </application>
 
 </manifest>

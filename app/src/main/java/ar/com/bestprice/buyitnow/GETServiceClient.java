@@ -15,12 +15,12 @@ import java.util.concurrent.Callable;
 /**
  * Created by ivan on 07/04/16.
  */
-public class ServiceClient implements Callable {
+public class GETServiceClient implements Callable {
 
 
     private final String URL;
 
-    public ServiceClient(String URL) {
+    public GETServiceClient(String URL) {
         this.URL = URL;
     }
 

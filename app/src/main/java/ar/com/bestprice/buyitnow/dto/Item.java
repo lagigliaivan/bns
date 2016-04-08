@@ -1,9 +1,11 @@
 package ar.com.bestprice.buyitnow.dto;
 
+import java.io.Serializable;
+
 /**
  * Created by ivan on 31/03/16.
  */
-public class Item {
+public class Item implements Serializable{
 
     private String id;
     private String description;
@@ -33,7 +35,8 @@ public class Item {
         this.price = price;
     }
 
-
-
-
+    @Override
+    public String toString() {
+        return  description + "\t \t"+ price;
+    }
 }
