@@ -20,14 +20,16 @@
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/refresh_button"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:clickable="true"
         android:onClick="onClick"
-        android:layout_margin="@dimen/fab_margin"
+        android:layout_margin="5dp"
         android:src="@android:drawable/ic_popup_sync"
         app:layout_anchor="@id/main_content"
-        app:layout_anchorGravity="top|right|end"/>
+        android:alpha="0.5"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        app:layout_anchorGravity="bottom|left|end"/>
 
 
     <android.support.design.widget.FloatingActionButton
@@ -36,10 +38,12 @@
         android:layout_height="wrap_content"
         android:clickable="true"
         android:onClick="onClick"
-        android:layout_margin="@dimen/fab_margin"
+        android:layout_margin="5dp"
         android:src="@android:drawable/ic_input_add"
         app:layout_anchor="@id/main_content"
         android:text="@string/add_item"
+        android:alpha="0.5"
+        style="@style/Widget.AppCompat.Button.Borderless"
         app:layout_anchorGravity="bottom|right|end"/>
 
 </android.support.design.widget.CoordinatorLayout>

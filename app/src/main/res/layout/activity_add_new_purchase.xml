@@ -18,6 +18,20 @@
     </ListView>
 
     <android.support.design.widget.FloatingActionButton
+        android:id="@+id/save_purchase"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:onClick="onClick"
+        android:layout_margin="@dimen/fab_margin"
+        android:layout_marginLeft="@dimen/fab_margin"
+        android:visibility="visible"
+        android:src="@android:drawable/ic_menu_save"
+        app:layout_anchor="@id/main_content"
+        android:text="Save Purchase"
+        app:layout_anchorGravity="bottom|left|end"/>
+
+    <android.support.design.widget.FloatingActionButton
         android:id="@+id/add_new_item"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -25,22 +39,11 @@
         android:onClick="onClick"
         android:visibility="visible"
         android:layout_margin="@dimen/fab_margin"
+        android:layout_marginRight="@dimen/fab_margin"
         android:src="@android:drawable/ic_input_add"
         android:text="@string/add_item"
         app:layout_anchor="@id/main_content"
         app:layout_anchorGravity="bottom|right|end"/>
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/save_purchase"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:onClick="onClick"
-        android:layout_margin="@dimen/fab_margin"
-        android:visibility="visible"
-        android:src="@android:drawable/ic_menu_save"
-        app:layout_anchor="@id/main_content"
-        android:text="Save Purchase"
-        app:layout_anchorGravity="top|right|end"/>
 
 </android.support.design.widget.CoordinatorLayout>

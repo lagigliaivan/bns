@@ -1,27 +1,53 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="40dp"
+    android:layout_height="match_parent"
     android:clickable="true"
     android:orientation="vertical"
-    android:paddingLeft="40dp"
+    android:paddingLeft="30dp"
     tools:context=".MainActivity" >
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:drawableLeft="@android:drawable/btn_star_big_on"
-        android:drawablePadding="5dp"
-        android:gravity="center_vertical"
-        android:text="@string/hello_world"
-        android:textSize="14sp"
-        android:textStyle="bold" >
-    </TextView>
 
-    <View
+        <TextView
+            android:drawableLeft="@android:drawable/star_on"
+            android:id="@+id/item_description"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:drawablePadding="5dp"
+            android:gravity="left"
+            android:textSize="14sp"
+            android:layout_column="1"
+            android:autoText="false"
+            android:paddingRight="@dimen/fab_margin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        </TextView>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/black" />
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:orientation="horizontal"
+        android:paddingRight="5dp"
+        android:gravity="right"
+        android:layout_gravity="right"
+        tools:context=".MainActivity" >
+        <TextView
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="$"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:id="@+id/textView5"
+            android:layout_column="0" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/item_price"
+            android:textStyle="bold"
+            android:gravity="right"
+            android:layout_gravity="right"
+            android:layout_column="1" />
+</LinearLayout>
 
-</LinearLayout> 
+</LinearLayout>

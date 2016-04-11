@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return listView;
     }
 
-    public SparseArray<Group> createData( List<PurchasesByMonth> purchasesByMonth) {
+    private SparseArray<Group> createData( List<PurchasesByMonth> purchasesByMonth) {
 
         SparseArray<Group> groups = new SparseArray<>();
         int j = 0;
@@ -106,7 +106,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return p;
     }
 
-    //private static final int ADD_NEW_PURCHASE = 9001;
 
     public void onClick(View view) {
         if(view.getId() == R.id.add_new_purchase) {
@@ -115,37 +114,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }else{
             String jsonString = sendHttpRequest();
             PurchasesContainer purchasesContainer = parseJsonString(jsonString);
-            ExpandableListView listView = getListView();
             MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
+
+            ExpandableListView listView = getListView();
             listView.setAdapter(adapter);
         }
-    }
-
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // The activity is about to become visible.
-    }
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // The activity has become visible (it is now "resumed").
-    }
-    @Override
-    protected void onPause() {
-        super.onPause();
-        // Another activity is taking focus (this activity is about to be "paused").
-    }
-    @Override
-    protected void onStop() {
-        super.onStop();
-        // The activity is no longer visible (it is now "stopped")
-    }
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // The activity is about to be destroyed.
     }
 
 }

@@ -1,6 +1,8 @@
 package ar.com.bestprice.buyitnow;
 
 import android.app.Activity;
+import android.graphics.drawable.ClipDrawable;
+import android.graphics.drawable.PictureDrawable;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +14,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import ar.com.bestprice.buyitnow.dto.Item;
-import ar.com.bestprice.buyitnow.dto.Purchase;
 
 
 public class MyExpandableListAdapter extends BaseExpandableListAdapter {
@@ -48,12 +49,16 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
             convertView = inflater.inflate(R.layout.listrow_details, null);
         }
 
-        TextView text = (TextView) convertView.findViewById(R.id.textView1);
-        text.setText( children.getDescription() + " : $" + children.getPrice() );
+        TextView text = (TextView) convertView.findViewById(R.id.item_description);
+        text.setText( children.getDescription());
+
+        text = (TextView) convertView.findViewById(R.id.item_price);
+        text.setText(Float.toString(children.getPrice()));
+
         convertView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(activity, children.getDescription() + " : $" + children.getPrice(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "ID:" + children.getId(), Toast.LENGTH_SHORT).show();
             }
         });
         return convertView;
@@ -96,8 +101,19 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.listrow_group, null);
         }
+
         Group group = (Group) getGroup(groupPosition);
-        ((CheckedTextView) convertView).setText(group.string);
+
+        float total = 0;
+        for(Item item:group.children){
+            total += item.getPrice();
+        }
+        if(total >= 1000) {
+            ((CheckedTextView) convertView).setCheckMarkDrawable(R.drawable.ic_trending_up_black_18dp);
+        }else {
+            ((CheckedTextView) convertView).setCheckMarkDrawable(R.drawable.ic_trending_down_black_18dp);
+        }
+        ((CheckedTextView) convertView).setText(group.string + "\t\t" + "$" + total);
         ((CheckedTextView) convertView).setChecked(isExpanded);
         return convertView;
     }
