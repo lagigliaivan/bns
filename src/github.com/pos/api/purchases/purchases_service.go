@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"time"
+	"sort"
 )
 
 func init() {
@@ -77,7 +78,6 @@ func (service Service) HandleRequestPurchases(w http.ResponseWriter, r *http.Req
 			handler(w, r)
 		}
 	}
-	//service.purchasesHandler[service.error](w, r)
 }
 
 func (service Service) HandleGetPurchases(w http.ResponseWriter, r *http.Request) {
@@ -153,7 +153,20 @@ func (service Service) getPurchases() []purchase.Purchase {
 func (service Service) getPurchasesGroupedBy(period string) map[time.Month][]purchase.Purchase {
 	log.Printf("Getting items from DB")
 	purchases := service.db.GetPurchasesGroupedByMonth()
-	return  purchases;
+	keys := make([]int, 0, len(purchases))
+
+	for key := range purchases {
+		keys = append(keys, int(key))
+	}
+	sort.Ints(keys)
+
+	sortedPurchases := make(map[time.Month][]purchase.Purchase, len(keys))
+
+	for _,key := range keys {
+		sortedPurchases[time.Month(key)] = purchases[time.Month(key)];
+	}
+	log.Printf("a verrr: %s", sortedPurchases);
+	return  sortedPurchases;
 }
 
 func (service Service) savePurchases( purchases []purchase.Purchase)  {
