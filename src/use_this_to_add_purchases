@@ -1,25 +1,36 @@
 {
 	"purchases": [{
-		"time": "2016-05-05T18:54:03.5102707-03:00",
-		"items": [{
-				"id": "1",
-				"description": "first product",
-				"price": 2
-			},
-			{
-				"id": "2",
-				"description": "second product",
-				"price": 34
-			},
-			{
-				"id": "3",
-				"description": "third product",
-				"price": 332
-			},
-			{
-				"id": "4",
-				"description": "forth product",
-				"price": 22
-			}]
-        }]
+                  		"time": "2016-04-12T00:06:22.364Z",
+                  		"items": [{
+                  			"id": "7506339312072",
+                  			"description": "Detergente Magistral Marina 300 ml",
+                  			"price": 26.08
+                  		},
+                  		{
+                  			"id": "7791290000681",
+                  			"description": "Detergente ala DOBLE PODER limon 500ml",
+                  			"price": 32
+                  		},
+                  		{
+                  			"id": "7790250019565",
+                  			"description": "Papel Higienico Higienol Premium Doble Hoja 4 rollos 30 m",
+                  			"price": 39.98
+                  		},
+                  		{
+                  			"id": "4790454056598",
+                  			"description": "Vino Estancia Mendoza bivarietal cavernet-malbec 750ml",
+                  			"price": 35.38
+                  		},
+                  		{
+                  			"id": "77939234",
+                  			"description": "Alfajor Terrabusi clasico dulce de leche y baño reposteria 50g",
+                  			"price": 6
+                  		},
+                  		{
+                  			"id": "7790387000849",
+                  			"description": "Mate cocido TARAGUI original 25 saquitos de 3g",
+                  			"price": 15
+                  		}]
+                  	}]
 }
+
