@@ -1,6 +1,8 @@
 {
 	"purchases": [{
                   		"time": "2016-04-12T00:06:22.364Z",
+                  		"location":"lat + long",
+                  		"shop" : "Carrefour",
                   		"items": [{
                   			"id": "7506339312072",
                   			"description": "Detergente Magistral Marina 300 ml",
