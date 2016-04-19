@@ -59,6 +59,7 @@ func (service Service) HandleError(w http.ResponseWriter, r *http.Request) {
 }
 
 func (service Service) HandleRequestPurchases(w http.ResponseWriter, r *http.Request) {
+
 	params := r.URL.Query()
 	log.Printf("len == 0")
 	if len(params) != 0 {
@@ -151,7 +152,8 @@ func (service Service) getPurchases() []purchase.Purchase {
 }
 
 func (service Service) getPurchasesGroupedBy(period string) map[time.Month][]purchase.Purchase {
-	log.Printf("Getting items from DB")
+
+	log.Printf("Getting purchases from DB")
 	purchases := service.db.GetPurchasesGroupedByMonth()
 	keys := make([]int, 0, len(purchases))
 

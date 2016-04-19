@@ -47,3 +47,26 @@ func (catDb CatalogDB) SaveItem(item.Item) int {
 
 	return 0
 }
+
+func (catDb CatalogDB) GetPurchase(time time.Time) purchase.Purchase  {
+
+	return purchase.Purchase{}
+}
+
+func (catDb CatalogDB) SavePurchase( p purchase.Purchase) error {
+
+
+	return nil
+}
+
+func (catDb CatalogDB) GetPurchases() []purchase.Purchase  {
+
+
+	return []purchase.Purchase{}
+}
+
+func (catDb CatalogDB) GetPurchasesGroupedByMonth() map[time.Month][]purchase.Purchase  {
+
+	return make(map[time.Month][]purchase.Purchase)
+
+}

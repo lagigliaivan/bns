@@ -304,6 +304,7 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 
 
 func Test_aws(t *testing.T){
+
 	endpoint := "http://172.17.0.2:8000"
 	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
 
@@ -333,7 +334,7 @@ func Test_aws(t *testing.T){
 	}*/
 	//log.Println("Result :%s ", result)
 	tname := "Purchases"
-	 key := map[string]* dynamodb.AttributeValue {
+	key := map[string]* dynamodb.AttributeValue {
 		 "user": {
 			 S: aws.String("lagigliaivan"),
 		 },
