@@ -17,20 +17,29 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <activity android:name="ar.com.bestprice.buyitnow.MainActivity"
+            android:label="Try-n-Save"/>
+
         <activity android:name="ar.com.bestprice.buyitnow.barcodereader.BarcodeCaptureActivity"
             android:label="Read Barcode"/>
+
         <activity android:name="ar.com.bestprice.buyitnow.AddItemActivity"
             android:label="Add item"/>
+
         <activity android:name="ar.com.bestprice.buyitnow.AddNewPurchaseActivity"
             android:label="Add new purchase"/>
 
+        <activity android:name=".LogInActivity">
+        android:label="@string/app_name" >
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+        </activity>
+
+        <activity android:name=".SignUpActivity" />
 
     </application>
 

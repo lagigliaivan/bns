@@ -97,7 +97,12 @@ public class AddNewPurchaseActivity extends AppCompatActivity implements View.On
 
             purchases.setPurchases(ps);
 
-            task = service.submit(new POSTServiceClient("http://10.33.117.120:8080/catalog/purchases", purchases));
+
+            //task = service.submit(new POSTServiceClient("http://10.33.117.120:8080/catalog/purchases", purchases));
+            String serviceURL = Context.getContext().getServiceURL();
+            task = service.submit(new POSTServiceClient(serviceURL + "/purchases", purchases));
+
+
             try {
                 Integer status = task.get();
             } catch (final InterruptedException | ExecutionException ex) {
