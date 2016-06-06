@@ -1,4 +1,4 @@
-package items
+package services
 
 import (
 	"fmt"
@@ -6,18 +6,18 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pos/infrastructure"
 	"encoding/json"
-	"github.com/pos/dto/item"
+	"github.com/pos/dto"
 	"io/ioutil"
 	"log"
+
+	//"github.com/smugmug/godynamo/types/item"
 )
 
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
-type GetPathParams func (*http.Request) map[string]string
-
-type Service struct {
+type ItemsService struct {
 	GetRequestParameters GetPathParams
 	error                string
 	name                 string
@@ -26,40 +26,41 @@ type Service struct {
 	productsHandler	     map[string] func(http.ResponseWriter,*http.Request)
 }
 
-func NewService(db infrastructure.DB) *Service{
+func NewItemService(db infrastructure.DB) *ItemsService {
 
-	service := new(Service)
+	service := new(ItemsService)
 	service.GetRequestParameters = getPathParams
 	service.db = db
 	service.error = "ERROR"
 
 	service.productIdsHandler = make(map[string] func(http.ResponseWriter,*http.Request))
-	service.productIdsHandler[http.MethodGet] = service.HandleGetItem
-	service.productIdsHandler[http.MethodPut] = service.HandlePutItem
-	service.productIdsHandler[service.error]  = service.HandleError
+	service.productIdsHandler[http.MethodGet] = service.handleGetItem
+	service.productIdsHandler[http.MethodPut] = service.handlePutItem
+	service.productIdsHandler[service.error]  = service.handleError
 
 	service.productsHandler = make(map[string] func(http.ResponseWriter,*http.Request))
-	service.productsHandler[http.MethodPost] = service.HandlePostItem
-	service.productsHandler[http.MethodGet] = service.HandleGetItems
-	service.productsHandler[service.error]  = service.HandleError
+	service.productsHandler[http.MethodPost] = service.handlePostItem
+	service.productsHandler[http.MethodGet] = service.handleGetItems
+	service.productsHandler[service.error]  = service.handleError
 
 	return service
 }
 
-func (service Service) ConfigureRouter(router *mux.Router) {
+func (service ItemsService) ConfigureRouter(router *mux.Router) {
 
-	router.HandleFunc("/catalog/products/{id}", service.HandleRequestProductId)
-	router.HandleFunc("/catalog/products", service.HandleRequestProducts)
+	router.HandleFunc("/products/{id}", service.handleRequestProductId).Name("products+id")
+	router.HandleFunc("/products", service.handleRequestProducts).Name("products no slash")
+	router.HandleFunc("/products/", service.handleRequestProducts).Name("products + slash")
 }
 
-func (service Service) HandleError(w http.ResponseWriter, r *http.Request) {
+func (service ItemsService) handleError(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusMethodNotAllowed)
 	fmt.Fprint(w, "The request method is not supported for the requested resource")
 }
 
 //Handle request of type GET and PUT against /catalog/products/{id}
 //This method derives to another different handler according to the HTTP method.
-func (service Service) HandleRequestProductId(w http.ResponseWriter, r *http.Request){
+func (service ItemsService) handleRequestProductId(w http.ResponseWriter, r *http.Request){
 
 	handler := service.productIdsHandler[r.Method]
 	if handler == nil {
@@ -72,9 +73,10 @@ func (service Service) HandleRequestProductId(w http.ResponseWriter, r *http.Req
 
 //Handle request of type GET and PUT against /catalog/products/{id}
 //This method derives to another different handler according to the HTTP method.
-func (service Service) HandleRequestProducts(w http.ResponseWriter, r *http.Request){
+func (service ItemsService) handleRequestProducts(w http.ResponseWriter, r *http.Request){
 
 	handler := service.productsHandler[r.Method]
+
 	if handler == nil {
 		service.productsHandler[service.error] (w, r)
 	}else {
@@ -84,7 +86,7 @@ func (service Service) HandleRequestProducts(w http.ResponseWriter, r *http.Requ
 
 
 //URL catalog/products/{id}
-func (service Service) HandleGetItem(w http.ResponseWriter, r *http.Request) {
+func (service ItemsService) handleGetItem(w http.ResponseWriter, r *http.Request) {
 
 	vars := service.GetRequestParameters(r)
 
@@ -104,11 +106,11 @@ func (service Service) HandleGetItem(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (service Service) HandleGetItems(w http.ResponseWriter, r *http.Request) {
+func (service ItemsService) handleGetItems(w http.ResponseWriter, r *http.Request) {
 
 	items := service.getItems()
 
-	container := item.NewContainer()
+	container := dto.NewItemContainer()
 
 	for _, item := range items {
 		container.Add(item)
@@ -129,7 +131,7 @@ func (service Service) HandleGetItems(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} string "Not Found"
 // @Resource /users
 // @Router /v1/users/:userId.json [get]//PUT catalog/products/{id}
-func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
+func (service ItemsService) handlePutItem(w http.ResponseWriter, r *http.Request){
 
 	vars := service.GetRequestParameters(r)
 	itemId := vars["id"]
@@ -148,7 +150,7 @@ func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	item := new(item.Item)
+	item := new(dto.Item)
 	if err := json.Unmarshal(body, item); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Printf("PUT itemId %s. The request contains a wrong format: %s Body: %s", itemId, err, body)
@@ -160,11 +162,11 @@ func (service Service) HandlePutItem(w http.ResponseWriter, r *http.Request){
 
 }
 
-func (service Service) HandlePostItem(w http.ResponseWriter, r *http.Request){
+func (service ItemsService) handlePostItem(w http.ResponseWriter, r *http.Request){
 
 	body, _ := ioutil.ReadAll(r.Body)
 
-	items := new(item.Container)
+	items := new(dto.ItemContainer)
 
 	if err := json.Unmarshal(body, items); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -194,19 +196,19 @@ func (service Service) HandlePostItem(w http.ResponseWriter, r *http.Request){
 
 }
 
-func (service Service) getItem(id string) item.Item {
+func (service ItemsService) getItem(id string) dto.Item {
 	log.Printf("Getting item_id: %s from DB", id)
 	item := service.db.GetItem(id)
 	return  item;
 }
 
-func (service Service) getItems() []item.Item {
+func (service ItemsService) getItems() []dto.Item {
 	log.Printf("Getting items from DB")
 	items := service.db.GetItems()
 	return  items;
 }
 
-func (service Service) addUpdateItem(item item.Item) int {
+func (service ItemsService) addUpdateItem(item dto.Item) int {
 
 	if item.Id == "" {
 		log.Printf("Error at trying to save an empty item.")
@@ -217,11 +219,4 @@ func (service Service) addUpdateItem(item item.Item) int {
 	log.Printf("PUT item_id: %s returned OK", item.Id)
 
 	return 0
-}
-
-//This function returns a map containing all the path params contained in the request URL.
-//In this case, the implementation uses mux.
-//This function is used by default, but can be overwritten for testing purposes or any other one.
-func getPathParams(r *http.Request) map[string]string {
-	return mux.Vars(r)
 }

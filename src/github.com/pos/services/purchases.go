@@ -1,14 +1,12 @@
-package purchases
+package services
 
 import (
 	"fmt"
 	"net/http"
 	"github.com/gorilla/mux"
 	"github.com/pos/infrastructure"
-
 	"log"
-	"github.com/pos/dto/purchase"
-	"github.com/pos/dto/item"
+	"github.com/pos/dto"
 	"encoding/json"
 	"io/ioutil"
 	"time"
@@ -25,8 +23,8 @@ const (
 )
 type GetPathParams func (*http.Request) map[string]string
 
-type Service struct {
-	GetRequestParameters GetPathParams
+type PurchaseService struct {
+	getRequestParameters GetPathParams
 	error                string
 	name                 string
 	db                   infrastructure.DB
@@ -34,40 +32,62 @@ type Service struct {
 	purchasesHandler     map[string] func(http.ResponseWriter,*http.Request)
 }
 
-func NewService(db infrastructure.DB) *Service{
+func NewPurchaseService(db infrastructure.DB) *PurchaseService {
 
-	service := new(Service)
-	service.GetRequestParameters = getPathParams
+	service := new(PurchaseService)
+	service.getRequestParameters = getPathParams
 	service.db = db
 	service.error = "ERROR"
 
 	service.purchasesHandler = make(map[string] func(http.ResponseWriter,*http.Request))
-	service.purchasesHandler[http.MethodGet] = service.HandleGetPurchases
-	service.purchasesHandler[http.MethodPost] = service.HandlePostPurchases
-	service.purchasesHandler[service.error]  = service.HandleError
+	service.purchasesHandler[http.MethodGet] = service.handleGetPurchases
+	service.purchasesHandler[http.MethodPost] = service.handlePostPurchases
+	service.purchasesHandler[service.error]  = service.handleDefaultError
 
 	return service
 }
-
-func (service Service) ConfigureService(router *mux.Router) {
-	router.HandleFunc("/catalog/purchases", service.HandleRequestPurchases)
+//This method sets what resources are going to be managed by the router
+func (service PurchaseService) ConfigureRouter(router *mux.Router) {
+	router.HandleFunc("/purchases", service.handleRequestPurchases)
 }
 
-func (service Service) HandleError(w http.ResponseWriter, r *http.Request) {
+func (service PurchaseService) handleDefaultError(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusMethodNotAllowed)
 	fmt.Fprint(w, "The request method is not supported for the requested resource")
 }
 
-func (service Service) HandleRequestPurchases(w http.ResponseWriter, r *http.Request) {
+func (service PurchaseService) handleForbiddenError(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusForbidden)
+	fmt.Fprint(w, "The request method is not supported for the requested resource")
+}
+
+func (service PurchaseService) handleRequestPurchases(w http.ResponseWriter, r *http.Request) {
 
 	params := r.URL.Query()
-	log.Printf("len == 0")
+	/*if (len(params) == 0 || params["token"] == nil) {
+		service.handleForbiddenError(w, r)
+		return
+	}*/
+
+	if len(params) != 0 {
+		if params[GROUP_BY] != nil {
+			service.handleGetPurchasesGroupByMonth(w, r)
+		}
+	}else {
+		handler := service.purchasesHandler[r.Method]
+		if handler == nil {
+			service.purchasesHandler[service.error](w, r)
+		}else {
+			handler(w, r)
+		}
+	}
+	/*log.Printf("len == 0")
 	if len(params) != 0 {
 		log.Printf("len != 0")
 		for key, _ := range params {
 			log.Printf("key: %s", key)
 			if key == GROUP_BY {
-				service.HandleGetPurchasesGroupByMonth(w, r)
+				service.handleGetPurchasesGroupByMonth(w, r)
 				break
 			}
 		}
@@ -78,12 +98,12 @@ func (service Service) HandleRequestPurchases(w http.ResponseWriter, r *http.Req
 		}else {
 			handler(w, r)
 		}
-	}
+	}*/
 }
 
-func (service Service) HandleGetPurchases(w http.ResponseWriter, r *http.Request) {
+func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http.Request) {
 
-	container := purchase.NewContainer()
+	container := dto.NewPurchaseContainer()
 	purchases := service.getPurchases()
 
 	for _, purchase := range purchases {
@@ -101,14 +121,16 @@ func (service Service) HandleGetPurchases(w http.ResponseWriter, r *http.Request
 	fmt.Fprintf(w, "%s", purchasesAsJson)
 }
 
-func (service Service) HandleGetPurchasesGroupByMonth(w http.ResponseWriter, r *http.Request) {
+func (service PurchaseService) handleGetPurchasesGroupByMonth(w http.ResponseWriter, r *http.Request) {
 
-	var purchasesByMonth map[time.Month][]purchase.Purchase
+	user := getPathParams(r)["user"]
 
-	purchasesByMonth = service.getPurchasesGroupedBy(MONTH)
+	var purchasesByMonth map[time.Month][]dto.Purchase
 
-	pByMonthContainer := purchase.PurchasesByMonthContainer{make([]purchase.PurchasesByMonth, 0)}
-	pByMonth := purchase.PurchasesByMonth{}
+	purchasesByMonth = service.getPurchasesGroupedBy(user, MONTH)
+
+	pByMonthContainer := dto.PurchasesByMonthContainer{make([]dto.PurchasesByMonth, 0)}
+	pByMonth := dto.PurchasesByMonth{}
 
 	for month, purchases := range purchasesByMonth {
 		pByMonth.Month = month.String()
@@ -128,11 +150,11 @@ func (service Service) HandleGetPurchasesGroupByMonth(w http.ResponseWriter, r *
 
 }
 
-func (service Service) HandlePostPurchases (w http.ResponseWriter, r *http.Request) {
+func (service PurchaseService) handlePostPurchases(w http.ResponseWriter, r *http.Request) {
 
 	body, _ := ioutil.ReadAll(r.Body)
 
-	purchases := new(purchase.Container)
+	purchases := new(dto.PurchaseContainer)
 
 	if err := json.Unmarshal(body, purchases); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -142,16 +164,15 @@ func (service Service) HandlePostPurchases (w http.ResponseWriter, r *http.Reque
 
 	service.savePurchases(purchases.Purchases)
 	w.WriteHeader(http.StatusCreated)
-
 }
 
-func (service Service) getPurchases() []purchase.Purchase {
+func (service PurchaseService) getPurchases() []dto.Purchase {
 	log.Printf("Getting items from DB")
 	purchases := service.db.GetPurchases()
 	return  purchases;
 }
 
-func (service Service) getPurchasesGroupedBy(period string) map[time.Month][]purchase.Purchase {
+func (service PurchaseService) getPurchasesGroupedBy(user, period string) map[time.Month][]dto.Purchase {
 
 	log.Printf("Getting purchases from DB")
 	purchases := service.db.GetPurchasesGroupedByMonth()
@@ -162,7 +183,7 @@ func (service Service) getPurchasesGroupedBy(period string) map[time.Month][]pur
 	}
 	sort.Ints(keys)
 
-	sortedPurchases := make(map[time.Month][]purchase.Purchase, len(keys))
+	sortedPurchases := make(map[time.Month][]dto.Purchase, len(keys))
 
 	for _,key := range keys {
 		sortedPurchases[time.Month(key)] = purchases[time.Month(key)];
@@ -171,7 +192,7 @@ func (service Service) getPurchasesGroupedBy(period string) map[time.Month][]pur
 	return  sortedPurchases;
 }
 
-func (service Service) savePurchases( purchases []purchase.Purchase)  {
+func (service PurchaseService) savePurchases( purchases []dto.Purchase)  {
 	log.Printf("Saving items in  DB")
 
 	for _, purchase := range purchases {
@@ -179,7 +200,7 @@ func (service Service) savePurchases( purchases []purchase.Purchase)  {
 	}
 }
 
-func (service Service) addUpdateItem(item item.Item) int {
+func (service PurchaseService) addUpdateItem(item dto.Item) int {
 
 	if item.Id == "" {
 		log.Printf("Error at trying to save an empty item.")
@@ -195,6 +216,23 @@ func (service Service) addUpdateItem(item item.Item) int {
 //This function returns a map containing all the path params contained in the request URL.
 //In this case, the implementation uses mux.
 //This function is used by default, but can be overwritten for testing purposes or any other one.
-func getPathParams(r *http.Request) map[string]string {
-	return mux.Vars(r)
+/*
+
+
+func getUser(r *http.Request) string {
+	return getPathParams(r)["user"]
 }
+
+func getUserId(header http.Header) string{
+	s := strings.SplitN(header.Get("Authorization"), " ", 2)
+	if len(s) != 2 { return "" }
+
+	b, err := base64.StdEncoding.DecodeString(s[1])
+	if err != nil { return "" }
+
+	pair := strings.SplitN(string(b), ":", 2)
+	if len(pair) != 2 { return "" }
+
+	//return pair[0] == "user" && pair[1] == "pass"
+	return pair[0]
+}*/

@@ -1,4 +1,4 @@
-package item
+package dto
 
 import (
 	"encoding/json"
@@ -25,37 +25,37 @@ func (item Item) ToJsonString() string{
 	return string(itemAsJson)
 }
 
-type Container struct {
+type ItemContainer struct {
 
 	Items []Item  `json:"items"`
 
 }
 
-func NewContainer() Container {
+func NewItemContainer() ItemContainer {
 
-	return Container{Items: make([]Item, 0)}
+	return ItemContainer{Items: make([]Item, 0)}
 
 }
 
-func (items *Container) Add(item Item) {
+func (items *ItemContainer) Add(item Item) {
 
 	items.Items = append(items.Items, item)
 }
 
-func (items Container) GetItems() []Item{
+func (items ItemContainer) GetItems() []Item{
 
 	return items.Items
 
 }
 
-func (items Container) ToJsonString() string{
+func (items ItemContainer) ToJsonString() string{
 
 	itemsAsJson, _ := json.Marshal(items)
 	return string(itemsAsJson)
 
 }
 
-func (items Container) IsEmpty() bool{
+func (items ItemContainer) IsEmpty() bool{
 
 	if len(items.GetItems()) < 1 {
 
@@ -63,5 +63,4 @@ func (items Container) IsEmpty() bool{
 	}
 
 	return false
-
 }

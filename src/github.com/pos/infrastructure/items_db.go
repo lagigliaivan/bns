@@ -4,21 +4,20 @@ import (
 	"database/sql"
 	_"github.com/go-sql-driver/mysql"
 	"fmt"
-	"github.com/pos/dto/item"
+	"github.com/pos/dto"
 	"time"
-	"github.com/pos/dto/purchase"
 
 )
 
 type DB interface {
-	GetItem(string) item.Item
-	SaveItem(item.Item) int
-	GetItems() []item.Item
+	GetItem(string) dto.Item
+	SaveItem(dto.Item) int
+	GetItems() []dto.Item
 
-	GetPurchase(time.Time) purchase.Purchase
-	SavePurchase(purchase.Purchase) error
-	GetPurchases() []purchase.Purchase
-	GetPurchasesGroupedByMonth() map[time.Month][]purchase.Purchase
+	GetPurchase(time.Time) dto.Purchase
+	SavePurchase(dto.Purchase) error
+	GetPurchases() []dto.Purchase
+	GetPurchasesGroupedByMonth() map[time.Month][]dto.Purchase
 }
 
 type CatalogDB struct {
@@ -33,40 +32,40 @@ func (catDb CatalogDB) init() {
 	catDb.db = db
 }
 
-func (catDb CatalogDB) GetItem(id string) (item.Item){
-	item := item.Item{}
+func (catDb CatalogDB) GetItem(id string) (dto.Item){
+	item := dto.Item{}
 	item.Id = id
 	return item
 }
 
-func (catDb CatalogDB) GetItems() []item.Item{
+func (catDb CatalogDB) GetItems() []dto.Item{
 	return nil
 }
 
-func (catDb CatalogDB) SaveItem(item.Item) int {
+func (catDb CatalogDB) SaveItem(dto.Item) int {
 
 	return 0
 }
 
-func (catDb CatalogDB) GetPurchase(time time.Time) purchase.Purchase  {
+func (catDb CatalogDB) GetPurchase(time time.Time) dto.Purchase  {
 
-	return purchase.Purchase{}
+	return dto.Purchase{}
 }
 
-func (catDb CatalogDB) SavePurchase( p purchase.Purchase) error {
+func (catDb CatalogDB) SavePurchase( p dto.Purchase) error {
 
 
 	return nil
 }
 
-func (catDb CatalogDB) GetPurchases() []purchase.Purchase  {
+func (catDb CatalogDB) GetPurchases() []dto.Purchase  {
 
 
-	return []purchase.Purchase{}
+	return []dto.Purchase{}
 }
 
-func (catDb CatalogDB) GetPurchasesGroupedByMonth() map[time.Month][]purchase.Purchase  {
+func (catDb CatalogDB) GetPurchasesGroupedByMonth() map[time.Month][]dto.Purchase  {
 
-	return make(map[time.Month][]purchase.Purchase)
+	return make(map[time.Month][]dto.Purchase)
 
 }

@@ -1,4 +1,4 @@
-package purchases
+package services
 
 import (
 	"testing"
@@ -6,17 +6,13 @@ import (
 	"log"
 	"time"
 	"github.com/pos/infrastructure"
-	"net/http/httptest"
-	"github.com/pos/dto/purchase"
 	"encoding/json"
-	"github.com/pos/dto/item"
-	"io/ioutil"
-	"strings"
 	"github.com/pos/dto"
+	"io/ioutil"
 
-	"github.com/aws/aws-sdk-go/aws"
+/*	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb"*/
 )
 
 func init() {
@@ -27,7 +23,7 @@ func init() {
 const STATUS_ERROR_MESSAGE string = "%s %s Received status code: %d different from what was expected: %d"
 
 var (
-	itemsPurchaseA = []item.Item{
+	itemsPurchaseA = []dto.Item{
 
 		{
 			Id: "1",
@@ -51,7 +47,7 @@ var (
 		},
 	}
 
-	itemsPurchaseB = []item.Item{
+	itemsPurchaseB = []dto.Item{
 
 		{
 			Id: "100",
@@ -75,7 +71,7 @@ var (
 		},
 	}
 
-	setOfPurchases = []purchase.Purchase{
+	setOfPurchases = []dto.Purchase{
 
 		{
 			Time: time.Now(),
@@ -98,16 +94,29 @@ var (
 
 	}
 
-	postPurchases = purchase.Container{Purchases:setOfPurchases}
+	postPurchases = dto.PurchaseContainer{Purchases:setOfPurchases}
 )
+/*
+func Test_GET_Purchases_WITH_NO_TOKEN_Returns_An_Error(t *testing.T) {
+	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
+	defer server.Close()
+
+	res, err := http.Get(getURL(server.URL))
+
+	if !isHTTPStatus(http.StatusForbidden, res, err){
+		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusForbidden)
+		t.FailNow()
+	}
+}
+*/
 
 func Test_GET_Purchases_Returns_A_List_Of_Purchases(t *testing.T) {
 
-	service := NewService(infrastructure.NewMemDb())
-	server := httptest.NewServer(http.HandlerFunc(service.HandlePostPurchases))
+
+	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
 	defer server.Close()
 
-	res, err := httpPost(server.URL, postPurchases)
+	res, err := httpPost(getURL(server.URL), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
@@ -115,8 +124,7 @@ func Test_GET_Purchases_Returns_A_List_Of_Purchases(t *testing.T) {
 	}
 
 
-	server = httptest.NewServer(http.HandlerFunc(service.HandleGetPurchases))
-	res, err = http.Get(server.URL)
+	res, err = http.Get(getURL(server.URL))
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -129,8 +137,8 @@ func Test_GET_Purchases_Returns_A_List_Of_Purchases(t *testing.T) {
 		log.Fatal("Error")
 		t.FailNow()
 	}
-	log.Printf("body: %s", body)
-	purchases := new(purchase.Container)
+
+	purchases := new(dto.PurchaseContainer)
 
 	if err := json.Unmarshal(body, purchases); err != nil {
 
@@ -156,11 +164,11 @@ func Test_GET_Purchases_Returns_A_List_Of_Purchases(t *testing.T) {
 
 func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) {
 
-	service := NewService(infrastructure.NewMemDb())
-	server := httptest.NewServer(http.HandlerFunc(service.HandlePostPurchases))
+	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
 	defer server.Close()
 
-	res, err := httpPost(server.URL, postPurchases)
+
+	res, err := httpPost(getURL(server.URL), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
@@ -168,8 +176,7 @@ func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) 
 	}
 
 
-	server = httptest.NewServer(http.HandlerFunc(service.HandleGetPurchases))
-	res, err = http.Get(server.URL)
+	res, err = http.Get(getURL(server.URL))
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -183,7 +190,7 @@ func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) 
 		t.FailNow()
 	}
 
-	purchases := new(purchase.Container)
+	purchases := new(dto.PurchaseContainer)
 
 	if err := json.Unmarshal(body, purchases); err != nil {
 
@@ -212,19 +219,18 @@ func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) 
 
 func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *testing.T) {
 
-	service := NewService(infrastructure.NewMemDb())
-	server := httptest.NewServer(http.HandlerFunc(service.HandlePostPurchases))
+
+	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
 	defer server.Close()
 
-	res, err := httpPost(server.URL, postPurchases)
+	res, err := httpPost(getURL(server.URL), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
 		t.FailNow()
 	}
 
-	server = httptest.NewServer(http.HandlerFunc(service.HandleGetPurchasesGroupByMonth))
-	res, err = http.Get(server.URL + "?groupBy=month")
+	res, err = http.Get(getURL(server.URL) + "?groupBy=month")
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -238,7 +244,7 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 		t.FailNow()
 	}
 
-	purchases := new(purchase.PurchasesByMonthContainer)
+	purchases := new(dto.PurchasesByMonthContainer)
 
 	if err := json.Unmarshal(body, purchases); err != nil {
 
@@ -257,12 +263,10 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 
 func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_By_Month(t *testing.T) {
 
-	service := NewService(infrastructure.NewMemDb())
-	server := httptest.NewServer(http.HandlerFunc(service.HandlePostPurchases))
-	//server := httptest.NewServer(http.HandlerFunc(main.GetRouter()))
+	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
 	defer server.Close()
 
-	res, err := httpPost(server.URL, postPurchases)
+	res, err := httpPost(getURL(server.URL), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
@@ -270,8 +274,7 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 	}
 
 
-	server = httptest.NewServer(http.HandlerFunc(service.HandleGetPurchasesGroupByMonth))
-	res, err = http.Get(server.URL + "?groupBy=ANYTHING")
+	res, err = http.Get(getURL(server.URL) + "?groupBy=ANYTHING")
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -285,7 +288,7 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 		t.FailNow()
 	}
 
-	purchases := new(purchase.PurchasesByMonthContainer)
+	purchases := new(dto.PurchasesByMonthContainer)
 
 	if err := json.Unmarshal(body, purchases); err != nil {
 
@@ -303,12 +306,12 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 }
 
 
-func Test_aws(t *testing.T){
+/*func Test_aws(t *testing.T){
 
 	endpoint := "http://172.17.0.2:8000"
 	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
 
-	/*it := map[string]* dynamodb.AttributeValue {
+	it := map[string]* dynamodb.AttributeValue {
 		"user": {
 			S: aws.String("lagigliaivan"),
 		},
@@ -331,9 +334,9 @@ func Test_aws(t *testing.T){
 	if err != nil {
 		log.Println(err)
 		return
-	}*/
-	//log.Println("Result :%s ", result)
-	tname := "Purchases"
+	}
+	log.Println("Result :%s ", result)
+	//tname := "Purchases"
 	key := map[string]* dynamodb.AttributeValue {
 		 "user": {
 			 S: aws.String("lagigliaivan"),
@@ -350,25 +353,15 @@ func Test_aws(t *testing.T){
 		return
 	}
 	log.Println("Result:%s ", itemResult)
-	/*for _, table := range result.TableNames {
+	*//*for _, table := range result.TableNames {
 		log.Println(*table)
-	}*/
-}
+	}*//*
+}*/
 
-func isHTTPStatus(httpStatus int, res *http.Response, err error ) bool {
+/*func isHTTPStatus(httpStatus int, res *http.Response, err error ) bool {
 	return !( (err != nil) || (res.StatusCode != httpStatus) )
-}
+}*/
 
-func httpPost(url string, purchases purchase.Container) (*http.Response, error){
-
-	body := strings.NewReader(purchases.ToJsonString())
-	req, err := http.NewRequest(http.MethodPost, url, body)
-	if err != nil {
-		log.Printf("Error when creating POST request %d.", err)
-		return nil, err
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-
-	return resp, err
+func getURL(url string) string{
+	return url + "/catalog/purchases"
 }

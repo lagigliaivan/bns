@@ -1,4 +1,4 @@
-package items
+package services
 
 import (
 	"log"
@@ -9,12 +9,12 @@ import (
 	"strings"
 	"bytes"
 	"fmt"
-	"github.com/pos/dto/item"
+	"github.com/pos/dto"
 	"io/ioutil"
 	"encoding/json"
 	"io"
 	"reflect"
-	"github.com/gorilla/mux"
+
 )
 
 
@@ -23,7 +23,7 @@ func init() {
 }
 
 var (
-	setOfItems = []item.Item{
+	setOfItems = []dto.Item{
 
 		{
 			Id: "1",
@@ -47,18 +47,13 @@ var (
 		},
 	}
 
-	postItems = item.Container{Items:setOfItems}
+	postItems = dto.ItemContainer{Items:setOfItems}
 )
 
 //Testing service to check GET /catalog/product/{id}
 func Test_GET_item_returns_404_when_it_does_not_exist(t *testing.T){
 
-	service := NewService(infrastructure.NewMemDb())
-	router := mux.NewRouter();
-	service.ConfigureRouter(router)
-
-	testingServer := httptest.NewServer(router)
-
+	testingServer := getServer(NewItemService(infrastructure.NewMemDb()))
 	defer testingServer.Close()
 
 	itemToBeAdded := createItemDto()
@@ -76,12 +71,12 @@ func Test_GET_item_returns_404_when_it_does_not_exist(t *testing.T){
 func Test_GET_item_returns_200_when_it_exists(t *testing.T){
 
 	itemToBeAdded := createItemDto()
-	service := NewService(infrastructure.NewMemDb())
+	service := NewItemService(infrastructure.NewMemDb())
 
 	//Adding ITEM without calling RESTapi. Calling a service function directly
 	service.addUpdateItem(itemToBeAdded)
 
-	router := mux.NewRouter();
+	router := NewRouter();
 	service.ConfigureRouter(router)
 
 	testingServer := httptest.NewServer(router)
@@ -89,7 +84,7 @@ func Test_GET_item_returns_200_when_it_exists(t *testing.T){
 
 	//GETting URL
 	url := getURLToBeTested(testingServer.URL, itemToBeAdded.Id);
-
+	log.Printf("url:%s\n", url)
 	res, err := httpGet(url)
 	if !isHTTPStatus(http.StatusOK, res, err){
 		debug("GET", url, res.StatusCode, http.StatusOK)
@@ -100,17 +95,12 @@ func Test_GET_item_returns_200_when_it_exists(t *testing.T){
 //Testing server to check POST /catalog/product/{id}
 func Test_POST_item_returns_201_when_it_is_successfully_created (t *testing.T) {
 
-	service := NewService(infrastructure.NewMemDb())
-
-	router := mux.NewRouter();
-	service.ConfigureRouter(router)
-
-	testingServer := httptest.NewServer(router)
+	testingServer := getServer(NewItemService(infrastructure.NewMemDb()))
 
 	defer testingServer.Close()
 
 	itemToBeAdded := createItemDto()
-	items := item.NewContainer()
+	items := dto.NewItemContainer()
 	items.Add(itemToBeAdded)
 
 	url := getURLToBeTested(testingServer.URL);
@@ -126,18 +116,14 @@ func Test_POST_GET_returns_the_same_item_after_it_is_created(t *testing.T){
 
 	itemToBeAdded := createItemDto()
 
-	service := NewService(infrastructure.NewMemDb())
-	router := mux.NewRouter();
-	service.ConfigureRouter(router)
-
-	server := httptest.NewServer(router)
+	server := getServer(NewItemService(infrastructure.NewMemDb()))
 	defer server.Close()
 
 	//POST Item
 	url := getURLToBeTested(server.URL);
 
 
-	items := item.NewContainer()
+	items := dto.NewItemContainer()
 	items.Add(itemToBeAdded)
 	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
 
@@ -168,16 +154,12 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 
 	//POST Item
 	itemToBeAdded := createItemDto()
-	service := NewService(infrastructure.NewMemDb())
 
-	router := mux.NewRouter();
-	service.ConfigureRouter(router)
-
-	testingServer := httptest.NewServer(router)
+	testingServer := getServer(NewItemService(infrastructure.NewMemDb()))
 	defer testingServer.Close()
 	url := getURLToBeTested(testingServer.URL);
 
-	items := item.NewContainer()
+	items := dto.NewItemContainer()
 	items.Add(itemToBeAdded)
 
 	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
@@ -219,18 +201,13 @@ func Test_POST_item_returns_400_when_body_is_sent_without_item_id(t *testing.T){
 	itemToBeAdded := createItemDto()
 	itemToBeAdded.Id = ""
 
-	service := NewService(infrastructure.NewMemDb())
-
-	router := mux.NewRouter();
-	service.ConfigureRouter(router)
-
-	server := httptest.NewServer(router)
+	server := getServer(NewItemService(infrastructure.NewMemDb()))
 	defer server.Close()
 
 	//POST Item
 	url := getURLToBeTested(server.URL);
 
-	items := item.NewContainer()
+	items := dto.NewItemContainer()
 	items.Add(itemToBeAdded)
 
 	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
@@ -242,17 +219,18 @@ func Test_POST_item_returns_400_when_body_is_sent_without_item_id(t *testing.T){
 }
 
 func Test_GET_items_returns_a_list_of_items(t *testing.T){
-	service := NewService(infrastructure.NewMemDb())
 
-	if httpPOST(*service) != nil {
+	server := getServer(NewItemService(infrastructure.NewMemDb()))
+	defer server.Close()
+
+	if httpPOST(*server) != nil {
 		t.FailNow();
 	}
 
-	server := httptest.NewServer(http.HandlerFunc(service.HandleGetItems))
-
-	//GET Items
 	url := getURLToBeTested(server.URL);
+
 	defer server.Close()
+	log.Printf("server.URL:%s", url)
 
 	res, err := httpGet(url)
 
@@ -261,7 +239,7 @@ func Test_GET_items_returns_a_list_of_items(t *testing.T){
 		t.FailNow()
 	}
 
-	items := item.NewContainer()
+	items := dto.NewItemContainer()
 
 	body, err := ioutil.ReadAll(res.Body)
 
@@ -295,22 +273,22 @@ func Test_GET_items_returns_a_list_of_items(t *testing.T){
 	}
 
 }
-
+/*
 func Test_POSTing_Date_Is_Stored_When_Item_Is_Saved(t *testing.T) {
 
-	service := NewService(infrastructure.NewMemDb())
+	server := getServer(NewItemService(infrastructure.NewMemDb()))
+	defer server.Close()
 
-	if httpPOST(*service) != nil {
+	if httpPOST(*server) != nil {
 		t.FailNow();
 	}
 
-
-}
+}*/
 
 //Testing functions that are not exposed as REST services.
 func Test_returns_an_error_when_item_does_NOT_exist (t *testing.T) {
 
-	service := NewService(infrastructure.NewMemDb());
+	service := NewItemService(infrastructure.NewMemDb());
 	item := service.getItem("1021")
 
 	if item.Id == "1021" {
@@ -322,7 +300,7 @@ func Test_returns_an_item_just_saved (t *testing.T) {
 
 	itemToBeAdded := createItemDto()
 
-	service := NewService(infrastructure.NewMemDb());
+	service := NewItemService(infrastructure.NewMemDb());
 	service.addUpdateItem(itemToBeAdded)
 
 	item := service.getItem(itemToBeAdded.Id)
@@ -334,7 +312,7 @@ func Test_returns_an_item_just_saved (t *testing.T) {
 
 func Test_returns_an_empty_item_if_it_does_not_exist(t *testing.T){
 
-	service := NewService(infrastructure.NewMemDb());
+	service := NewItemService(infrastructure.NewMemDb());
 	item := service.getItem("non_existing_item")
 
 	if item.Id != "" {
@@ -344,7 +322,7 @@ func Test_returns_an_empty_item_if_it_does_not_exist(t *testing.T){
 
 func Test_returns_no_error_when_adding_an_item(t *testing.T){
 
-	service := NewService(infrastructure.NewMemDb());
+	service := NewItemService(infrastructure.NewMemDb());
 	item := createItemDto()
 	err := service.addUpdateItem(item)
 
@@ -355,25 +333,6 @@ func Test_returns_no_error_when_adding_an_item(t *testing.T){
 
 //Tests auxiliary functions
 
-func httpPOST(service Service) error{
-	router := mux.NewRouter();
-	service.ConfigureRouter(router)
-
-	server := httptest.NewServer(router)
-	defer server.Close()
-
-	//POST Items for later being retrieved.
-	url := getURLToBeTested(server.URL);
-
-	res, err := httpPost(strings.TrimSuffix(url, "/"), postItems)
-
-	if !isHTTPStatus(http.StatusCreated, res, err){
-		debug(http.MethodPost, url, res.StatusCode, http.StatusCreated)
-		return err
-	}
-
-	return nil
-}
 func debug(method string, url string, expectedStatusCode int, receivedStatusCode int){
 
 	var buf bytes.Buffer
@@ -382,32 +341,13 @@ func debug(method string, url string, expectedStatusCode int, receivedStatusCode
 	fmt.Print(&buf)
 }
 
-func createItemDto() item.Item {
+func createItemDto() dto.Item {
 
 	id := "12345"
 	price := float32(10.1)
 	descr := "milk 100 cm3"
 
-	return item.Item{id, descr, price}
-}
-
-
-//This function is a callback to return the item id from URL. When running normal, this ID is taken from the URL but
-//this process is resolved by the multiplexer (gorilla.mux)
-func returnItemIdFromURL(itemId string) func (r *http.Request) map[string]string {
-
-	if itemId == ""{
-		log.Printf("ItemId to be return is empty.")
-	}
-
-	f := func (r *http.Request) map[string]string {
-		req_vars := make(map[string]string)
-		req_vars["id"]= itemId
-		log.Printf("Returning itemid:%s from a testing callback.", req_vars["id"])
-		return req_vars
-	}
-
-	return f
+	return dto.Item{id, descr, price}
 }
 
 //API to be tested
@@ -426,7 +366,22 @@ func getURLToBeTested(base_url string, params ... string) string {
 	return base_url + catalog_api + p;
 }
 
-func httpPut(url string, item item.Item) (resp * http.Response, err error) {
+func httpPOST(server httptest.Server) error{
+
+	//POST Items for later being retrieved.
+	url := getURLToBeTested(server.URL);
+
+	res, err := httpPost(strings.TrimSuffix(url, "/"), postItems)
+
+	if !isHTTPStatus(http.StatusCreated, res, err){
+		debug(http.MethodPost, url, res.StatusCode, http.StatusCreated)
+		return err
+	}
+
+	return nil
+}
+
+func httpPut(url string, item dto.Stringifiable) (resp * http.Response, err error) {
 
 	bodyAsString := item.ToJsonString()
 	log.Printf("body: %s", bodyAsString)
@@ -446,9 +401,9 @@ func httpGet(url string) (*http.Response, error){
 	return http.Get(url)
 }
 
-func httpPost(url string, items item.Container) (*http.Response, error){
+func httpPost(url string, values dto.Stringifiable) (*http.Response, error){
 
-	body := strings.NewReader(items.ToJsonString())
+	body := strings.NewReader(values.ToJsonString())
 	req, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
 		log.Printf("Error when creating POST request %d.", err)
@@ -460,14 +415,22 @@ func httpPost(url string, items item.Container) (*http.Response, error){
 	return resp, err
 }
 
+func getServer(service Service) *httptest.Server {
+
+	router := NewRouter()
+	service.ConfigureRouter(router)
+	server := httptest.NewServer(router)
+
+	return server
+}
+
 func isHTTPStatus(httpStatus int, res *http.Response, err error ) bool {
 	return !( (err != nil) || (res.StatusCode != httpStatus) )
 }
 
+func createItemFromJson(itemAsJson io.ReadCloser) dto.Item {
 
-func createItemFromJson(itemAsJson io.ReadCloser) item.Item {
-
-	item := new(item.Item)
+	item := new(dto.Item)
 	response, err := ioutil.ReadAll(itemAsJson)
 
 	if err != nil {
