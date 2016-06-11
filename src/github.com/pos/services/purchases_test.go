@@ -124,7 +124,7 @@ func Test_GET_Purchases_Returns_A_List_Of_Purchases(t *testing.T) {
 	}
 
 
-	res, err = http.Get(getURL(server.URL))
+	res, err = httpGet(getURL(server.URL))
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -176,7 +176,7 @@ func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) 
 	}
 
 
-	res, err = http.Get(getURL(server.URL))
+	res, err = httpGet(getURL(server.URL))
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -230,7 +230,7 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 		t.FailNow()
 	}
 
-	res, err = http.Get(getURL(server.URL) + "?groupBy=month")
+	res, err = httpGet(getURL(server.URL) + "?groupBy=month")
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -274,7 +274,7 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 	}
 
 
-	res, err = http.Get(getURL(server.URL) + "?groupBy=ANYTHING")
+	res, err = httpGet(getURL(server.URL) + "?groupBy=ANYTHING")
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)

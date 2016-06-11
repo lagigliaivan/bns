@@ -6,7 +6,7 @@ import (
 )
 
 type Service interface {
-	ConfigureRouter(router *mux.Router)
+	ConfigureRouter(router Router)
 }
 
 func getPathParams(r *http.Request) map[string]string {

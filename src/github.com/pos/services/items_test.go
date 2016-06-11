@@ -63,7 +63,7 @@ func Test_GET_item_returns_404_when_it_does_not_exist(t *testing.T){
 
 	res, err := httpGet(url)
 	if !isHTTPStatus(http.StatusNotFound, res, err){
-		debug("GET", url, res.StatusCode, http.StatusOK)
+		deb("GET", url, res.StatusCode, http.StatusOK)
 		t.FailNow()
 	}
 }
@@ -87,7 +87,7 @@ func Test_GET_item_returns_200_when_it_exists(t *testing.T){
 	log.Printf("url:%s\n", url)
 	res, err := httpGet(url)
 	if !isHTTPStatus(http.StatusOK, res, err){
-		debug("GET", url, res.StatusCode, http.StatusOK)
+		deb("GET", url, res.StatusCode, http.StatusOK)
 		t.FailNow()
 	}
 }
@@ -107,7 +107,7 @@ func Test_POST_item_returns_201_when_it_is_successfully_created (t *testing.T) {
 	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
-		debug(http.MethodPost, url, res.StatusCode, http.StatusCreated)
+		deb(http.MethodPost, url, res.StatusCode, http.StatusCreated)
 		t.FailNow()
 	}
 }
@@ -128,7 +128,7 @@ func Test_POST_GET_returns_the_same_item_after_it_is_created(t *testing.T){
 	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
-		debug(http.MethodPost, url, res.StatusCode, http.StatusCreated)
+		deb(http.MethodPost, url, res.StatusCode, http.StatusCreated)
 		t.FailNow()
 	}
 
@@ -139,7 +139,7 @@ func Test_POST_GET_returns_the_same_item_after_it_is_created(t *testing.T){
 	res, err = httpGet(url)
 
 	if !isHTTPStatus(http.StatusOK, res, err){
-		debug(http.MethodGet, url, res.StatusCode, http.StatusOK)
+		deb(http.MethodGet, url, res.StatusCode, http.StatusOK)
 		t.FailNow()
 	}
 
@@ -165,7 +165,7 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
-		debug(http.MethodPut, url, res.StatusCode, http.StatusCreated)
+		deb(http.MethodPut, url, res.StatusCode, http.StatusCreated)
 		t.FailNow()
 	}
 
@@ -178,7 +178,7 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 	res, err = httpPut(url, itemToBeAdded)
 
 	if !isHTTPStatus(http.StatusOK, res, err){
-		debug(http.MethodPut, url, res.StatusCode, http.StatusOK)
+		deb(http.MethodPut, url, res.StatusCode, http.StatusOK)
 		t.FailNow()
 	}
 
@@ -186,7 +186,7 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 	res, err = httpGet(url)
 
 	if !isHTTPStatus(http.StatusOK, res, err){
-		debug(http.MethodGet, url, res.StatusCode, http.StatusOK)
+		deb(http.MethodGet, url, res.StatusCode, http.StatusOK)
 		t.FailNow()
 	}
 
@@ -213,7 +213,7 @@ func Test_POST_item_returns_400_when_body_is_sent_without_item_id(t *testing.T){
 	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
 
 	if !isHTTPStatus(http.StatusBadRequest, res, err){
-		debug(http.MethodPost, url, res.StatusCode, http.StatusBadRequest)
+		deb(http.MethodPost, url, res.StatusCode, http.StatusBadRequest)
 		t.FailNow()
 	}
 }
@@ -333,7 +333,7 @@ func Test_returns_no_error_when_adding_an_item(t *testing.T){
 
 //Tests auxiliary functions
 
-func debug(method string, url string, expectedStatusCode int, receivedStatusCode int){
+func deb(method string, url string, expectedStatusCode int, receivedStatusCode int){
 
 	var buf bytes.Buffer
 	logger := log.New(&buf, "logger: ", log.Lshortfile)
@@ -374,7 +374,7 @@ func httpPOST(server httptest.Server) error{
 	res, err := httpPost(strings.TrimSuffix(url, "/"), postItems)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
-		debug(http.MethodPost, url, res.StatusCode, http.StatusCreated)
+		deb(http.MethodPost, url, res.StatusCode, http.StatusCreated)
 		return err
 	}
 
@@ -392,13 +392,26 @@ func httpPut(url string, item dto.Stringifiable) (resp * http.Response, err erro
 		log.Printf("Error when creating PUT request %d.", err)
 		return nil, err
 	}
-
+	req.Header.Add("Security", "aaa")
 	resp, err = http.DefaultClient.Do(req)
 	return resp, err
 }
 
 func httpGet(url string) (*http.Response, error){
-	return http.Get(url)
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		log.Printf("Error when creating PUT request %d.", err)
+		return nil, err
+	}
+	req.Header.Add("Security", "aaa")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Printf("Error when creating PUT request %d.", err)
+		return nil, err
+	}
+	return resp, err
 }
 
 func httpPost(url string, values dto.Stringifiable) (*http.Response, error){
@@ -409,7 +422,7 @@ func httpPost(url string, values dto.Stringifiable) (*http.Response, error){
 		log.Printf("Error when creating POST request %d.", err)
 		return nil, err
 	}
-
+	req.Header.Add("Security", "aaa")
 	resp, err := http.DefaultClient.Do(req)
 
 	return resp, err

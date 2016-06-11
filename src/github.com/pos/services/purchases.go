@@ -3,7 +3,6 @@ package services
 import (
 	"fmt"
 	"net/http"
-	"github.com/gorilla/mux"
 	"github.com/pos/infrastructure"
 	"log"
 	"github.com/pos/dto"
@@ -47,7 +46,7 @@ func NewPurchaseService(db infrastructure.DB) *PurchaseService {
 	return service
 }
 //This method sets what resources are going to be managed by the router
-func (service PurchaseService) ConfigureRouter(router *mux.Router) {
+func (service PurchaseService) ConfigureRouter(router Router) {
 	router.HandleFunc("/purchases", service.handleRequestPurchases)
 }
 

@@ -3,14 +3,11 @@ package services
 import (
 	"fmt"
 	"net/http"
-	"github.com/gorilla/mux"
 	"github.com/pos/infrastructure"
 	"encoding/json"
 	"github.com/pos/dto"
 	"io/ioutil"
 	"log"
-
-	//"github.com/smugmug/godynamo/types/item"
 )
 
 func init() {
@@ -46,7 +43,7 @@ func NewItemService(db infrastructure.DB) *ItemsService {
 	return service
 }
 
-func (service ItemsService) ConfigureRouter(router *mux.Router) {
+func (service ItemsService) ConfigureRouter(router Router) {
 
 	router.HandleFunc("/products/{id}", service.handleRequestProductId).Name("products+id")
 	router.HandleFunc("/products", service.handleRequestProducts).Name("products no slash")
