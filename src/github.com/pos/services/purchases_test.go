@@ -96,7 +96,7 @@ var (
 
 	postPurchases = dto.PurchaseContainer{Purchases:setOfPurchases}
 )
-/*
+
 func Test_GET_Purchases_WITH_NO_TOKEN_Returns_An_Error(t *testing.T) {
 	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
 	defer server.Close()
@@ -108,10 +108,9 @@ func Test_GET_Purchases_WITH_NO_TOKEN_Returns_An_Error(t *testing.T) {
 		t.FailNow()
 	}
 }
-*/
 
-func Test_GET_Purchases_Returns_A_List_Of_Purchases(t *testing.T) {
 
+func Test_GET_Purchases_Returns_A_List_Of_Purchases_By_User(t *testing.T) {
 
 	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
 	defer server.Close()

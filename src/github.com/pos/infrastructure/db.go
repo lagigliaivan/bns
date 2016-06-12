@@ -14,10 +14,11 @@ type DB interface {
 	SaveItem(dto.Item) int
 	GetItems() []dto.Item
 
-	GetPurchase(time.Time) dto.Purchase
-	SavePurchase(dto.Purchase) error
-	GetPurchases() []dto.Purchase
-	GetPurchasesGroupedByMonth() map[time.Month][]dto.Purchase
+	//GetPurchase(time.Time) dto.Purchase
+	SavePurchase(dto.Purchase, string) error
+	GetPurchases(string) []dto.Purchase
+	GetPurchasesGroupedByMonth(string) map[time.Month][]dto.Purchase
+	//GetPurchasesByUser(user string)
 }
 
 type CatalogDB struct {
@@ -52,7 +53,7 @@ func (catDb CatalogDB) GetPurchase(time time.Time) dto.Purchase  {
 	return dto.Purchase{}
 }
 
-func (catDb CatalogDB) SavePurchase( p dto.Purchase) error {
+func (catDb CatalogDB) SavePurchase( p dto.Purchase, userId string) error {
 
 
 	return nil
@@ -67,5 +68,8 @@ func (catDb CatalogDB) GetPurchases() []dto.Purchase  {
 func (catDb CatalogDB) GetPurchasesGroupedByMonth() map[time.Month][]dto.Purchase  {
 
 	return make(map[time.Month][]dto.Purchase)
+}
 
+func (catDb CatalogDB) GetPurchasesByUser(user string) []dto.Purchase  {
+	return []dto.Purchase{}
 }

@@ -29,7 +29,7 @@ type PreRouter struct {
 func (preRouter *PreRouter) ServeHTTP(resp http.ResponseWriter, request *http.Request){
 
 	if !preRouter.rule(request){
-		http.NotFound(resp, request)
+		ForbiddenHandler(resp, request)
 		return
 	}
 
@@ -52,7 +52,9 @@ func validateUser (request *http.Request) bool{
 		log.Printf("Security Header needs to be present")
 		return false
 	}
-	
+
 	log.Printf("Security Header: %s", securityHeader)
 	return true
 }
+
+func ForbiddenHandler(w http.ResponseWriter, r *http.Request) { http.Error(w, "503 Forbidden", http.StatusForbidden) }
