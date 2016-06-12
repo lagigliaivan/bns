@@ -61,7 +61,7 @@ func Test_GET_item_returns_404_when_it_does_not_exist(t *testing.T){
 	//GETting URL
 	url := getURLToBeTested(testingServer.URL, itemToBeAdded.Id);
 
-	res, err := httpGet(url)
+	res, err := httpGet("lagigliaivan@gmail.com", url)
 	if !isHTTPStatus(http.StatusNotFound, res, err){
 		deb("GET", url, res.StatusCode, http.StatusOK)
 		t.FailNow()
@@ -85,7 +85,7 @@ func Test_GET_item_returns_200_when_it_exists(t *testing.T){
 	//GETting URL
 	url := getURLToBeTested(testingServer.URL, itemToBeAdded.Id);
 	log.Printf("url:%s\n", url)
-	res, err := httpGet(url)
+	res, err := httpGet("lagigliaivan@gmail.com", url)
 	if !isHTTPStatus(http.StatusOK, res, err){
 		deb("GET", url, res.StatusCode, http.StatusOK)
 		t.FailNow()
@@ -104,7 +104,7 @@ func Test_POST_item_returns_201_when_it_is_successfully_created (t *testing.T) {
 	items.Add(itemToBeAdded)
 
 	url := getURLToBeTested(testingServer.URL);
-	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
+	res, err := httpPost("121aseda2123123", strings.TrimSuffix(url, "/"), items)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		deb(http.MethodPost, url, res.StatusCode, http.StatusCreated)
@@ -125,7 +125,7 @@ func Test_POST_GET_returns_the_same_item_after_it_is_created(t *testing.T){
 
 	items := dto.NewItemContainer()
 	items.Add(itemToBeAdded)
-	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
+	res, err := httpPost("abafadfaf9a9fa0fa", strings.TrimSuffix(url, "/"), items)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		deb(http.MethodPost, url, res.StatusCode, http.StatusCreated)
@@ -136,7 +136,7 @@ func Test_POST_GET_returns_the_same_item_after_it_is_created(t *testing.T){
 
 	url = getURLToBeTested(server.URL, itemToBeAdded.Id);
 
-	res, err = httpGet(url)
+	res, err = httpGet("abafadfaf9a9fa0fa", url)
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		deb(http.MethodGet, url, res.StatusCode, http.StatusOK)
@@ -162,7 +162,7 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 	items := dto.NewItemContainer()
 	items.Add(itemToBeAdded)
 
-	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
+	res, err := httpPost("lagigliaiv@gmail.com.ar", strings.TrimSuffix(url, "/"), items)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		deb(http.MethodPut, url, res.StatusCode, http.StatusCreated)
@@ -175,7 +175,7 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 	itemToBeAdded.Description = "Description updated"
 	itemToBeAdded.Price = float32(21)
 
-	res, err = httpPut(url, itemToBeAdded)
+	res, err = httpPut("lagigliaiv@gmail.com.ar", url, itemToBeAdded)
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		deb(http.MethodPut, url, res.StatusCode, http.StatusOK)
@@ -183,7 +183,7 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 	}
 
 	//GET Item
-	res, err = httpGet(url)
+	res, err = httpGet("lagigliaiv@gmail.com.ar", url)
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		deb(http.MethodGet, url, res.StatusCode, http.StatusOK)
@@ -210,7 +210,7 @@ func Test_POST_item_returns_400_when_body_is_sent_without_item_id(t *testing.T){
 	items := dto.NewItemContainer()
 	items.Add(itemToBeAdded)
 
-	res, err := httpPost(strings.TrimSuffix(url, "/"), items)
+	res, err := httpPost("lagigliaiv@gmail.com.ar", strings.TrimSuffix(url, "/"), items)
 
 	if !isHTTPStatus(http.StatusBadRequest, res, err){
 		deb(http.MethodPost, url, res.StatusCode, http.StatusBadRequest)
@@ -223,7 +223,7 @@ func Test_GET_items_returns_a_list_of_items(t *testing.T){
 	server := getServer(NewItemService(infrastructure.NewMemDb()))
 	defer server.Close()
 
-	if httpPOST(*server) != nil {
+	if httpPOST("lagigliaiv@gmail.com.ar", *server) != nil {
 		t.FailNow();
 	}
 
@@ -232,7 +232,7 @@ func Test_GET_items_returns_a_list_of_items(t *testing.T){
 	defer server.Close()
 	log.Printf("server.URL:%s", url)
 
-	res, err := httpGet(url)
+	res, err := httpGet("lagigliaiv@gmail.com.ar", url)
 
 	if err != nil {
 		log.Printf("ERROR")
@@ -366,12 +366,12 @@ func getURLToBeTested(base_url string, params ... string) string {
 	return base_url + catalog_api + p;
 }
 
-func httpPOST(server httptest.Server) error{
+func httpPOST(user string, server httptest.Server) error{
 
 	//POST Items for later being retrieved.
 	url := getURLToBeTested(server.URL);
 
-	res, err := httpPost(strings.TrimSuffix(url, "/"), postItems)
+	res, err := httpPost(user, strings.TrimSuffix(url, "/"), postItems)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		deb(http.MethodPost, url, res.StatusCode, http.StatusCreated)
@@ -381,7 +381,7 @@ func httpPOST(server httptest.Server) error{
 	return nil
 }
 
-func httpPut(url string, item dto.Stringifiable) (resp * http.Response, err error) {
+func httpPut(user, url string, item dto.Stringifiable) (resp * http.Response, err error) {
 
 	bodyAsString := item.ToJsonString()
 	log.Printf("body: %s", bodyAsString)
@@ -392,19 +392,19 @@ func httpPut(url string, item dto.Stringifiable) (resp * http.Response, err erro
 		log.Printf("Error when creating PUT request %d.", err)
 		return nil, err
 	}
-	req.Header.Add("Security", "aaa")
+	req.Header.Add("Security", user)
 	resp, err = http.DefaultClient.Do(req)
 	return resp, err
 }
 
-func httpGet(url string) (*http.Response, error){
+func httpGet(user, url string) (*http.Response, error){
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Printf("Error when creating PUT request %d.", err)
 		return nil, err
 	}
-	req.Header.Add("Security", "aaa")
+	req.Header.Add("Security", user)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -414,7 +414,7 @@ func httpGet(url string) (*http.Response, error){
 	return resp, err
 }
 
-func httpPost(url string, values dto.Stringifiable) (*http.Response, error){
+func httpPost(user, url string, values dto.Stringifiable) (*http.Response, error){
 
 	body := strings.NewReader(values.ToJsonString())
 	req, err := http.NewRequest(http.MethodPost, url, body)
@@ -422,7 +422,7 @@ func httpPost(url string, values dto.Stringifiable) (*http.Response, error){
 		log.Printf("Error when creating POST request %d.", err)
 		return nil, err
 	}
-	req.Header.Add("Security", "aaa")
+	req.Header.Add("Security", user)
 	resp, err := http.DefaultClient.Do(req)
 
 	return resp, err

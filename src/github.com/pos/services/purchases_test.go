@@ -115,7 +115,7 @@ func Test_GET_Purchases_Returns_A_List_Of_Purchases_By_User(t *testing.T) {
 	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
 	defer server.Close()
 
-	res, err := httpPost(getURL(server.URL), postPurchases)
+	res, err := httpPost("lagigliaiv@gmail.com.ar", getURL(server.URL), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
@@ -123,7 +123,7 @@ func Test_GET_Purchases_Returns_A_List_Of_Purchases_By_User(t *testing.T) {
 	}
 
 
-	res, err = httpGet(getURL(server.URL))
+	res, err = httpGet("lagigliaiv@gmail.com.ar", getURL(server.URL))
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -167,7 +167,7 @@ func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) 
 	defer server.Close()
 
 
-	res, err := httpPost(getURL(server.URL), postPurchases)
+	res, err := httpPost("lagigliaiv@gmail.com.ar", getURL(server.URL), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
@@ -175,7 +175,7 @@ func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) 
 	}
 
 
-	res, err = httpGet(getURL(server.URL))
+	res, err = httpGet("lagigliaiv@gmail.com.ar", getURL(server.URL))
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -222,14 +222,14 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
 	defer server.Close()
 
-	res, err := httpPost(getURL(server.URL), postPurchases)
+	res, err := httpPost("lagigliaiv@gmail.com.ar", getURL(server.URL), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
 		t.FailNow()
 	}
 
-	res, err = httpGet(getURL(server.URL) + "?groupBy=month")
+	res, err = httpGet("lagigliaiv@gmail.com.ar", getURL(server.URL) + "?groupBy=month")
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -265,7 +265,7 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
 	defer server.Close()
 
-	res, err := httpPost(getURL(server.URL), postPurchases)
+	res, err := httpPost("lagigliaiv@gmail.com.ar", getURL(server.URL), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
@@ -273,7 +273,7 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 	}
 
 
-	res, err = httpGet(getURL(server.URL) + "?groupBy=ANYTHING")
+	res, err = httpGet("lagigliaiv@gmail.com.ar", getURL(server.URL) + "?groupBy=ANYTHING")
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -304,6 +304,48 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 	log.Printf("GET items returned OK %s", body)
 }
 
+func Test_GET_Purchases_From_Other_User_Responds_different_purchases(t *testing.T) {
+
+	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
+	defer server.Close()
+
+	res, err := httpPost("lagigliaiv@gmail.com.ar", getURL(server.URL), postPurchases)
+
+	if !isHTTPStatus(http.StatusCreated, res, err){
+		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
+		t.FailNow()
+	}
+
+	res, err = httpGet("pepe@gmail.com.ar", getURL(server.URL) + "?groupBy=month")
+
+	if !isHTTPStatus(http.StatusOK, res, err){
+		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
+		t.FailNow()
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		log.Fatal("Error")
+		t.FailNow()
+	}
+
+	purchases := new(dto.PurchasesByMonthContainer)
+
+	if err := json.Unmarshal(body, purchases); err != nil {
+
+		log.Printf("Error when reading response %s", err)
+		t.FailNow()
+	}
+
+	if len(purchases.PurchasesByMonth) == 3{
+		log.Printf("Error: Expected items quantity is different from the received one")
+		t.FailNow()
+
+	}
+
+	log.Printf("GET items returned OK %s", body)
+}
 
 /*func Test_aws(t *testing.T){
 
