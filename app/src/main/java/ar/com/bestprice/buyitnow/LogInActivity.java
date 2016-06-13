@@ -12,6 +12,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Formatter;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
@@ -50,6 +55,7 @@ public class LogInActivity extends AppCompatActivity {
     }
 
     public void login() {
+
         Log.d(TAG, "Login");
 
         if (!validate()) {
@@ -59,8 +65,7 @@ public class LogInActivity extends AppCompatActivity {
 
         _loginButton.setEnabled(false);
 
-        final ProgressDialog progressDialog = new ProgressDialog(LogInActivity.this,
-                R.style.AppTheme);
+        final ProgressDialog progressDialog = new ProgressDialog(LogInActivity.this, R.style.AppTheme);
         progressDialog.setIndeterminate(true);
         progressDialog.setMessage("Authenticating...");
         progressDialog.show();
@@ -68,13 +73,18 @@ public class LogInActivity extends AppCompatActivity {
         String email = _emailText.getText().toString();
         String password = _passwordText.getText().toString();
 
-
-        // TODO: Implement your own authentication logic here.
-
         Intent intent = new Intent(this.getApplicationContext(), MainActivity.class);
+
+        String userLogin[] = email.split("@");
+        String user = userLogin[0];
+        String mail = userLogin[1];
 
         Context.getContext().setPass(password);
         Context.getContext().setUser(email);
+
+        String credential = encryptPassword(user + ":" + password + "@" + mail);
+
+        Context.getContext().setLogin(credential);
 
         startActivity(intent);
 
@@ -141,4 +151,38 @@ public class LogInActivity extends AppCompatActivity {
 
         return valid;
     }
+
+    private static String encryptPassword(String password)
+    {
+        String sha1 = "";
+        try
+        {
+            MessageDigest crypt = MessageDigest.getInstance("SHA-1");
+            crypt.reset();
+            crypt.update(password.getBytes("UTF-8"));
+            sha1 = byteToHex(crypt.digest());
+        }
+        catch(NoSuchAlgorithmException e)
+        {
+            e.printStackTrace();
+        }
+        catch(UnsupportedEncodingException e)
+        {
+            e.printStackTrace();
+        }
+        return sha1;
+    }
+    private static String byteToHex(final byte[] hash)
+    {
+        Formatter formatter = new Formatter();
+        for (byte b : hash)
+        {
+            formatter.format("%02x", b);
+        }
+        String result = formatter.toString();
+        formatter.close();
+        return result;
+    }
+
+
 }

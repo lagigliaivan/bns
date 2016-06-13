@@ -45,7 +45,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ExpandableListView listView = getListView();
         MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
         listView.setAdapter(adapter);
-
     }
 
     private MyExpandableListAdapter getListViewAdapter(PurchasesContainer purchasesContainer) {
@@ -65,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String serviceURL = Context.getContext().getServiceURL();
         String user = Context.getContext().getUser();
 
-        task = service.submit(new GETServiceClient(serviceURL + "/purchases?groupBy=month&user=" + user ));
+        task = service.submit(new GETServiceClient(serviceURL + "/purchases?groupBy=month)", Context.getContext().getLogin()));
 
         try {
             jsonString = task.get();

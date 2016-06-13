@@ -6,9 +6,10 @@ package ar.com.bestprice.buyitnow;
 public class Context {
 
     private static Context context = new Context();
-    private static String user;
-    private static String pass;
-    private String serviceURL = "http://10.116.64.196:8080/catalog/";
+    private String user;
+    private String pass;
+    private String login;
+    private String serviceURL = "http://192.168.0.3:8080/catalog/";
 
     private Context(){}
 
@@ -40,4 +41,6 @@ public class Context {
         this.pass = pass;
     }
 
+    public void setLogin(String login) { this.login = login;}
+    public String getLogin() { return this.login;}
 }

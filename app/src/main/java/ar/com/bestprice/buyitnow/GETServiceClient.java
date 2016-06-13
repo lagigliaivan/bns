@@ -19,9 +19,11 @@ public class GETServiceClient implements Callable {
 
 
     private final String URL;
+    private final String login;
 
-    public GETServiceClient(String URL) {
+    public GETServiceClient(String URL, String login) {
         this.URL = URL;
+        this.login = login;
     }
 
     @Override
@@ -32,7 +34,7 @@ public class GETServiceClient implements Callable {
         //PurchasesContainer p = null;
         String purchases = "";
         try {
-            // http://openweathermap.org/API#forecast
+
             //URL url = new URL("http://10.33.117.120:8080/catalog/products/");
             //URL url = new URL("http://192.168.0.7:8080/catalog/products/");
 
@@ -43,6 +45,7 @@ public class GETServiceClient implements Callable {
             // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
+            urlConnection.setRequestProperty("Authorization", this.login);
             urlConnection.connect();
 
             // Read the input stream into a String
