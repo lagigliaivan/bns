@@ -392,7 +392,7 @@ func httpPut(user, url string, item dto.Stringifiable) (resp * http.Response, er
 		log.Printf("Error when creating PUT request %d.", err)
 		return nil, err
 	}
-	req.Header.Add("Security", user)
+	req.Header.Add(HEADER, user)
 	resp, err = http.DefaultClient.Do(req)
 	return resp, err
 }
@@ -404,7 +404,7 @@ func httpGet(user, url string) (*http.Response, error){
 		log.Printf("Error when creating PUT request %d.", err)
 		return nil, err
 	}
-	req.Header.Add("Security", user)
+	req.Header.Add(HEADER, user)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -422,7 +422,7 @@ func httpPost(user, url string, values dto.Stringifiable) (*http.Response, error
 		log.Printf("Error when creating POST request %d.", err)
 		return nil, err
 	}
-	req.Header.Add("Security", user)
+	req.Header.Add(HEADER, user)
 	resp, err := http.DefaultClient.Do(req)
 
 	return resp, err

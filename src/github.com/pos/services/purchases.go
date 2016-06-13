@@ -74,7 +74,7 @@ func (service PurchaseService) handleRequestPurchases(w http.ResponseWriter, r *
 }
 
 func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http.Request) {
-	user := r.Header.Get("Security")
+	user := r.Header.Get(HEADER)
 
 	container := dto.NewPurchaseContainer()
 	purchases := service.getPurchases(user)
@@ -97,7 +97,7 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 func (service PurchaseService) handleGetPurchasesGroupByMonth(w http.ResponseWriter, r *http.Request) {
 
 
-	user := r.Header.Get("Security")
+	user := r.Header.Get(HEADER)
 	var purchasesByMonth map[time.Month][]dto.Purchase
 
 	purchasesByMonth = service.getPurchasesGroupedBy(user, MONTH)
@@ -125,7 +125,7 @@ func (service PurchaseService) handleGetPurchasesGroupByMonth(w http.ResponseWri
 
 func (service PurchaseService) handlePostPurchases(w http.ResponseWriter, r *http.Request) {
 
-	user := r.Header.Get("Security")
+	user := r.Header.Get(HEADER)
 	body, _ := ioutil.ReadAll(r.Body)
 
 	purchases := new(dto.PurchaseContainer)

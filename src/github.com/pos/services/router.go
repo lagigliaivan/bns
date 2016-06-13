@@ -4,6 +4,11 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"log"
+	"strings"
+)
+
+const(
+	HEADER = "Authorization"
 )
 
 func NewRouter() *PreRouter{
@@ -45,16 +50,28 @@ type Router interface  {
 	HandleFunc(string, func(http.ResponseWriter, *http.Request)) *mux.Route
 }
 
+var users [2]string =  [...]string{"d563af2d08b4f672a11b3ed9065b7890a6412cab", "107cbb20a1d1e156beac1a9a7a331b36321300d4"}
+
 func validateUser (request *http.Request) bool{
-	securityHeader := request.Header.Get("Security")
+
+	securityHeader := request.Header.Get(HEADER)
 
 	if len(securityHeader) == 0 {
 		log.Printf("Security Header needs to be present")
 		return false
+	}else {
+
+		for _, allowedUser := range users {
+			if strings.Compare(securityHeader, allowedUser) == 0 {
+				log.Printf("user:%s\n", allowedUser)
+				return true
+			}
+		}
+
+		log.Printf("User %s is not allowed", securityHeader)
 	}
 
-	log.Printf("Security Header: %s", securityHeader)
-	return true
+	return false
 }
 
 func ForbiddenHandler(w http.ResponseWriter, r *http.Request) { http.Error(w, "503 Forbidden", http.StatusForbidden) }

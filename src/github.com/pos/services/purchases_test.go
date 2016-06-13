@@ -13,10 +13,24 @@ import (
 /*	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"*/
+	"crypto/sha1"
+	"fmt"
+	"io"
 )
+
+
+var user1 string
+var user2 string
 
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	sha := sha1.New()
+	io.WriteString(sha, "mayname:password@gmail.com.ar")
+	user1 = fmt.Sprintf("%x", sha.Sum(nil))
+
+	sha.Reset()
+	io.WriteString(sha, "mayname2:password@gmail.com.ar")
+	user2 = fmt.Sprintf("%x", sha.Sum(nil))
 }
 
 
@@ -112,18 +126,18 @@ func Test_GET_Purchases_WITH_NO_TOKEN_Returns_An_Error(t *testing.T) {
 
 func Test_GET_Purchases_Returns_A_List_Of_Purchases_By_User(t *testing.T) {
 
+
 	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
 	defer server.Close()
 
-	res, err := httpPost("lagigliaiv@gmail.com.ar", getURL(server.URL), postPurchases)
+	res, err := httpPost(user1, getURL(server.URL), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
 		t.FailNow()
 	}
 
-
-	res, err = httpGet("lagigliaiv@gmail.com.ar", getURL(server.URL))
+	res, err = httpGet(user1, getURL(server.URL))
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -167,7 +181,7 @@ func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) 
 	defer server.Close()
 
 
-	res, err := httpPost("lagigliaiv@gmail.com.ar", getURL(server.URL), postPurchases)
+	res, err := httpPost(user1, getURL(server.URL), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
@@ -175,7 +189,7 @@ func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) 
 	}
 
 
-	res, err = httpGet("lagigliaiv@gmail.com.ar", getURL(server.URL))
+	res, err = httpGet(user1, getURL(server.URL))
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -222,14 +236,14 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
 	defer server.Close()
 
-	res, err := httpPost("lagigliaiv@gmail.com.ar", getURL(server.URL), postPurchases)
+	res, err := httpPost(user1, getURL(server.URL), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
 		t.FailNow()
 	}
 
-	res, err = httpGet("lagigliaiv@gmail.com.ar", getURL(server.URL) + "?groupBy=month")
+	res, err = httpGet(user1, getURL(server.URL) + "?groupBy=month")
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -265,7 +279,7 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
 	defer server.Close()
 
-	res, err := httpPost("lagigliaiv@gmail.com.ar", getURL(server.URL), postPurchases)
+	res, err := httpPost(user1, getURL(server.URL), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
@@ -273,7 +287,7 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 	}
 
 
-	res, err = httpGet("lagigliaiv@gmail.com.ar", getURL(server.URL) + "?groupBy=ANYTHING")
+	res, err = httpGet(user1, getURL(server.URL) + "?groupBy=ANYTHING")
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -309,14 +323,14 @@ func Test_GET_Purchases_From_Other_User_Responds_different_purchases(t *testing.
 	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
 	defer server.Close()
 
-	res, err := httpPost("lagigliaiv@gmail.com.ar", getURL(server.URL), postPurchases)
+	res, err := httpPost(user1, getURL(server.URL), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
 		t.FailNow()
 	}
 
-	res, err = httpGet("pepe@gmail.com.ar", getURL(server.URL) + "?groupBy=month")
+	res, err = httpGet(user2, getURL(server.URL) + "?groupBy=month")
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
