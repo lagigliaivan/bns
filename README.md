@@ -8,6 +8,11 @@ As a whole, these two applications allow keeping records of different purchases 
 The main idea is to provide some suggestions about where to buy at the best price, the most purchased products by the user, according to his/her
 profile. 
 
+#Compiling POS
+/opt/go/bin/go build -o /tmp/pos /home/ivan/dev/goland/src/github.com/pos/main.go
+
+
+
 ### Docker container for Local AWS DynamoDB
 
 AWS DynamoDB Local will let you test against DynamoDB without needing
