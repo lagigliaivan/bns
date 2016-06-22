@@ -9,8 +9,12 @@ The main idea is to provide some suggestions about where to buy at the best pric
 profile. 
 
 #Compiling POS
-/opt/go/bin/go build -o /tmp/pos /home/ivan/dev/goland/src/github.com/pos/main.go
+/opt/go/bin/go build -o /tmp/pos /home/ivan/dev/bns/src/services/main.go
 
+### Docker image
+cd /home/ivan/dev/bns/src/services
+sudo docker build -t my-golang-app .
+sudo docker run -d -p 8080:8080  my-golang-app
 
 
 ### Docker container for Local AWS DynamoDB

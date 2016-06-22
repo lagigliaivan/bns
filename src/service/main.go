@@ -8,19 +8,17 @@ package main
 import (
 	"log"
 	"net/http"
-	"github.com/pos/infrastructure"
-	"github.com/pos/services"
 )
 
 func main() {
 
-	router := services.NewRouter()
-	db := infrastructure.NewMemDb()
+	router := NewRouter()
+	db := NewMemDb()
 
-	itemsService := services.NewItemService(db)
+	itemsService := NewItemService(db)
 	itemsService.ConfigureRouter(router)
 
-	purchasesService := services.NewPurchaseService(db)
+	purchasesService := NewPurchaseService(db)
 	purchasesService.ConfigureRouter(router)
 
 	log.Fatal(http.ListenAndServe(":8080", router))

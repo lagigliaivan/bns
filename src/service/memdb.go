@@ -1,45 +1,44 @@
-package infrastructure
+package main
 
 import (
-	"github.com/pos/dto"
 	"sync"
 	"log"
 	"time"
 )
 
-type items map[string] dto.Item
+type items map[string] Item
 
 
 type Mem_DB struct {
 	lockI *sync.RWMutex
 	lockP  *sync.RWMutex
 	items items
-	/*purchases map[time.Time] dto.Purchase
-	purchasesByMonth map[time.Month] []dto.Purchase*/
-	purchasesByUser  map[string] map[time.Month] []dto.Purchase
+	/*purchases map[time.Time] Purchase
+	purchasesByMonth map[time.Month] []Purchase*/
+	purchasesByUser  map[string] map[time.Month] []Purchase
 }
 
 func NewMemDb() (Mem_DB) {
 	db := Mem_DB{}
-	db.items = make(map[string]dto.Item)
-	/*db.purchases = make(map[time.Time]dto.Purchase)
-	db.purchasesByMonth = make(map[time.Month][]dto.Purchase)*/
-	db.purchasesByUser = make (map[string] map[time.Month] []dto.Purchase)
+	db.items = make(map[string]Item)
+	/*db.purchases = make(map[time.Time]Purchase)
+	db.purchasesByMonth = make(map[time.Month][]Purchase)*/
+	db.purchasesByUser = make (map[string] map[time.Month] []Purchase)
 	db.lockP = new(sync.RWMutex)
 	db.lockI = new(sync.RWMutex)
 	return  db
 }
 
-func (db Mem_DB) GetItem(id string) (dto.Item)  {
+func (db Mem_DB) GetItem(id string) (Item)  {
 	db.lockI.Lock()
 	defer db.lockI.Unlock()
 	log.Printf("GetItem id:%s db.size now: %d", id, len(db.items))
 	return db.items[id]
 }
 
-func (db Mem_DB) GetItems() ([]dto.Item){
+func (db Mem_DB) GetItems() ([]Item){
 
-	var items []dto.Item = make([]dto.Item, 0)
+	var items []Item = make([]Item, 0)
 
 	for _, item := range db.items {
 		items = append(items, item)
@@ -48,7 +47,7 @@ func (db Mem_DB) GetItems() ([]dto.Item){
 	return items
 }
 
-func (db Mem_DB) SaveItem(item dto.Item) int  {
+func (db Mem_DB) SaveItem(item Item) int  {
 	db.lockI.Lock()
 	defer db.lockI.Unlock()
 	log.Printf("SaveItem id:%s db.size before: %d", item.Id, len(db.items))
@@ -57,14 +56,14 @@ func (db Mem_DB) SaveItem(item dto.Item) int  {
 	return 0;
 }
 /*
-func (db Mem_DB) GetPurchase(time time.Time) dto.Purchase  {
+func (db Mem_DB) GetPurchase(time time.Time) Purchase  {
 	db.lockP.Lock()
 	defer db.lockP.Unlock()
 	purchases := db.purchases[time]
 	return purchases
 }*/
 
-func (db Mem_DB) SavePurchase( p dto.Purchase, userId string) error {
+func (db Mem_DB) SavePurchase( p Purchase, userId string) error {
 
 	db.lockP.Lock()
 	defer db.lockP.Unlock()
@@ -73,7 +72,7 @@ func (db Mem_DB) SavePurchase( p dto.Purchase, userId string) error {
 	purchasesByMonth := db.purchasesByMonth[p.Time.Month()]
 
 	if  purchasesByMonth == nil {
-		purchasesByMonth = make([]dto.Purchase, 0)
+		purchasesByMonth = make([]Purchase, 0)
 	}
 	purchasesByMonth = append(purchasesByMonth, p)
 	db.purchasesByMonth[p.Time.Month()] = purchasesByMonth
@@ -82,7 +81,7 @@ func (db Mem_DB) SavePurchase( p dto.Purchase, userId string) error {
 	userPurchasesByMonth := db.purchasesByUser[userId]
 
 	if  userPurchasesByMonth == nil {
-		userPurchasesByMonth = make(map[time.Month] []dto.Purchase, 0)
+		userPurchasesByMonth = make(map[time.Month] []Purchase, 0)
 	}
 
 	userPurchasesByMonth[p.Time.Month()] = append(userPurchasesByMonth[p.Time.Month()],p)
@@ -93,9 +92,9 @@ func (db Mem_DB) SavePurchase( p dto.Purchase, userId string) error {
 	return nil
 }
 
-func (db Mem_DB) GetPurchases(userId string) []dto.Purchase  {
+func (db Mem_DB) GetPurchases(userId string) []Purchase  {
 
-	purchases := make([]dto.Purchase, 0)
+	purchases := make([]Purchase, 0)
 
 	db.lockP.Lock()
 	defer db.lockP.Unlock()
@@ -109,11 +108,11 @@ func (db Mem_DB) GetPurchases(userId string) []dto.Purchase  {
 	return purchases
 }
 
-func (db Mem_DB) GetPurchasesGroupedByMonth(userId string) map[time.Month][]dto.Purchase  {
+func (db Mem_DB) GetPurchasesGroupedByMonth(userId string) map[time.Month][]Purchase  {
 
 	return db.purchasesByUser[userId]
 }
 
-func (db Mem_DB) GetPurchasesByUser(user string) []dto.Purchase  {
-	return []dto.Purchase{}
+func (db Mem_DB) GetPurchasesByUser(user string) []Purchase  {
+	return []Purchase{}
 }
