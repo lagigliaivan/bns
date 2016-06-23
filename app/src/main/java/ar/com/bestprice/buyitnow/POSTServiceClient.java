@@ -44,6 +44,7 @@ public class POSTServiceClient implements Callable {
 
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Authorization", Context.getContext().getSha1());
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);
 

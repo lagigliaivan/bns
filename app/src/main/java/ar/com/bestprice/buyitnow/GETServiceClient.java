@@ -35,17 +35,13 @@ public class GETServiceClient implements Callable {
         String purchases = "";
         try {
 
-            //URL url = new URL("http://10.33.117.120:8080/catalog/products/");
-            //URL url = new URL("http://192.168.0.7:8080/catalog/products/");
-
-
             //URL url = new URL("http://10.33.117.120:8080/catalog/purchases?groupBy=month");
             URL url = new URL(this.URL);
 
             // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
-            urlConnection.setRequestProperty("Authorization", this.login);
+            urlConnection.setRequestProperty("Authorization", Context.getContext().getSha1());
             urlConnection.connect();
 
             // Read the input stream into a String

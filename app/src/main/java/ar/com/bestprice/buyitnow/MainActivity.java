@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String serviceURL = Context.getContext().getServiceURL();
         String user = Context.getContext().getUser();
 
-        task = service.submit(new GETServiceClient(serviceURL + "/purchases?groupBy=month)", Context.getContext().getLogin()));
+        task = service.submit(new GETServiceClient(serviceURL + "/purchases?groupBy=month", Context.getContext().getSha1()));
 
         try {
             jsonString = task.get();
