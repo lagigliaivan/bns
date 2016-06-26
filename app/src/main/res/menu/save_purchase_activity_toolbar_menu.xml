@@ -3,17 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".AddNewPurchaseActivity">
-
-
+    
     <item android:id="@+id/save_purchase"
         android:icon="@drawable/ic_assignment_turned_in_white_24dp"
         app:showAsAction="always"
         android:title="@string/save_purchase"/>
-
-    <item android:id="@+id/add_item_barcode"
-        android:icon="@drawable/barcode"
-        app:showAsAction="always"
-        android:title="@string/add_item_barcode"/>
 
     <item android:id="@+id/add_item_no_barcode"
         android:icon="@drawable/cart_plus"
