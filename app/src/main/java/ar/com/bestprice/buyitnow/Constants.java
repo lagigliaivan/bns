@@ -5,7 +5,11 @@ package ar.com.bestprice.buyitnow;
  */
 public class Constants {
 
-    public static String CALLING_ACTIVITY = "calling_activity";
-    public static int NEW_PURCHASE = 1;
-    public static int MAIN_ACTIVITY = 2;
+    public final static String CALLING_ACTIVITY = "calling_activity";
+    public final static int NEW_PURCHASE = 1;
+    public final static int MAIN_ACTIVITY = 2;
+
+    public final static String ITEM = "Item";
+
+
 }

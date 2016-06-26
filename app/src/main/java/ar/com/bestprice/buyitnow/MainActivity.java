@@ -17,7 +17,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import ar.com.bestprice.buyitnow.barcodereader.BarcodeCaptureActivity;
 import ar.com.bestprice.buyitnow.dto.Item;
 import ar.com.bestprice.buyitnow.dto.Purchase;
 import ar.com.bestprice.buyitnow.dto.PurchasesByMonth;
@@ -72,9 +71,7 @@ public class MainActivity extends AppCompatActivity {
         final Future<String> task;
         String jsonString = "";
 
-        //task = service.submit(new GETServiceClient("http://10.33.117.120:8080/catalog/purchases?groupBy=month"));
         String serviceURL = Context.getContext().getServiceURL();
-        String user = Context.getContext().getUser();
 
         task = service.submit(new GETServiceClient(serviceURL + "/purchases?groupBy=month", Context.getContext().getSha1()));
 
@@ -142,16 +139,11 @@ public class MainActivity extends AppCompatActivity {
 
         switch (item.getItemId()){
 
-            case R.id.add_item_no_barcode:
+            case R.id.add_item:
 
                 Intent intent = new Intent(this.getApplicationContext(), AddItemActivity.class);
                 intent.putExtra(Constants.CALLING_ACTIVITY, Constants.MAIN_ACTIVITY);
                 startActivity(intent);
-                break;
-
-            case R.id.add_item_barcode:
-
-                startActivity(new Intent(this.getApplicationContext(), BarcodeCaptureActivity.class));
                 break;
 
             case R.id.refresh_purchases:

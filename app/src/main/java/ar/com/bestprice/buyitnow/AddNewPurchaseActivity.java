@@ -4,14 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
-import com.google.android.gms.vision.barcode.Barcode;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,7 +22,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import ar.com.bestprice.buyitnow.barcodereader.BarcodeCaptureActivity;
 import ar.com.bestprice.buyitnow.dto.Item;
 import ar.com.bestprice.buyitnow.dto.Purchase;
 import ar.com.bestprice.buyitnow.dto.Purchases;
@@ -44,72 +41,42 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_new_purchase_tool_bar);
 
-        listView = (ListView) findViewById(R.id.listview_show_items_in_a_purchase);
+        Item item = (Item)getIntent().getSerializableExtra(Constants.ITEM);
 
-        Item item = (Item)getIntent().getSerializableExtra("Item");
+        if(item != null) {
 
-        items.add(item);
+            listView = (ListView) findViewById(R.id.listview_show_items_in_a_purchase);
+            items.add(item);
 
-        List itemsAsString = new ArrayList();
+            List itemsAsString = new ArrayList();
 
-        for (Item i: items ){
-            itemsAsString.add(i.toString());
+            for (Item i: items ){
+                itemsAsString.add(i.toString());
+            }
+
+            adapter = new ArrayAdapter<>(this,
+                    android.R.layout.simple_list_item_1, android.R.id.text1, itemsAsString);
+
+            listView.setAdapter(adapter);
         }
-
-        // Define a new Adapter
-        // First parameter - Context
-        // Second parameter - Layout for the row
-        // Third parameter - ID of the TextView to which the data is written
-        // Forth - the Array of data
-
-        adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, android.R.id.text1, itemsAsString);
-
-        // Assign adapter to ListView
-        listView.setAdapter(adapter);
-
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.new_purchase_toolbar);
 
         setSupportActionBar(toolbar);
+
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
     }
 
-    private static final int RC_BARCODE_CAPTURE = 9001;
-
-
-    private static String TAG = "BarCode Reader";
-    private static final int ADD_ITEM = 9002;
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == RC_BARCODE_CAPTURE) {
 
-            if (resultCode == CommonStatusCodes.SUCCESS) {
-                if (data != null) {
-                    Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
-
-                    Log.d(TAG, "Barcode read: " + barcode.displayValue);
-
-                    Intent intent = new Intent(this.getApplicationContext(), AddItemActivity.class);
-                    intent.putExtra("BarCode", barcode.displayValue);
-                    startActivityForResult(intent, ADD_ITEM);
-
-                } else {
-                    Log.d(TAG, "No barcode captured, intent data is null");
-                }
-
-            }
-        }
-        else{
             if (resultCode == CommonStatusCodes.SUCCESS && data != null) {
 
-                    Item item = (Item) data.getSerializableExtra("Item");
-
+                    Item item = (Item) data.getSerializableExtra(Constants.ITEM);
                     items.add(item);
 
                     List itemsAsString = new ArrayList();
@@ -123,9 +90,6 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
 
                     listView.setAdapter(adapter);
             }
-        } /*else {
-            super.onActivityResult(requestCode, resultCode, data);
-        }*/
     }
 
     @Override
@@ -135,30 +99,27 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
 
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+        // Handling action bar item clicks
 
-        switch (item.getItemId()){
+        switch (menuItem.getItemId()){
 
-            case R.id.add_item_no_barcode:
+            case R.id.add_item:
+
                 Intent intent = new Intent(this.getApplicationContext(), AddItemActivity.class);
+
+                //Adding an extra param for AddItemActivity to know if AddNewPurchase activity has to be started or
+                //the captured item has just to be returned.
                 intent.putExtra(Constants.CALLING_ACTIVITY, Constants.NEW_PURCHASE);
                 startActivityForResult(intent, Constants.NEW_PURCHASE);
-                break;
 
-            case R.id.add_item_barcode:
-
-                startActivity(new Intent(this.getApplicationContext(), BarcodeCaptureActivity.class));
                 break;
 
             case R.id.save_purchase:
 
                 final ExecutorService service = Executors.newFixedThreadPool(1);
                 final Future<Integer> task;
-
 
                 //2016-05-05T18:54:03.5102707-03:00
                 SimpleDateFormat datetime = new SimpleDateFormat ("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZZZZZ", Locale.US);
@@ -178,11 +139,8 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
 
                 purchases.setPurchases(ps);
 
-
-                //task = service.submit(new POSTServiceClient("http://10.33.117.120:8080/catalog/purchases", purchases));
                 String serviceURL = Context.getContext().getServiceURL();
                 task = service.submit(new POSTServiceClient(serviceURL + "/purchases", purchases));
-
 
                 try {
                     Integer status = task.get();
@@ -192,10 +150,10 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
                     service.shutdownNow();
                 }
 
-
                 finish();
+                break;
         }
 
-        return super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected(menuItem);
     }
 }

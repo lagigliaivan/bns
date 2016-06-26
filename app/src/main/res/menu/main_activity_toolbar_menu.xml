@@ -9,7 +9,7 @@
         app:showAsAction="always"
         android:title="@string/refresh_purchases_list"/>
 
-    <item android:id="@+id/add_item_no_barcode"
+    <item android:id="@+id/add_item"
         android:icon="@drawable/cart_plus"
         app:showAsAction="always"
         android:title="@string/add_item_no_barcode"/>
