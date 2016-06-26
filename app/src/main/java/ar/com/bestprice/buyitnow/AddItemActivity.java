@@ -9,6 +9,7 @@ import android.widget.EditText;
 import com.google.android.gms.common.api.CommonStatusCodes;
 
 
+import ar.com.bestprice.buyitnow.barcodereader.BarcodeCaptureActivity;
 import ar.com.bestprice.buyitnow.dto.Item;
 
 /**
@@ -25,7 +26,7 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
 
         String barcodeId = getIntent().getStringExtra("BarCode");
 
-        EditText t = (EditText)findViewById(R.id.editText);
+        EditText t = (EditText)findViewById(R.id.id_text);
 
         t.setText(barcodeId);
     }
@@ -33,9 +34,9 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     public void onClick(View v) {
 
-        EditText id = (EditText)findViewById(R.id.editText);
-        EditText description = (EditText)findViewById(R.id.editText2);
-        EditText price = (EditText)findViewById(R.id.editText3);
+        EditText id = (EditText)findViewById(R.id.id_text);
+        EditText description = (EditText)findViewById(R.id.description_text);
+        EditText price = (EditText)findViewById(R.id.price_text);
 
         Item item = new Item();
         item.setId(id.getText().toString());
@@ -43,9 +44,12 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
         item.setPrice(Float.valueOf(price.getText().toString()));
 
         Intent data = new Intent();
-        data.putExtra("Item",item);
+        data.putExtra("Item", item);
 
-        setResult(CommonStatusCodes.SUCCESS, data);
+        Intent intent = new Intent(this.getApplicationContext(), AddNewPurchaseActivity.class);
+        startActivity(intent);
+
+        //setResult(CommonStatusCodes.SUCCESS, data);
         finish();
     }
 }

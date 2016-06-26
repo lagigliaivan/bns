@@ -3,13 +3,12 @@ package ar.com.bestprice.buyitnow;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.support.v7.widget.Toolbar;
 import android.util.SparseArray;
-import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ExpandableListView;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.gson.Gson;
 
 import java.util.List;
@@ -18,14 +17,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import ar.com.bestprice.buyitnow.barcodereader.BarcodeCaptureActivity;
 import ar.com.bestprice.buyitnow.dto.Item;
 import ar.com.bestprice.buyitnow.dto.Purchase;
 import ar.com.bestprice.buyitnow.dto.PurchasesByMonth;
 import ar.com.bestprice.buyitnow.dto.PurchasesContainer;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener,
-        GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity {
 
 
     private ExpandableListView listView = null;
@@ -34,23 +33,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main_tool_bar);
         renderView();
     }
 
     private void renderView() {
         String jsonString = sendHttpRequest();
-        PurchasesContainer purchasesContainer = parseJsonString(jsonString);
 
-        ExpandableListView listView = getListView();
-        MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
-        listView.setAdapter(adapter);
+        if(jsonString != null) {
+
+            PurchasesContainer purchasesContainer = parseJsonString(jsonString);
+            ExpandableListView listView = getListView();
+
+            MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
+            listView.setAdapter(adapter);
+
+            Toolbar toolbar = (Toolbar) findViewById(R.id.main_tool_bar);
+
+            setSupportActionBar(toolbar);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+
     }
 
     private MyExpandableListAdapter getListViewAdapter(PurchasesContainer purchasesContainer) {
+
         SparseArray<Group> groups = createData(purchasesContainer.getPurchasesByMonth());
-        MyExpandableListAdapter adapter = new MyExpandableListAdapter(this, groups);
-        return adapter;
+        return new MyExpandableListAdapter(this, groups);
 
     }
 
@@ -80,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ExpandableListView getListView() {
 
         if(this.listView == null) {
-            this.listView = (ExpandableListView) findViewById(R.id.listView);
+            this.listView = (ExpandableListView) findViewById(R.id.listView_show_purchases);
         }
 
         return listView;
@@ -92,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int j = 0;
         for (PurchasesByMonth purchases:purchasesByMonth) {
 
-            Group group = new Group(purchases.getMonth().toString());
+            Group group = new Group(purchases.getMonth());
 
             for (Purchase purchase : purchases.getPurchases()){
 
@@ -115,23 +126,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return p;
     }
 
-
-    public void onClick(View view) {
-        if(view.getId() == R.id.add_new_purchase) {
-            Intent intent = new Intent(this.getApplicationContext(), AddNewPurchaseActivity.class);
-            startActivity(intent);
-        }else{
-            String jsonString = sendHttpRequest();
-            PurchasesContainer purchasesContainer = parseJsonString(jsonString);
-            MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
-
-            ExpandableListView listView = getListView();
-            listView.setAdapter(adapter);
-        }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_activity_toolbar_menu, menu);
+        return true;
     }
 
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.d("LOG-IN", "ERROR");
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+
+        switch (item.getItemId()){
+
+            case R.id.add_item_no_barcode:
+
+                startActivity(new Intent(this.getApplicationContext(), AddItemActivity.class));
+                break;
+
+            case R.id.add_item_barcode:
+
+                startActivity(new Intent(this.getApplicationContext(), BarcodeCaptureActivity.class));
+                break;
+
+            case R.id.refresh_purchases:
+
+                String jsonString = sendHttpRequest();
+                PurchasesContainer purchasesContainer = parseJsonString(jsonString);
+                MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
+
+                ExpandableListView listView = getListView();
+                listView.setAdapter(adapter);
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

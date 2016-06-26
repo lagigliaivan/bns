@@ -65,4 +65,11 @@
     <!-- Server Client ID.  This should be a valid Web OAuth 2.0 Client ID obtained
          from https://console.developers.google.com/ -->
     <string name="server_client_id">YOUR_SERVER_CLIENT_ID</string>
+
+    <string name="add_item_no_barcode">Add NO CodeBar Item</string>
+    <string name="add_item_barcode">Add Item Reading Code Bar</string>
+    <string name="refresh_purchases_list">Refresh purchases list</string>
+    <string name="save_purchase">Save purchase</string>
+
+
 </resources>

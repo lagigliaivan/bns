@@ -11,10 +11,10 @@ import java.util.Formatter;
 public class Context {
 
     private static Context context = new Context();
-    private String user;
-    private String pass;
+    private String user = "mayname@gmail.com.ar";
+    private String pass = "password";
     private String login;
-    private String serviceURL = "http://192.168.0.7:8080/catalog";
+    private String serviceURL = "http://192.168.0.3:8080/catalog";
 
     private Context(){}
 
@@ -49,35 +49,6 @@ public class Context {
     public void setLogin(String login) { this.login = login;}
 
     public String getLogin() { return this.login;}
-
-    /*public String getSha1(){
-
-        MessageDigest digest = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-1");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        String credentials = this.getLogin() + this.getPass();
-
-        digest.update(credentials.getBytes());
-        byte[] hash = digest.digest();
-        String encodedHash = encodeHex(hash);
-        return encodedHash;
-    }
-
-    private static String encodeHex(byte[] bytes) {
-        StringBuffer hex = new StringBuffer(bytes.length * 2);
-
-        for (int i = 0; i < bytes.length; i++) {
-            if (((int) bytes[i] & 0xff) < 0x10) {
-                hex.append("0");
-            }
-            hex.append(Integer.toString((int) bytes[i] & 0xff, 16));
-        }
-
-        return hex.toString();
-    }*/
 
     public String getSha1()
     {

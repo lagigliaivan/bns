@@ -2,12 +2,12 @@ package ar.com.bestprice.buyitnow;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ArrayAdapter;
-import android.widget.FrameLayout;
 import android.widget.ListView;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
@@ -32,7 +32,7 @@ import ar.com.bestprice.buyitnow.dto.Purchases;
 /**
  * Created by ivan on 08/04/16.
  */
-public class AddNewPurchaseActivity extends AppCompatActivity implements View.OnClickListener{
+public class AddNewPurchaseActivity extends AppCompatActivity{
 
     ListView listView = null;
     ArrayAdapter<String> adapter = null;
@@ -42,9 +42,9 @@ public class AddNewPurchaseActivity extends AppCompatActivity implements View.On
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_new_purchase);
+        setContentView(R.layout.activity_add_new_purchase_tool_bar);
 
-        listView = (ListView) findViewById(R.id.add_new_purchase_listView);
+        listView = (ListView) findViewById(R.id.listview_show_items_in_a_purchase);
 
         String[] values = new String[] {};
 
@@ -60,61 +60,17 @@ public class AddNewPurchaseActivity extends AppCompatActivity implements View.On
         // Assign adapter to ListView
         listView.setAdapter(adapter);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.new_purchase_toolbar);
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
     }
 
     private static final int RC_BARCODE_CAPTURE = 9001;
-    @Override
-    public void onClick(View v) {
 
-        if(v.getId() == R.id.add_new_item) {
-
-            Intent intent = new Intent(this.getApplicationContext(), BarcodeCaptureActivity.class);
-            intent.putExtra(BarcodeCaptureActivity.AutoFocus, true);
-            intent.putExtra(BarcodeCaptureActivity.UseFlash, false);
-            startActivityForResult(intent, RC_BARCODE_CAPTURE);
-
-        }else if (v.getId() == R.id.save_purchase){
-
-            final ExecutorService service = Executors.newFixedThreadPool(1);
-            final Future<Integer> task;
-
-
-            //2016-05-05T18:54:03.5102707-03:00
-            SimpleDateFormat datetime = new SimpleDateFormat ("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZZZZZ", Locale.US);
-            datetime.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-            Date date = new Date(System.currentTimeMillis());
-
-            Purchases purchases = new Purchases();
-
-            Purchase purchase = new Purchase();
-            purchase.setItems(items);
-            purchase.setTime(datetime.format(date));
-
-
-            ArrayList<Purchase> ps = new ArrayList<>();
-            ps.add(purchase);
-
-            purchases.setPurchases(ps);
-
-
-            //task = service.submit(new POSTServiceClient("http://10.33.117.120:8080/catalog/purchases", purchases));
-            String serviceURL = Context.getContext().getServiceURL();
-            task = service.submit(new POSTServiceClient(serviceURL + "/purchases", purchases));
-
-
-            try {
-                Integer status = task.get();
-            } catch (final InterruptedException | ExecutionException ex) {
-                ex.printStackTrace();
-            } finally {
-                service.shutdownNow();
-            }
-
-
-            finish();
-        }
-    }
 
     private static String TAG = "BarCode Reader";
     private static final int ADD_ITEM = 9002;
@@ -160,5 +116,75 @@ public class AddNewPurchaseActivity extends AppCompatActivity implements View.On
         } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.save_purchase_activity_toolbar_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+
+        switch (item.getItemId()){
+
+            case R.id.add_item_no_barcode:
+
+                startActivity(new Intent(this.getApplicationContext(), AddItemActivity.class));
+                break;
+
+            case R.id.add_item_barcode:
+
+                startActivity(new Intent(this.getApplicationContext(), BarcodeCaptureActivity.class));
+                break;
+
+            case R.id.save_purchase:
+
+                final ExecutorService service = Executors.newFixedThreadPool(1);
+                final Future<Integer> task;
+
+
+                //2016-05-05T18:54:03.5102707-03:00
+                SimpleDateFormat datetime = new SimpleDateFormat ("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZZZZZ", Locale.US);
+                datetime.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+                Date date = new Date(System.currentTimeMillis());
+
+                Purchases purchases = new Purchases();
+
+                Purchase purchase = new Purchase();
+                purchase.setItems(items);
+                purchase.setTime(datetime.format(date));
+
+
+                ArrayList<Purchase> ps = new ArrayList<>();
+                ps.add(purchase);
+
+                purchases.setPurchases(ps);
+
+
+                //task = service.submit(new POSTServiceClient("http://10.33.117.120:8080/catalog/purchases", purchases));
+                String serviceURL = Context.getContext().getServiceURL();
+                task = service.submit(new POSTServiceClient(serviceURL + "/purchases", purchases));
+
+
+                try {
+                    Integer status = task.get();
+                } catch (final InterruptedException | ExecutionException ex) {
+                    ex.printStackTrace();
+                } finally {
+                    service.shutdownNow();
+                }
+
+
+                finish();
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }
