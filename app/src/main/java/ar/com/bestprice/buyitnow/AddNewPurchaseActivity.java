@@ -46,7 +46,15 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
 
         listView = (ListView) findViewById(R.id.listview_show_items_in_a_purchase);
 
-        String[] values = new String[] {};
+        Item item = (Item)getIntent().getSerializableExtra("Item");
+
+        items.add(item);
+
+        List itemsAsString = new ArrayList();
+
+        for (Item i: items ){
+            itemsAsString.add(i.toString());
+        }
 
         // Define a new Adapter
         // First parameter - Context
@@ -55,10 +63,11 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
         // Forth - the Array of data
 
         adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, android.R.id.text1, values);
+                android.R.layout.simple_list_item_1, android.R.id.text1, itemsAsString);
 
         // Assign adapter to ListView
         listView.setAdapter(adapter);
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.new_purchase_toolbar);
 
@@ -96,26 +105,27 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
 
             }
         }
-        else if(requestCode == ADD_ITEM) {
+        else{
+            if (resultCode == CommonStatusCodes.SUCCESS && data != null) {
 
-            Item item = (Item)data.getSerializableExtra("Item");
+                    Item item = (Item) data.getSerializableExtra("Item");
 
-            items.add(item);
+                    items.add(item);
 
-            List itemsAsString = new ArrayList();
+                    List itemsAsString = new ArrayList();
 
-            for (Item i: items ){
-                itemsAsString.add(i.toString());
+                    for (Item i : items) {
+                        itemsAsString.add(i.toString());
+                    }
+
+                    ArrayAdapter adapter = new ArrayAdapter<>(this,
+                            android.R.layout.simple_list_item_1, android.R.id.text1, itemsAsString);
+
+                    listView.setAdapter(adapter);
             }
-
-            ArrayAdapter adapter = new ArrayAdapter<>(this,
-                    android.R.layout.simple_list_item_1, android.R.id.text1, itemsAsString);
-
-            listView.setAdapter(adapter);
-
-        } else {
+        } /*else {
             super.onActivityResult(requestCode, resultCode, data);
-        }
+        }*/
     }
 
     @Override
@@ -134,8 +144,9 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
         switch (item.getItemId()){
 
             case R.id.add_item_no_barcode:
-
-                startActivity(new Intent(this.getApplicationContext(), AddItemActivity.class));
+                Intent intent = new Intent(this.getApplicationContext(), AddItemActivity.class);
+                intent.putExtra(Constants.CALLING_ACTIVITY, Constants.NEW_PURCHASE);
+                startActivityForResult(intent, Constants.NEW_PURCHASE);
                 break;
 
             case R.id.add_item_barcode:

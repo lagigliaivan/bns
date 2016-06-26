@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void renderView() {
+
         String jsonString = sendHttpRequest();
 
         if(jsonString != null) {
@@ -143,7 +144,9 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.add_item_no_barcode:
 
-                startActivity(new Intent(this.getApplicationContext(), AddItemActivity.class));
+                Intent intent = new Intent(this.getApplicationContext(), AddItemActivity.class);
+                intent.putExtra(Constants.CALLING_ACTIVITY, Constants.MAIN_ACTIVITY);
+                startActivity(intent);
                 break;
 
             case R.id.add_item_barcode:

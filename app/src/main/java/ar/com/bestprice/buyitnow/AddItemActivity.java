@@ -38,18 +38,29 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
         EditText description = (EditText)findViewById(R.id.description_text);
         EditText price = (EditText)findViewById(R.id.price_text);
 
+
         Item item = new Item();
         item.setId(id.getText().toString());
         item.setDescription(description.getText().toString());
         item.setPrice(Float.valueOf(price.getText().toString()));
 
-        Intent data = new Intent();
-        data.putExtra("Item", item);
+        triggerActivity(item);
 
-        Intent intent = new Intent(this.getApplicationContext(), AddNewPurchaseActivity.class);
-        startActivity(intent);
-
-        //setResult(CommonStatusCodes.SUCCESS, data);
         finish();
+    }
+
+    private void triggerActivity(Item item){
+
+        if (getIntent().getIntExtra(Constants.CALLING_ACTIVITY, 0) == Constants.NEW_PURCHASE){
+            Intent data = new Intent();
+            data.putExtra("Item", item);
+            setResult(CommonStatusCodes.SUCCESS, data);
+
+        } else {
+
+            Intent intent = new Intent(this.getApplicationContext(), AddNewPurchaseActivity.class);
+            intent.putExtra("Item", item);
+            startActivity(intent);
+        }
     }
 }
