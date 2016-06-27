@@ -50,10 +50,11 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         }
 
         TextView text = (TextView) convertView.findViewById(R.id.item_description);
-        text.setText( children.getDescription());
+        text.setText(children.getDescription());
 
         text = (TextView) convertView.findViewById(R.id.item_price);
-        text.setText(Float.toString(children.getPrice()));
+
+        text.setText(String.format("%.2f", children.getPrice()) + " $");
 
         convertView.setOnClickListener(new OnClickListener() {
             @Override
