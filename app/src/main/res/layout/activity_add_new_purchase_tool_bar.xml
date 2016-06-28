@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="ar.com.bestprice.buyitnow.AddNewPurchaseActivity">
 
+
     <ListView
         android:id="@+id/listview_show_items_in_a_purchase"
         android:layout_width="fill_parent"
@@ -24,4 +25,5 @@
         android:layout_alignParentBottom="true"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
+
 </RelativeLayout>

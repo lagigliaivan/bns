@@ -5,8 +5,8 @@
     android:layout_height="?android:attr/listPreferredItemHeight"
     android:layout_marginLeft="8dp"
     android:gravity="left"
+    android:textAppearance="?android:attr/textAppearanceMedium"
     android:paddingLeft="32dp"
     android:paddingTop="8dp"
     android:text="Test"
-    android:textSize="14sp"
     android:textStyle="bold" />
