@@ -3,18 +3,17 @@ package main
 import (
 	"log"
 	"testing"
-	"github.com/pos/infrastructure"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"bytes"
 	"fmt"
-	"github.com/pos/dto"
 	"io/ioutil"
 	"encoding/json"
 	"io"
 	"reflect"
-
+	"crypto/sha1"
+	"time"
 )
 
 
@@ -23,7 +22,7 @@ func init() {
 }
 
 var (
-	setOfItems = []dto.Item{
+	setOfItems = []Item{
 
 		{
 			Id: "1",
@@ -47,13 +46,13 @@ var (
 		},
 	}
 
-	postItems = dto.ItemContainer{Items:setOfItems}
+	postItems = ItemContainer{Items:setOfItems}
 )
 
 //Testing service to check GET /catalog/product/{id}
 func Test_GET_item_returns_404_when_it_does_not_exist(t *testing.T){
 
-	testingServer := getServer(NewItemService(infrastructure.NewMemDb()))
+	testingServer := getServer(NewItemService(NewMemDb()))
 	defer testingServer.Close()
 
 	itemToBeAdded := createItemDto()
@@ -71,7 +70,7 @@ func Test_GET_item_returns_404_when_it_does_not_exist(t *testing.T){
 func Test_GET_item_returns_200_when_it_exists(t *testing.T){
 
 	itemToBeAdded := createItemDto()
-	service := NewItemService(infrastructure.NewMemDb())
+	service := NewItemService(NewMemDb())
 
 	//Adding ITEM without calling RESTapi. Calling a service function directly
 	service.addUpdateItem(itemToBeAdded)
@@ -95,12 +94,12 @@ func Test_GET_item_returns_200_when_it_exists(t *testing.T){
 //Testing server to check POST /catalog/product/{id}
 func Test_POST_item_returns_201_when_it_is_successfully_created (t *testing.T) {
 
-	testingServer := getServer(NewItemService(infrastructure.NewMemDb()))
+	testingServer := getServer(NewItemService(NewMemDb()))
 
 	defer testingServer.Close()
 
 	itemToBeAdded := createItemDto()
-	items := dto.NewItemContainer()
+	items := NewItemContainer()
 	items.Add(itemToBeAdded)
 
 	url := getURLToBeTested(testingServer.URL);
@@ -116,14 +115,14 @@ func Test_POST_GET_returns_the_same_item_after_it_is_created(t *testing.T){
 
 	itemToBeAdded := createItemDto()
 
-	server := getServer(NewItemService(infrastructure.NewMemDb()))
+	server := getServer(NewItemService(NewMemDb()))
 	defer server.Close()
 
 	//POST Item
 	url := getURLToBeTested(server.URL);
 
 
-	items := dto.NewItemContainer()
+	items := NewItemContainer()
 	items.Add(itemToBeAdded)
 	res, err := httpPost("abafadfaf9a9fa0fa", strings.TrimSuffix(url, "/"), items)
 
@@ -155,11 +154,11 @@ func Test_PUT_item_returns_200_when_it_is_successfully_updated (t *testing.T) {
 	//POST Item
 	itemToBeAdded := createItemDto()
 
-	testingServer := getServer(NewItemService(infrastructure.NewMemDb()))
+	testingServer := getServer(NewItemService(NewMemDb()))
 	defer testingServer.Close()
 	url := getURLToBeTested(testingServer.URL);
 
-	items := dto.NewItemContainer()
+	items := NewItemContainer()
 	items.Add(itemToBeAdded)
 
 	res, err := httpPost("lagigliaiv@gmail.com.ar", strings.TrimSuffix(url, "/"), items)
@@ -201,13 +200,13 @@ func Test_POST_item_returns_400_when_body_is_sent_without_item_id(t *testing.T){
 	itemToBeAdded := createItemDto()
 	itemToBeAdded.Id = ""
 
-	server := getServer(NewItemService(infrastructure.NewMemDb()))
+	server := getServer(NewItemService(NewMemDb()))
 	defer server.Close()
 
 	//POST Item
 	url := getURLToBeTested(server.URL);
 
-	items := dto.NewItemContainer()
+	items := NewItemContainer()
 	items.Add(itemToBeAdded)
 
 	res, err := httpPost("lagigliaiv@gmail.com.ar", strings.TrimSuffix(url, "/"), items)
@@ -220,7 +219,7 @@ func Test_POST_item_returns_400_when_body_is_sent_without_item_id(t *testing.T){
 
 func Test_GET_items_returns_a_list_of_items(t *testing.T){
 
-	server := getServer(NewItemService(infrastructure.NewMemDb()))
+	server := getServer(NewItemService(NewMemDb()))
 	defer server.Close()
 
 	if httpPOST("lagigliaiv@gmail.com.ar", *server) != nil {
@@ -239,7 +238,7 @@ func Test_GET_items_returns_a_list_of_items(t *testing.T){
 		t.FailNow()
 	}
 
-	items := dto.NewItemContainer()
+	items := NewItemContainer()
 
 	body, err := ioutil.ReadAll(res.Body)
 
@@ -276,7 +275,7 @@ func Test_GET_items_returns_a_list_of_items(t *testing.T){
 /*
 func Test_POSTing_Date_Is_Stored_When_Item_Is_Saved(t *testing.T) {
 
-	server := getServer(NewItemService(infrastructure.NewMemDb()))
+	server := getServer(NewItemService(NewMemDb()))
 	defer server.Close()
 
 	if httpPOST(*server) != nil {
@@ -288,7 +287,7 @@ func Test_POSTing_Date_Is_Stored_When_Item_Is_Saved(t *testing.T) {
 //Testing functions that are not exposed as REST services.
 func Test_returns_an_error_when_item_does_NOT_exist (t *testing.T) {
 
-	service := NewItemService(infrastructure.NewMemDb());
+	service := NewItemService(NewMemDb());
 	item := service.getItem("1021")
 
 	if item.Id == "1021" {
@@ -300,7 +299,7 @@ func Test_returns_an_item_just_saved (t *testing.T) {
 
 	itemToBeAdded := createItemDto()
 
-	service := NewItemService(infrastructure.NewMemDb());
+	service := NewItemService(NewMemDb());
 	service.addUpdateItem(itemToBeAdded)
 
 	item := service.getItem(itemToBeAdded.Id)
@@ -312,7 +311,7 @@ func Test_returns_an_item_just_saved (t *testing.T) {
 
 func Test_returns_an_empty_item_if_it_does_not_exist(t *testing.T){
 
-	service := NewItemService(infrastructure.NewMemDb());
+	service := NewItemService(NewMemDb());
 	item := service.getItem("non_existing_item")
 
 	if item.Id != "" {
@@ -322,7 +321,7 @@ func Test_returns_an_empty_item_if_it_does_not_exist(t *testing.T){
 
 func Test_returns_no_error_when_adding_an_item(t *testing.T){
 
-	service := NewItemService(infrastructure.NewMemDb());
+	service := NewItemService(NewMemDb());
 	item := createItemDto()
 	err := service.addUpdateItem(item)
 
@@ -341,13 +340,13 @@ func deb(method string, url string, expectedStatusCode int, receivedStatusCode i
 	fmt.Print(&buf)
 }
 
-func createItemDto() dto.Item {
+func createItemDto() Item {
 
 	id := "12345"
 	price := float32(10.1)
 	descr := "milk 100 cm3"
 
-	return dto.Item{id, descr, price}
+	return Item{id, descr, price}
 }
 
 //API to be tested
@@ -381,7 +380,7 @@ func httpPOST(user string, server httptest.Server) error{
 	return nil
 }
 
-func httpPut(user, url string, item dto.Stringifiable) (resp * http.Response, err error) {
+func httpPut(user, url string, item Stringifiable) (resp * http.Response, err error) {
 
 	bodyAsString := item.ToJsonString()
 	log.Printf("body: %s", bodyAsString)
@@ -414,7 +413,7 @@ func httpGet(user, url string) (*http.Response, error){
 	return resp, err
 }
 
-func httpPost(user, url string, values dto.Stringifiable) (*http.Response, error){
+func httpPost(user, url string, values Stringifiable) (*http.Response, error){
 
 	body := strings.NewReader(values.ToJsonString())
 	req, err := http.NewRequest(http.MethodPost, url, body)
@@ -441,9 +440,9 @@ func isHTTPStatus(httpStatus int, res *http.Response, err error ) bool {
 	return !( (err != nil) || (res.StatusCode != httpStatus) )
 }
 
-func createItemFromJson(itemAsJson io.ReadCloser) dto.Item {
+func createItemFromJson(itemAsJson io.ReadCloser) Item {
 
-	item := new(dto.Item)
+	item := new(Item)
 	response, err := ioutil.ReadAll(itemAsJson)
 
 	if err != nil {
@@ -477,7 +476,7 @@ func init() {
 const STATUS_ERROR_MESSAGE string = "%s %s Received status code: %d different from what was expected: %d"
 
 var (
-	itemsPurchaseA = []dto.Item{
+	itemsPurchaseA = []Item{
 
 		{
 			Id: "1",
@@ -501,7 +500,7 @@ var (
 		},
 	}
 
-	itemsPurchaseB = []dto.Item{
+	itemsPurchaseB = []Item{
 
 		{
 			Id: "100",
@@ -525,11 +524,11 @@ var (
 		},
 	}
 
-	setOfPurchases = []dto.Purchase{
+	setOfPurchases = []Purchase{
 
 		{
 			Time: time.Now(),
-			Point:dto.NewPoint(-31.4165791, -64.1855098),
+			Point:NewPoint(-31.4165791, -64.1855098),
 			Shop:"Libertad",
 			Items:itemsPurchaseA,
 		},
@@ -548,11 +547,11 @@ var (
 
 	}
 
-	postPurchases = dto.PurchaseContainer{Purchases:setOfPurchases}
+	postPurchases = PurchaseContainer{Purchases:setOfPurchases}
 )
 
 func Test_GET_Purchases_WITH_NO_TOKEN_Returns_An_Error(t *testing.T) {
-	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
+	server := getServer(NewPurchaseService(NewMemDb()))
 	defer server.Close()
 
 	res, err := http.Get(getURL(server.URL))
@@ -567,7 +566,7 @@ func Test_GET_Purchases_WITH_NO_TOKEN_Returns_An_Error(t *testing.T) {
 func Test_GET_Purchases_Returns_A_List_Of_Purchases_By_User(t *testing.T) {
 
 
-	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
+	server := getServer(NewPurchaseService(NewMemDb()))
 	defer server.Close()
 
 	res, err := httpPost(user1, getURL(server.URL), postPurchases)
@@ -591,7 +590,7 @@ func Test_GET_Purchases_Returns_A_List_Of_Purchases_By_User(t *testing.T) {
 		t.FailNow()
 	}
 
-	purchases := new(dto.PurchaseContainer)
+	purchases := new(PurchaseContainer)
 
 	if err := json.Unmarshal(body, purchases); err != nil {
 
@@ -617,7 +616,7 @@ func Test_GET_Purchases_Returns_A_List_Of_Purchases_By_User(t *testing.T) {
 
 func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) {
 
-	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
+	server := getServer(NewPurchaseService(NewMemDb()))
 	defer server.Close()
 
 
@@ -643,7 +642,7 @@ func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) 
 		t.FailNow()
 	}
 
-	purchases := new(dto.PurchaseContainer)
+	purchases := new(PurchaseContainer)
 
 	if err := json.Unmarshal(body, purchases); err != nil {
 
@@ -667,13 +666,12 @@ func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) 
 		log.Print("Error, purchases saved not found")
 		t.FailNow();
 	}
-
 }
 
 func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *testing.T) {
 
 
-	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
+	server := getServer(NewPurchaseService(NewMemDb()))
 	defer server.Close()
 
 	res, err := httpPost(user1, getURL(server.URL), postPurchases)
@@ -697,7 +695,7 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 		t.FailNow()
 	}
 
-	purchases := new(dto.PurchasesByMonthContainer)
+	purchases := new(PurchasesByMonthContainer)
 
 	if err := json.Unmarshal(body, purchases); err != nil {
 
@@ -716,7 +714,7 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 
 func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_By_Month(t *testing.T) {
 
-	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
+	server := getServer(NewPurchaseService(NewMemDb()))
 	defer server.Close()
 
 	res, err := httpPost(user1, getURL(server.URL), postPurchases)
@@ -741,7 +739,7 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 		t.FailNow()
 	}
 
-	purchases := new(dto.PurchasesByMonthContainer)
+	purchases := new(PurchasesByMonthContainer)
 
 	if err := json.Unmarshal(body, purchases); err != nil {
 
@@ -760,7 +758,7 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 
 func Test_GET_Purchases_From_Other_User_Responds_different_purchases(t *testing.T) {
 
-	server := getServer(NewPurchaseService(infrastructure.NewMemDb()))
+	server := getServer(NewPurchaseService(NewMemDb()))
 	defer server.Close()
 
 	res, err := httpPost(user1, getURL(server.URL), postPurchases)
@@ -784,7 +782,7 @@ func Test_GET_Purchases_From_Other_User_Responds_different_purchases(t *testing.
 		t.FailNow()
 	}
 
-	purchases := new(dto.PurchasesByMonthContainer)
+	purchases := new(PurchasesByMonthContainer)
 
 	if err := json.Unmarshal(body, purchases); err != nil {
 
@@ -801,7 +799,7 @@ func Test_GET_Purchases_From_Other_User_Responds_different_purchases(t *testing.
 	log.Printf("GET items returned OK %s", body)
 }
 
-/*func Test_aws(t *testing.T){
+func Test_aws(t *testing.T){
 
 	endpoint := "http://172.17.0.2:8000"
 	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
@@ -848,10 +846,10 @@ func Test_GET_Purchases_From_Other_User_Responds_different_purchases(t *testing.
 		return
 	}
 	log.Println("Result:%s ", itemResult)
-	*//*for _, table := range result.TableNames {
+	/*for _, table := range result.TableNames {
 		log.Println(*table)
 	}*//*
-}*/
+}
 
 /*func isHTTPStatus(httpStatus int, res *http.Response, err error ) bool {
 	return !( (err != nil) || (res.StatusCode != httpStatus) )

@@ -68,16 +68,6 @@ func (db Mem_DB) SavePurchase( p Purchase, userId string) error {
 	db.lockP.Lock()
 	defer db.lockP.Unlock()
 
-	/*db.purchases[p.Time] = p
-	purchasesByMonth := db.purchasesByMonth[p.Time.Month()]
-
-	if  purchasesByMonth == nil {
-		purchasesByMonth = make([]Purchase, 0)
-	}
-	purchasesByMonth = append(purchasesByMonth, p)
-	db.purchasesByMonth[p.Time.Month()] = purchasesByMonth
-*/
-
 	userPurchasesByMonth := db.purchasesByUser[userId]
 
 	if  userPurchasesByMonth == nil {

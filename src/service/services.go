@@ -104,7 +104,6 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 
 func (service PurchaseService) handleGetPurchasesGroupByMonth(w http.ResponseWriter, r *http.Request) {
 
-
 	user := r.Header.Get(HEADER)
 	var purchasesByMonth map[time.Month][]Purchase
 
@@ -171,6 +170,7 @@ func (service PurchaseService) getPurchasesGroupedBy(user, period string) map[ti
 	for _,key := range keys {
 		sortedPurchases[time.Month(key)] = purchases[time.Month(key)];
 	}
+
 	log.Printf("Sorted Purchases:", sortedPurchases);
 	return  sortedPurchases;
 }
@@ -195,32 +195,6 @@ func (service PurchaseService) addUpdateItem(item Item) int {
 
 	return 0
 }
-
-//This function returns a map containing all the path params contained in the request URL.
-//In this case, the implementation uses mux.
-//This function is used by default, but can be overwritten for testing purposes or any other one.
-/*
-
-
-func getUser(r *http.Request) string {
-	return getPathParams(r)["user"]
-}
-
-func getUserId(header http.Header) string{
-	s := strings.SplitN(header.Get("Authorization"), " ", 2)
-	if len(s) != 2 { return "" }
-
-	b, err := base64.StdEncoding.DecodeString(s[1])
-	if err != nil { return "" }
-
-	pair := strings.SplitN(string(b), ":", 2)
-	if len(pair) != 2 { return "" }
-
-	//return pair[0] == "user" && pair[1] == "pass"
-	return pair[0]
-}*/
-
-
 
 type ItemsService struct {
 	GetRequestParameters GetPathParams
@@ -327,15 +301,7 @@ func (service ItemsService) handleGetItems(w http.ResponseWriter, r *http.Reques
 	log.Printf("GET items returned OK %s", itemsAsJson)
 
 }
-// @Title Get Users Information
-// @Description Get Users Information
-// @Accept json
-// @Param userId path int true "User ID"
-// @Success 200 {object} string "Success"
-// @Failure 401 {object} string "Access denied"
-// @Failure 404 {object} string "Not Found"
-// @Resource /users
-// @Router /v1/users/:userId.json [get]//PUT catalog/products/{id}
+
 func (service ItemsService) handlePutItem(w http.ResponseWriter, r *http.Request){
 
 	vars := service.GetRequestParameters(r)
