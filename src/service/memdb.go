@@ -55,13 +55,6 @@ func (db Mem_DB) SaveItem(item Item) int  {
 	log.Printf("SaveItem id:%s db.size now: %d", item.Id, len(db.items))
 	return 0;
 }
-/*
-func (db Mem_DB) GetPurchase(time time.Time) Purchase  {
-	db.lockP.Lock()
-	defer db.lockP.Unlock()
-	purchases := db.purchases[time]
-	return purchases
-}*/
 
 func (db Mem_DB) SavePurchase( p Purchase, userId string) error {
 
@@ -98,7 +91,7 @@ func (db Mem_DB) GetPurchases(userId string) []Purchase  {
 	return purchases
 }
 
-func (db Mem_DB) GetPurchasesGroupedByMonth(userId string) map[time.Month][]Purchase  {
+func (db Mem_DB) GetPurchasesByMonth(userId string, year int) map[time.Month][]Purchase  {
 
 	return db.purchasesByUser[userId]
 }

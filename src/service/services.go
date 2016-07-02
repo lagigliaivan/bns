@@ -69,7 +69,7 @@ func (service PurchaseService) handleRequestPurchases(w http.ResponseWriter, r *
 
 	if len(params) != 0 {
 		if params[GROUP_BY] != nil {
-			service.handleGetPurchasesGroupByMonth(w, r)
+			service.handleGetPurchasesByMonth(w, r)
 		}
 	}else {
 		handler := service.purchasesHandler[r.Method]
@@ -102,12 +102,21 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 	fmt.Fprintf(w, "%s", purchasesAsJson)
 }
 
-func (service PurchaseService) handleGetPurchasesGroupByMonth(w http.ResponseWriter, r *http.Request) {
+func (service PurchaseService) handleGetPurchasesByMonth(w http.ResponseWriter, r *http.Request) {
 
 	user := r.Header.Get(HEADER)
+	//params := r.URL.Query()
+
+	year := time.Now().Year()
+/*
+	if params["year"] != nil {
+		year = params["year"]
+	}*/
+
 	var purchasesByMonth map[time.Month][]Purchase
 
-	purchasesByMonth = service.getPurchasesGroupedBy(user, MONTH)
+
+	purchasesByMonth = service.getPurchasesByMonth(user, year)
 
 	pByMonthContainer := PurchasesByMonthContainer{make([]PurchasesByMonth, 0)}
 	pByMonth := PurchasesByMonth{}
@@ -153,11 +162,11 @@ func (service PurchaseService) getPurchases(userId string) []Purchase {
 	return  purchases;
 }
 
-func (service PurchaseService) getPurchasesGroupedBy(user, period string) map[time.Month][]Purchase {
+func (service PurchaseService) getPurchasesByMonth(user string, year int) map[time.Month][]Purchase {
 
 	log.Printf("Getting purchases from DB")
 
-	purchases := service.db.GetPurchasesGroupedByMonth(user)
+	purchases := service.db.GetPurchasesByMonth(user, year)
 	keys := make([]int, 0, len(purchases))
 
 	for key := range purchases {

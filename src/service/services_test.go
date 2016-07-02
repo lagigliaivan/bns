@@ -14,6 +14,9 @@ import (
 	"reflect"
 	"crypto/sha1"
 	"time"
+"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 
@@ -799,45 +802,106 @@ func Test_GET_Purchases_From_Other_User_Responds_different_purchases(t *testing.
 	log.Printf("GET items returned OK %s", body)
 }
 
-func Test_aws(t *testing.T){
+func getHashUserId(user string) string {
 
-	endpoint := "http://172.17.0.2:8000"
-	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
+	sha := sha1.New()
+	io.WriteString(sha, user)
+	var id string = fmt.Sprintf("%x", sha.Sum(nil))
+	return id
+}
 
+func getDynamoDBItem(id string, dt string, user string, shop string, items ItemContainer) map[string]* dynamodb.AttributeValue {
+
+	/*var its string
+
+	for _, it := range items {
+		its = it.ToJsonString()
+	}
+*/
 	it := map[string]* dynamodb.AttributeValue {
-		"user": {
-			S: aws.String("lagigliaivan"),
+		"id": {
+			S: aws.String(id),
 		},
-		"purchase": {
-			S: aws.String("2016-04-12T00:06:22.364Z"),
+		"dt": {
+			S: aws.String(dt),
 		},
-		"location": {
-			S: aws.String("-31.4165791, -64.1855098"),
+		"user":{
+			S: aws.String(user),
 		},
 		"shop":{
-			S: aws.String("Carrefour"),
+			S: aws.String(shop),
+		},
+		"items":{
+			//S: aws.String("[{\"itemid\":\"12313213\",\"description\":\"fadfaf\",\"price\":20},{\"itemid\":\"12313213\",\"description\":\"fadfa\",\"price\":20},{\"itemid\":\"12313213\",\"description\":\"fadfa\",\"price\":20},{\"itemid\":\"12313213\",\"description\":\"fadsfadf\",\"price\":20},{\"itemid\":\"12313213\",\"description\":\"fadfadf\",\"price\":20},]"),
+			S: aws.String(items.ToJsonString()),
 		},
 	}
-	tname := "Purchases"
-	putItem := dynamodb.PutItemInput{Item:it, TableName:&tname}
+
+	return it
+}
+
+var endpoint = "http://localhost:8000"
+var tname = "Purchases"
 
 
-	result, err := svc.PutItem(&putItem)
-	//result, err := svc.ListTables(&dynamodb.ListTablesInput{})
-	if err != nil {
-		log.Println(err)
-		return
+var dts = []string{
+
+		"2016-01-12T00:01:23Z",
+		"2016-02-12T10:06:23Z",
+		"2016-03-12T11:06:23Z",
+		"2016-04-12T12:06:23Z",
+		"2016-05-12T00:06:23Z",
+		"2016-06-12T13:06:23Z",
+		"2016-07-12T00:06:23Z",
+		"2016-08-12T00:06:23Z",
+		"2016-09-12T01:06:23Z",
+		"2016-10-12T14:06:23Z",
+		"2016-11-12T00:06:23Z",
+
+		"2016-01-13T00:06:23Z",
+		"2016-02-14T20:06:23Z",
+		"2016-03-19T00:06:23Z",
+		"2016-04-11T00:06:23Z",
+	  }
+
+func Test_items_creation_in_aws (t *testing.T) {
+
+	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
+
+	user := "lagigliaivan@gmail.com"
+	id := getHashUserId(user)
+
+	for _, dt := range dts {
+
+
+		items := []Item { Item{Id:"12312313", Description:"Cafe la morenita", Price:10},  Item{Id:"3332", Description:"Jabon de tocador", Price:13.4}}
+		itemsContainer := new (ItemContainer)
+		itemsContainer.Items = items
+
+
+		it := getDynamoDBItem(id, dt, user, "carrefour", *itemsContainer)
+		putItem := dynamodb.PutItemInput{Item:it, TableName:&tname}
+
+		result, err := svc.PutItem(&putItem)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		log.Println("Result :%s ", result)
 	}
-	log.Println("Result :%s ", result)
-	//tname := "Purchases"
-	key := map[string]* dynamodb.AttributeValue {
-		 "user": {
-			 S: aws.String("lagigliaivan"),
-		 },
-		 "purchase": {
-			 S: aws.String("2016-04-12T00:06:22.364Z"),
-		 },
-	 }
+
+
+
+
+	/*key := map[string]* dynamodb.AttributeValue {
+		"id": {
+			S: aws.String(id),
+		},
+		"dt": {
+			S: aws.String(dt),
+		},
+	}
 
 	item := dynamodb.GetItemInput{Key:key, TableName:&tname}
 	itemResult, err := svc.GetItem(&item)
@@ -845,15 +909,96 @@ func Test_aws(t *testing.T){
 		log.Println(err)
 		return
 	}
-	log.Println("Result:%s ", itemResult)
-	/*for _, table := range result.TableNames {
-		log.Println(*table)
-	}*//*
+
+	log.Println("Result:%s ", itemResult)*/
 }
 
-/*func isHTTPStatus(httpStatus int, res *http.Response, err error ) bool {
-	return !( (err != nil) || (res.StatusCode != httpStatus) )
-}*/
+func Test_aws(t *testing.T){
+
+	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
+
+	user := "lagigliaivan@gmail.com"
+
+	id := getHashUserId(user)
+
+	params := &dynamodb.QueryInput{
+		TableName: aws.String(tname),
+		ConsistentRead:      aws.Bool(true),
+		ExpressionAttributeNames: map[string]*string{
+			"#s": aws.String("shop"),
+			"#i": aws.String("items"),
+			"#d": aws.String("dt"),// Required
+		},
+		ProjectionExpression: aws.String("#s, #i, #d"),
+		ExpressionAttributeValues: map[string] *dynamodb.AttributeValue {
+			":v1": {
+				S:    aws.String(id),
+			},
+			":v2": {
+				S:    aws.String("2016-01-00T00:00:00Z"),
+			},
+			":v3": {
+				S:    aws.String("2016-12-31T00:00:00Z"),
+			},
+		},
+		KeyConditionExpression: aws.String("id = :v1 AND dt BETWEEN :v2 AND :v3 "),
+
+	}
+	resp, err := svc.Query(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp.Items)
+
+
+	//parseQueryResponse(resp.Items)
+
+}
+
+
+func parseQueryResponse (items []map[string]*dynamodb.AttributeValue) {
+
+		for _, p := range items{
+			fmt.Println(p)
+			t, err := time.Parse(time.RFC3339, *(p["dt"].S))
+
+			if err != nil {
+				fmt.Println("Error")
+			}
+
+			itemsContainer := new(ItemContainer)
+			if err := json.Unmarshal([]byte(*(p["items"].S)), itemsContainer); err != nil {
+
+				log.Printf("Error when reading response %s", err)
+				//t.FailNow()
+			}
+
+			purchase := Purchase{Time:t, Shop:*(p["shop"].S), Items:itemsContainer.Items}
+			fmt.Println(purchase)
+		}
+
+	/*body, err := ioutil.ReadAll(resp.Items)
+
+		if err != nil {
+			log.Fatal("Error")
+
+		}
+
+
+		purchases := new(PurchasesByMonthContainer)
+
+		if err := json.Unmarshal(body, purchases); err != nil {
+
+			log.Printf("Error when reading response %s", err)
+			//t.FailNow()
+		}*/
+}
 
 func getURL(url string) string{
 	return url + "/catalog/purchases"
