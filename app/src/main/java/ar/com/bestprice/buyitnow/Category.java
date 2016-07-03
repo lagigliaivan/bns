@@ -7,12 +7,12 @@ import java.util.Enumeration;
  */
 public enum Category {
 
-    MERCADERIA ("Mercaderia", 1, R.drawable.shopping_cart_icon_48),
-    DIVERSION   ("Diversion", 2, R.drawable.harlequin_red_icon_48),
-    IMPUESTOS   ("Impuestos", 3, R.drawable.taxes_icon_48),
-    SERVICIOS ("Servicios", 4, R.drawable.taxes_icon_48),
-    SALUD ("Salud", 5, R.drawable.pill_icon_48),
-    OTROS  ("Otros",6, R.drawable.joker_icon_48);
+    MERCADERIA ("Mercaderia", 1, R.drawable.shop_cart_icon_32),
+    DIVERSION   ("Diversion", 2, R.drawable.face_laugh_icon_32),
+    IMPUESTOS   ("Impuestos", 3, R.drawable.taxes_icon_32),
+    SERVICIOS ("Servicios", 4, R.drawable.payment_icon_32),
+    SALUD ("Salud", 5, R.drawable.pill_icon_32),
+    OTROS  ("Otros",6, R.drawable.basket_full_icon_32);
 
 
     private final String name;

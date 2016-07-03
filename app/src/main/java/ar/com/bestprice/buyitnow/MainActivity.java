@@ -98,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
     private SparseArray<Group> createData( List<PurchasesByMonth> purchasesByMonth) {
 
         SparseArray<Group> groups = new SparseArray<>();
+
         int j = 0;
         for (PurchasesByMonth purchases:purchasesByMonth) {
 

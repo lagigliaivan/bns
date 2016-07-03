@@ -12,7 +12,7 @@ public class Item implements Serializable{
     private String id;
     private String description;
     private Float price;
-    private Category category;
+    private String category = "";
 
     public String getId() {
         return id;
@@ -44,10 +44,17 @@ public class Item implements Serializable{
     }
 
     public Category getCategory() {
-        return category;
+
+        if (category.isEmpty()){
+
+            return Category.MERCADERIA;
+        }else {
+
+            return Category.valueOf(category.toUpperCase());
+        }
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(String category) {
         this.category = category;
     }
 }

@@ -82,7 +82,7 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
                 item.setId(id.getText().toString());
                 item.setDescription(description.getText().toString());
                 item.setPrice(Float.valueOf(price.getText().toString()));
-                item.setCategory(Category.valueOf(category));
+                item.setCategory(category);
 
                 startActivity(item);
 

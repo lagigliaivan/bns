@@ -108,6 +108,7 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded,
                              View convertView, ViewGroup parent) {
+
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.listrow_group, null);
         }
