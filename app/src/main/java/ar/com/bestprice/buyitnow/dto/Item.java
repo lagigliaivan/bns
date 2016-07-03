@@ -2,6 +2,8 @@ package ar.com.bestprice.buyitnow.dto;
 
 import java.io.Serializable;
 
+import ar.com.bestprice.buyitnow.Category;
+
 /**
  * Created by ivan on 31/03/16.
  */
@@ -10,6 +12,7 @@ public class Item implements Serializable{
     private String id;
     private String description;
     private Float price;
+    private Category category;
 
     public String getId() {
         return id;
@@ -38,5 +41,13 @@ public class Item implements Serializable{
     @Override
     public String toString() {
         return  description + "\t \t"+ price;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 }

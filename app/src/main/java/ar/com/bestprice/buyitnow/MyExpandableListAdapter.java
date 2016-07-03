@@ -1,8 +1,6 @@
 package ar.com.bestprice.buyitnow;
 
 import android.app.Activity;
-import android.graphics.drawable.ClipDrawable;
-import android.graphics.drawable.PictureDrawable;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,10 +47,21 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
             convertView = inflater.inflate(R.layout.listrow_details, null);
         }
 
-        TextView text = (TextView) convertView.findViewById(R.id.item_description);
+
+        TextView text = (TextView) convertView.findViewById(R.id.listrow_item_description);
         text.setText(children.getDescription());
 
+        Category category = children.getCategory();
+
+        int icon = R.drawable.wallet_icon;
+        if (children.getCategory() != null) {
+                icon = children.getCategory().getIcon();
+        }
+
+        text.setCompoundDrawablesWithIntrinsicBounds(icon, 0, 0, 0);
+
         text = (TextView) convertView.findViewById(R.id.item_price);
+
 
         text.setText(String.format("%.2f", children.getPrice()) + " $");
 

@@ -10,20 +10,20 @@
     android:baselineAligned="false">
 
 
-        <TextView
-            android:drawableLeft="@drawable/steak_icon"
-            android:id="@+id/item_description"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:drawablePadding="5dp"
-            android:gravity="left"
-            android:layout_column="1"
-            android:autoText="false"
-            android:paddingRight="@dimen/fab_margin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:background="@drawable/border"
-            android:layout_alignParentStart="true"/>
+    <TextView
+        android:drawableLeft="@drawable/steak_icon"
+        android:id="@+id/listrow_item_description"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:drawablePadding="5dp"
+        android:gravity="left"
+        android:layout_column="1"
+        android:autoText="false"
+        android:paddingRight="@dimen/fab_margin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/border"
+        android:layout_alignParentStart="true"/>
 
 
     <TextView
@@ -36,7 +36,7 @@
         android:gravity="right"
         android:textAlignment="center"
         android:layout_gravity="left"
-        android:layout_alignBottom="@+id/item_description"
+        android:layout_alignBottom="@+id/listrow_item_description"
         android:layout_alignParentEnd="true" />
 
     <!--

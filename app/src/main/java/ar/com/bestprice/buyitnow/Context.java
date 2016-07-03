@@ -14,7 +14,7 @@ public class Context {
     private String user = "mayname@gmail.com.ar";
     private String pass = "password";
     private String login;
-    private String serviceURL = "http://192.168.0.3:8080/catalog";
+    private String serviceURL = "http://192.168.0.4:8080/catalog";
 
     private Context(){}
 

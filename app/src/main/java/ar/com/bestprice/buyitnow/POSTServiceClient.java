@@ -36,9 +36,6 @@ public class POSTServiceClient implements Callable {
         int responseCode = 203;
         // BufferedReader reader = null;
         try {
-            // http://openweathermap.org/API#forecast
-            //URL url = new URL("http://10.33.117.120:8080/catalog/products/");
-            //URL url = new URL("http://10.33.117.120:8080/catalog/purchases");
 
             URL url = new URL(this.url);
 
@@ -77,14 +74,7 @@ public class POSTServiceClient implements Callable {
         finally{
             if (urlConnection != null) {
                 urlConnection.disconnect();
-            }/*
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e("PlaceholderFragment", "Error closing stream", e);
-                }
-            }*/
+            }
         }
         return responseCode;
     }

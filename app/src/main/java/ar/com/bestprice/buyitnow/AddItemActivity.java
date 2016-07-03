@@ -5,12 +5,18 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
+import android.widget.TextView;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
 
+
+import java.util.ArrayList;
 
 import ar.com.bestprice.buyitnow.barcodereader.BarcodeCaptureActivity;
 import ar.com.bestprice.buyitnow.dto.Item;
@@ -28,6 +34,19 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_item);
+        Spinner spinner = (Spinner) findViewById(R.id.add_item_spinner);
+
+        ArrayList arraySpinner = new ArrayList();
+
+        for (Category c : Category.values()) {
+            arraySpinner.add(c);
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, arraySpinner);
+
+
+        spinner.setAdapter(adapter);
 
     }
 
@@ -49,14 +68,21 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
 
             case R.id.save_purchase_item: //save item button was pushed
 
-                EditText id = (EditText)findViewById(R.id.id_text);
+                EditText id = (EditText)findViewById(R.id.add_item_prod_id);
                 EditText description = (EditText)findViewById(R.id.description_text);
                 EditText price = (EditText)findViewById(R.id.price_text);
+
+                Spinner spinner = (Spinner)findViewById(R.id.add_item_spinner);
+
+                TextView textView = (TextView)spinner.getSelectedView();
+                String category = textView.getText().toString();
+
 
                 Item item = new Item();
                 item.setId(id.getText().toString());
                 item.setDescription(description.getText().toString());
                 item.setPrice(Float.valueOf(price.getText().toString()));
+                item.setCategory(Category.valueOf(category));
 
                 startActivity(item);
 
@@ -98,7 +124,7 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
         if(requestCode == RC_BARCODE_CAPTURE && resultCode == CommonStatusCodes.SUCCESS){
 
             Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
-            EditText id = (EditText)findViewById(R.id.id_text);
+            EditText id = (EditText)findViewById(R.id.add_item_prod_id);
             id.setText(barcode.displayValue);
 
         }else if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK) {

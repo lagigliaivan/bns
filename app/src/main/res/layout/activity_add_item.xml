@@ -11,27 +11,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="ID:"
-        android:id="@+id/id"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/id_text"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/id"
-        android:layout_toStartOf="@+id/take_picture" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Descripcion:"
         android:id="@+id/description"
-        android:layout_marginTop="25dp"
-        android:layout_below="@+id/id_text"
+        android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
 
     <EditText
@@ -46,11 +28,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Precio:"
+        android:text="@string/add_item_price"
         android:id="@+id/price"
         android:layout_below="@+id/description_text"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="35dp" />
+        android:layout_marginTop="28dp" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -60,7 +42,8 @@
         android:id="@+id/price_text"
         android:layout_below="@+id/price"
         android:layout_alignParentStart="true"
-        android:layout_alignEnd="@+id/description_text" />
+        android:layout_toStartOf="@+id/textView2"
+        android:layout_alignEnd="@+id/description" />
 
     <ImageButton
         android:layout_width="wrap_content"
@@ -74,21 +57,12 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Save"
+        android:text="@string/add_item_save"
         android:id="@+id/save_purchase_item"
         android:onClick="onClick"
-        android:layout_below="@+id/price_text"
-        android:layout_marginTop="63dp"
-        android:layout_alignEnd="@+id/product_picture"
-        android:layout_toEndOf="@+id/id" />
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/imageButton_barcode"
-        android:src="@drawable/barcode"
-        android:layout_alignTop="@+id/id_text"
-        android:layout_toEndOf="@+id/id_text"
-        android:onClick="onClick"/>
+        android:layout_marginTop="55dp"
+        android:layout_below="@+id/add_item_prod_id"
+        android:layout_centerHorizontal="true" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -97,6 +71,56 @@
         android:layout_alignTop="@+id/price_text"
         android:layout_alignStart="@+id/take_picture"
         style="@android:style/Widget.WebView" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="ID:"
+        android:id="@+id/textView"
+        android:layout_below="@+id/price_text"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="38dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/add_item_prod_id"
+        android:layout_alignBottom="@+id/imageButton_barcode"
+        android:layout_alignParentStart="true"
+        android:layout_alignEnd="@+id/description_text" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageButton_barcode"
+        android:src="@drawable/barcode"
+        android:onClick="onClick"
+        android:layout_below="@+id/textView"
+        android:layout_toEndOf="@+id/product_picture" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/add_item_category"
+        android:id="@+id/textView2"
+        android:layout_above="@+id/product_picture"
+        android:layout_toEndOf="@+id/save_purchase_item" />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/add_item_spinner"
+        android:spinnerMode="dropdown"
+        android:layout_above="@+id/textView"
+        android:layout_alignEnd="@+id/imageButton_barcode"
+        android:layout_toEndOf="@+id/price_text"
+        android:layout_below="@+id/textView2"
+        android:layout_alignParentEnd="false"
+        android:textAlignment="center"
+        android:touchscreenBlocksFocus="false"
+        android:theme="@style/Animation.AppCompat.DropDownUp" />
 
 </RelativeLayout>
 
