@@ -14,7 +14,7 @@ import (
 	"reflect"
 	"crypto/sha1"
 	"time"
-"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 )
@@ -802,22 +802,8 @@ func Test_GET_Purchases_From_Other_User_Responds_different_purchases(t *testing.
 	log.Printf("GET items returned OK %s", body)
 }
 
-func getHashUserId(user string) string {
-
-	sha := sha1.New()
-	io.WriteString(sha, user)
-	var id string = fmt.Sprintf("%x", sha.Sum(nil))
-	return id
-}
-
 func getDynamoDBItem(id string, dt string, user string, shop string, items ItemContainer) map[string]* dynamodb.AttributeValue {
 
-	/*var its string
-
-	for _, it := range items {
-		its = it.ToJsonString()
-	}
-*/
 	it := map[string]* dynamodb.AttributeValue {
 		"id": {
 			S: aws.String(id),
@@ -864,12 +850,12 @@ var dts = []string{
 		"2016-04-11T00:06:23Z",
 	  }
 
-func Test_items_creation_in_aws (t *testing.T) {
+func Test_aws_items_creation(t *testing.T) {
+
+	count := 0
 
 	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
 
-	user := "lagigliaivan@gmail.com"
-	id := getHashUserId(user)
 
 	for _, dt := range dts {
 
@@ -878,8 +864,8 @@ func Test_items_creation_in_aws (t *testing.T) {
 		itemsContainer := new (ItemContainer)
 		itemsContainer.Items = items
 
-
-		it := getDynamoDBItem(id, dt, user, "carrefour", *itemsContainer)
+		user := "mayuser:password@gmail.com.ar"
+		it := getDynamoDBItem(user1, dt, user, "carrefour", *itemsContainer)
 		putItem := dynamodb.PutItemInput{Item:it, TableName:&tname}
 
 		result, err := svc.PutItem(&putItem)
@@ -887,12 +873,19 @@ func Test_items_creation_in_aws (t *testing.T) {
 			log.Println(err)
 			return
 		}
+		log.Println("Result :%s ", result)
+
+		user = "mayuser2:password@gmail.com.ar"
+		it = getDynamoDBItem(user2, dt, user, "carrefour", *itemsContainer)
+		putItem = dynamodb.PutItemInput{Item:it, TableName:&tname}
+
+		count = count+2
 
 		log.Println("Result :%s ", result)
 	}
 
 
-
+	log.Printf("%d items were inserted", count)
 
 	/*key := map[string]* dynamodb.AttributeValue {
 		"id": {
@@ -913,13 +906,12 @@ func Test_items_creation_in_aws (t *testing.T) {
 	log.Println("Result:%s ", itemResult)*/
 }
 
-func Test_aws(t *testing.T){
+func Test_aws_items_query(t *testing.T){
 
 	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
 
-	user := "lagigliaivan@gmail.com"
 
-	id := getHashUserId(user)
+	id := user1
 
 	params := &dynamodb.QueryInput{
 		TableName: aws.String(tname),
@@ -927,7 +919,7 @@ func Test_aws(t *testing.T){
 		ExpressionAttributeNames: map[string]*string{
 			"#s": aws.String("shop"),
 			"#i": aws.String("items"),
-			"#d": aws.String("dt"),// Required
+			"#d": aws.String("dt"),
 		},
 		ProjectionExpression: aws.String("#s, #i, #d"),
 		ExpressionAttributeValues: map[string] *dynamodb.AttributeValue {
@@ -954,10 +946,10 @@ func Test_aws(t *testing.T){
 	}
 
 	// Pretty-print the response data.
-	fmt.Println(resp.Items)
+	fmt.Print(resp)
 
 
-	//parseQueryResponse(resp.Items)
+	parseQueryResponse(resp.Items)
 
 }
 
@@ -965,7 +957,7 @@ func Test_aws(t *testing.T){
 func parseQueryResponse (items []map[string]*dynamodb.AttributeValue) {
 
 		for _, p := range items{
-			fmt.Println(p)
+			//fmt.Println(p)
 			t, err := time.Parse(time.RFC3339, *(p["dt"].S))
 
 			if err != nil {
@@ -983,21 +975,6 @@ func parseQueryResponse (items []map[string]*dynamodb.AttributeValue) {
 			fmt.Println(purchase)
 		}
 
-	/*body, err := ioutil.ReadAll(resp.Items)
-
-		if err != nil {
-			log.Fatal("Error")
-
-		}
-
-
-		purchases := new(PurchasesByMonthContainer)
-
-		if err := json.Unmarshal(body, purchases); err != nil {
-
-			log.Printf("Error when reading response %s", err)
-			//t.FailNow()
-		}*/
 }
 
 func getURL(url string) string{

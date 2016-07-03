@@ -1,12 +1,18 @@
 package main
 
 import (
-	//"fmt"
 	"time"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"fmt"
+	"encoding/json"
+	"log"
+	"strings"
+	"errors"
+)
+const (
+	PURCHASES = "Purchases"
 )
 
 type DB interface {
@@ -14,69 +20,158 @@ type DB interface {
 	SaveItem(Item) int
 	GetItems() []Item
 
-	//GetPurchase(time.Time) Purchase
 	SavePurchase(Purchase, string) error
 	GetPurchases(string) []Purchase
 	GetPurchasesByMonth(string, int) map[time.Month][]Purchase
-	//GetPurchasesByUser(user string)
+
 }
 
-type CatalogDB struct {
+type DynamoDB struct {
 	endpoint string
 	svc *dynamodb.DynamoDB
 }
 
-func NewCatalogDB() *CatalogDB {
+func NewDynamoDB(endpoint, region string) (*DynamoDB, error) {
 
-	catalogDB := new(CatalogDB)
-	catalogDB.endpoint = "http://localhost:8000"
-	catalogDB.svc = dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&catalogDB.endpoint}))
+	if strings.Compare(endpoint, "") == 0 || strings.Compare(region, "") == 0 {
+		return nil, errors.New("endpoint or region cannot be nil")
+	}
 
-	return catalogDB
+	catalogDB := new(DynamoDB)
+	catalogDB.endpoint = endpoint
+	catalogDB.svc = dynamodb.New(session.New(&aws.Config{Region: aws.String(region), Endpoint:&catalogDB.endpoint}))
+
+	return catalogDB, nil
 }
 
-func (catDb CatalogDB) GetItem(id string) (Item){
+func (catDb DynamoDB) GetItem(id string) (Item){
 	item := Item{}
 	item.Id = id
 	return item
 }
 
-func (catDb CatalogDB) GetItems() []Item{
+func (catDb DynamoDB) GetItems() []Item{
 	return nil
 }
 
-func (catDb CatalogDB) SaveItem(Item) int {
+func (catDb DynamoDB) SaveItem(Item) int {
 
 	return 0
 }
 
-func (catDb CatalogDB) GetPurchase(time time.Time) Purchase  {
+func (catDb DynamoDB) GetPurchase(time time.Time) Purchase  {
 
 	return Purchase{}
 }
 
-func (catDb CatalogDB) SavePurchase( p Purchase, userId string) error {
+func (catDb DynamoDB) SavePurchase( p Purchase, userId string) error {
+
+	tname := PURCHASES
+
+	it := buildDynamoItem(p, userId)
+
+	putItem := dynamodb.PutItemInput{Item:it, TableName:&tname}
+
+	result, err := catDb.svc.PutItem(&putItem)
 
 
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	log.Println(result)
 	return nil
 }
 
-func (catDb CatalogDB) GetPurchases() []Purchase  {
+func (catDb DynamoDB) GetPurchases(user string) []Purchase  {
 
+	resp, err := catDb.getPurchasesFromAWS(user, time.Now().Year())
 
-	return []Purchase{}
+	if err != nil {
+		log.Printf("Error while querying DB %s\n", err)
+		return []Purchase{}
+	}
+
+	purchases := []Purchase{}
+
+	for _, p := range resp.Items{
+
+		t, err := time.Parse(time.RFC3339, *(p["dt"].S))
+
+		if err != nil {
+			fmt.Printf("Error while parsing Purchase date: %s \n", err)
+			return []Purchase{}
+		}
+
+		itemsContainer := new(ItemContainer)
+		if err := json.Unmarshal([]byte(*(p["items"].S)), itemsContainer); err != nil {
+
+			log.Printf("Error when reading response %s", err)
+			return []Purchase{}
+		}
+
+		purchase := Purchase{Time:t, Shop:*(p["shop"].S), Items:itemsContainer.Items}
+
+		purchases = append(purchases, purchase)
+		fmt.Println(purchase)
+	}
+
+	return purchases
 }
 
-func (catDb CatalogDB) GetPurchasesByMonth(user string, year int) map[time.Month][]Purchase  {
+func (catDb DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month][]Purchase  {
 
-	table := "purchases"
+
+	resp, err := catDb.getPurchasesFromAWS(user, year)
+
+	if err != nil {
+		log.Printf("Error while querying DB %s\n", err)
+		return make(map[time.Month][]Purchase)
+	}
+
+	purchasesByMonth := make(map[time.Month][]Purchase)
+
+	for _, p := range resp.Items{
+
+		t, err := time.Parse(time.RFC3339, *(p["dt"].S))
+
+		if err != nil {
+			fmt.Printf("Error while parsing Purchase date: %s \n", err)
+			return make(map[time.Month][]Purchase)
+		}
+
+		itemsContainer := new(ItemContainer)
+		if err := json.Unmarshal([]byte(*(p["items"].S)), itemsContainer); err != nil {
+
+			log.Printf("Error when reading response %s", err)
+			return make(map[time.Month][]Purchase)
+		}
+
+		purchase := Purchase{Time:t, Shop:*(p["shop"].S), Items:itemsContainer.Items}
+
+		if purchasesByMonth[t.Month()] == nil {
+			purchasesByMonth[t.Month()] = make([]Purchase,0)
+		}
+		purchasesByMonth[t.Month()] = append(purchasesByMonth[t.Month()], purchase)
+
+		fmt.Println(purchase)
+	}
+
+
+	return purchasesByMonth
+}
+
+func (catDb DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.QueryOutput, error) {
+
+	log.Println("Querying AWS Dynamodb")
 
 	from := fmt.Sprintf("%d%s", year, "-01-00T00:00:00Z")
 	to := fmt.Sprintf("%d%s", year, "-12-31T23:59:00Z")
 
- 	params := &dynamodb.QueryInput{
-		TableName: aws.String(table),
-		ConsistentRead:      aws.Bool(true),
+	params := &dynamodb.QueryInput{
+		TableName: aws.String(PURCHASES),
+		ConsistentRead: aws.Bool(true),
 		ExpressionAttributeValues: map[string] *dynamodb.AttributeValue {
 			":v1": {
 				S:    aws.String(user),
@@ -89,40 +184,54 @@ func (catDb CatalogDB) GetPurchasesByMonth(user string, year int) map[time.Month
 			},
 		},
 		KeyConditionExpression: aws.String("id = :v1 AND dt BETWEEN :v2 AND :v3 "),
-
 	}
+
 	resp, err := catDb.svc.Query(params)
 
+	log.Println(resp)
+
 	if err != nil {
-		// Print the error, cast err to awserr.Error to get the Code and
-		// Message from an error.
 		fmt.Println(err.Error())
-		return make(map[time.Month][]Purchase)
+		return nil, err
 	}
 
-	// Pretty-print the response data.
-	fmt.Println(resp)
-
-	/*body, err := ioutil.ReadAll(resp)
-
-	if err != nil {
-		log.Fatal("Error")
-
-	}
-
-
-	purchases := new(PurchasesByMonthContainer)
-
-	if err := json.Unmarshal(body, purchases); err != nil {
-
-		log.Printf("Error when reading response %s", err)
-		//t.FailNow()
-	}
-*/
-
-	return make(map[time.Month][]Purchase)
+	return resp, nil
 }
 
-func (catDb CatalogDB) GetPurchasesByUser(user string) []Purchase  {
-	return []Purchase{}
+
+//func buildDynamoItem(id, dt, user, shop, items string) map[string]* dynamodb.AttributeValue {
+func buildDynamoItem(purchase Purchase, user string) map[string]* dynamodb.AttributeValue {
+
+
+	shop := purchase.Shop
+
+	if shop == "" {
+		shop = "-"
+	}
+
+	itemsContainer := ItemContainer{}
+
+	for _, item := range purchase.Items {
+		itemsContainer.Add(item)
+	}
+
+	it := map[string]* dynamodb.AttributeValue {
+		"id": {
+			S: aws.String(user),
+		},
+		"dt": {
+			S: aws.String(purchase.Time.Format(time.RFC3339)),
+		},
+		"user":{
+			S: aws.String(user),
+		},
+		"shop":{
+			S: aws.String(shop),
+		},
+		"items":{
+			S: aws.String(itemsContainer.ToJsonString()),
+		},
+	}
+
+	return it
 }

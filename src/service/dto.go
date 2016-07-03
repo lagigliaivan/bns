@@ -18,6 +18,7 @@ type Item struct {
 	Id          string  `json:"id"`
 	Description string  `json:"description"`
 	Price       float32 `json:"price"`
+	Category    string  `json:"category"`
 }
 
 
@@ -77,7 +78,7 @@ func (items ItemContainer) IsEmpty() bool{
 
 
 type Purchase struct {
-	Time time.Time `json:"time"`//DateTime when this purchase was acquired.
+	Time time.Time `json:"time"`//DateTime when this purchase was done.
 	Items [] Item `json:"items"`
 	Point Point `json:"location"`
 	Shop string `json:"shop"`

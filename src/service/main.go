@@ -13,10 +13,13 @@ import (
 func main() {
 
 	router := NewRouter()
-	db := NewMemDb()
+	//db := NewMemDb()
+	db, _ := NewDynamoDB("http://localhost:8000", "us-west-2")
 
+	/*
 	itemsService := NewItemService(db)
 	itemsService.ConfigureRouter(router)
+	*/
 
 	purchasesService := NewPurchaseService(db)
 	purchasesService.ConfigureRouter(router)
