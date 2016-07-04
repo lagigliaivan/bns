@@ -4,14 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ExpandableListView listView = null;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -41,24 +41,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void renderView() {
 
-        String jsonString = sendHttpRequest();
+        renderPurchasesList();
 
-        if(jsonString != null) {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.main_tool_bar);
 
-            PurchasesContainer purchasesContainer = parseJsonString(jsonString);
-            ExpandableListView listView = getListView();
+        setSupportActionBar(toolbar);
 
-            MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
-            listView.setAdapter(adapter);
-
-            Toolbar toolbar = (Toolbar) findViewById(R.id.main_tool_bar);
-
-            setSupportActionBar(toolbar);
-
-            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
-
-        }
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
     }
 
@@ -146,14 +136,14 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.refresh_purchases:
 
-                RefreshPurchasesList();
+                renderPurchasesList();
                 break;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void RefreshPurchasesList() {
+    private void renderPurchasesList() {
 
         String jsonString = sendHttpRequest();
         PurchasesContainer purchasesContainer = parseJsonString(jsonString);
@@ -161,6 +151,21 @@ public class MainActivity extends AppCompatActivity {
 
         ExpandableListView listView = getListView();
         listView.setAdapter(adapter);
+
+
+        Map<Integer, PurchasesGroup> purchases = getPurchasesByMonth(purchasesContainer.getPurchasesByMonth());
+
+        float purchasesAverage = 0;
+
+        for (PurchasesGroup group : purchases.values()) {
+            purchasesAverage += group.getPurchasesTotalPrice();
+        }
+
+        purchasesAverage = purchasesAverage / purchases.size();
+
+        TextView average = (TextView) findViewById(R.id.average);
+        average.setText(String.format("Month average: %.2f", purchasesAverage));
+
     }
 
     private PurchasesContainer parseJsonString(String json){
@@ -179,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        RefreshPurchasesList();
+        renderPurchasesList();
     }
 
 }

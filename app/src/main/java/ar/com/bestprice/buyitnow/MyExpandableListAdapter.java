@@ -10,6 +10,7 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -116,8 +117,11 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
             convertView = inflater.inflate(R.layout.listrow_group, null);
         }
         //TODO Please try to separate text from numbers by no using tabs
-        CheckedTextView textView = (CheckedTextView) ((LinearLayout)convertView).getChildAt(0);
-        ImageView image = (ImageView) ((LinearLayout)convertView).getChildAt(1);
+        RelativeLayout relativeLayout = (RelativeLayout) ((LinearLayout)convertView).getChildAt(0);
+
+        CheckedTextView checkedTextView = (CheckedTextView) relativeLayout.getChildAt(0);
+        TextView textView = (TextView) relativeLayout.getChildAt(1);
+        ImageView image = (ImageView) relativeLayout.getChildAt(2);
 
 
         PurchasesGroup purchasesByMonth = (PurchasesGroup) getGroup(groupPosition);
@@ -140,23 +144,8 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         } else {
             image.setImageResource(R.drawable.run_icon_24);
         }
-
-        textView.setText(String.format("%s\t\t $ %.2f", purchasesByMonth.getString(), purchasesByMonth.getPurchasesTotalPrice()));
-
-
-
-        //TODO Please try to separate text from numbers by no using tabs
-       /* CheckedTextView textView = (CheckedTextView) ((LinearLayout)convertView).getChildAt(0);
-        TextView textView2 = (TextView) ((LinearLayout)convertView).getChildAt(1);*/
-
-
-       /* ((CheckedTextView) convertView).setText(String.format("%s\t\t\t\t $ %.2f", purchasesGroup.getString(), purchasesGroup.getPurchasesTotalPrice()));
-        ((CheckedTextView) convertView).setChecked(isExpanded);*/
-/*
-        textView.setText(String.format("%s\t\t\t\t $ %.2f", purchasesGroup.getString(), purchasesGroup.getPurchasesTotalPrice()));
-        textView.setChecked(isExpanded);
-*/
-   //     textView2.setText(String.format("%s\t\t $ %.2f", purchasesByMonth.getString(), purchasesByMonth.getPurchasesTotalPrice()));
+        checkedTextView.setText(purchasesByMonth.getString());
+        textView.setText(String.format("$%.2f",purchasesByMonth.getPurchasesTotalPrice()));
 
         return convertView;
     }
