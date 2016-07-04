@@ -11,7 +11,10 @@ import android.widget.ExpandableListView;
 
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -51,16 +54,17 @@ public class MainActivity extends AppCompatActivity {
             Toolbar toolbar = (Toolbar) findViewById(R.id.main_tool_bar);
 
             setSupportActionBar(toolbar);
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
+
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             getSupportActionBar().setDisplayShowTitleEnabled(false);
+
         }
 
     }
 
     private MyExpandableListAdapter getListViewAdapter(PurchasesContainer purchasesContainer) {
 
-        SparseArray<Group> groups = createData(purchasesContainer.getPurchasesByMonth());
+        Map<Integer, PurchasesGroup> groups = getPurchasesByMonth(purchasesContainer.getPurchasesByMonth());
         return new MyExpandableListAdapter(this, groups);
 
     }
@@ -95,40 +99,33 @@ public class MainActivity extends AppCompatActivity {
         return listView;
     }
 
-    private SparseArray<Group> createData( List<PurchasesByMonth> purchasesByMonth) {
+    private Map<Integer, PurchasesGroup> getPurchasesByMonth(List<PurchasesByMonth> purchasesByMonth) {
 
-        SparseArray<Group> groups = new SparseArray<>();
+        Map<Integer, PurchasesGroup> groups = new HashMap<>();
 
         int j = 0;
         for (PurchasesByMonth purchases:purchasesByMonth) {
 
-            Group group = new Group(purchases.getMonth());
+            PurchasesGroup purchasesGroup = new PurchasesGroup(Month.valueOf(purchases.getMonth().toUpperCase()));
 
             for (Purchase purchase : purchases.getPurchases()){
 
-                for(Item item: purchase.getItems()) {
-                    group.children.add(item);
-                }
-            }
+                float purchaseTotalPrice = 0;
 
-            groups.append(j, group);
+                for(Item item: purchase.getItems()) {
+
+                    purchaseTotalPrice += item.getPrice();
+                    purchasesGroup.children.add(item);
+                }
+
+                purchasesGroup.setPurchasesTotalPrice(purchaseTotalPrice);
+            }
+            groups.put(j, purchasesGroup);
             j++;
         }
 
         return groups;
 
-    }
-    private PurchasesContainer parseJsonString(String json){
-
-        Gson gson = new Gson();
-        PurchasesContainer p = gson.fromJson(json, PurchasesContainer.class);
-        return p;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_activity_toolbar_menu, menu);
-        return true;
     }
 
     @Override
@@ -149,15 +146,40 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.refresh_purchases:
 
-                String jsonString = sendHttpRequest();
-                PurchasesContainer purchasesContainer = parseJsonString(jsonString);
-                MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
-
-                ExpandableListView listView = getListView();
-                listView.setAdapter(adapter);
+                RefreshPurchasesList();
                 break;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    private void RefreshPurchasesList() {
+
+        String jsonString = sendHttpRequest();
+        PurchasesContainer purchasesContainer = parseJsonString(jsonString);
+        MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
+
+        ExpandableListView listView = getListView();
+        listView.setAdapter(adapter);
+    }
+
+    private PurchasesContainer parseJsonString(String json){
+
+        Gson gson = new Gson();
+        PurchasesContainer p = gson.fromJson(json, PurchasesContainer.class);
+        return p;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_activity_toolbar_menu, menu);
+        return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        RefreshPurchasesList();
+    }
+
 }

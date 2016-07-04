@@ -14,6 +14,7 @@ public class Item implements Serializable{
     private Float price;
     private String category = "";
 
+
     public String getId() {
         return id;
     }

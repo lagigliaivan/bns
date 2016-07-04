@@ -16,6 +16,9 @@ import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
 
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import ar.com.bestprice.buyitnow.barcodereader.BarcodeCaptureActivity;
@@ -78,8 +81,29 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
                 String category = textView.getText().toString();
 
 
+                String itemId = id.getText().toString();
+
+
+
+                if(itemId.isEmpty()){
+
+                    MessageDigest crypt = null;
+                    try {
+                        crypt = MessageDigest.getInstance("SHA-1");
+                        crypt.reset();
+                        crypt.update(description.getText().toString().getBytes("UTF-8"));
+                    } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+
+                    itemId = Context.byteToHex(crypt.digest());
+
+                }
+
                 Item item = new Item();
-                item.setId(id.getText().toString());
+                item.setId(itemId);
                 item.setDescription(description.getText().toString());
                 item.setPrice(Float.valueOf(price.getText().toString()));
                 item.setCategory(category);
@@ -121,7 +145,7 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if(requestCode == RC_BARCODE_CAPTURE && resultCode == CommonStatusCodes.SUCCESS){
+        if(requestCode == RC_BARCODE_CAPTURE && resultCode == CommonStatusCodes.SUCCESS && data != null){
 
             Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
             EditText id = (EditText)findViewById(R.id.add_item_prod_id);

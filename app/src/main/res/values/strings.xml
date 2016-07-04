@@ -76,6 +76,7 @@
     <string name="add_item_description">Description</string>
     <string name="add_item_save">Save</string>
     <string name="add_item_category">Category</string>
+    <string name="test">Test</string>
 
 
 </resources>

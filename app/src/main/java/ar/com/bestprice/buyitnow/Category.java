@@ -1,7 +1,5 @@
 package ar.com.bestprice.buyitnow;
 
-import java.util.Enumeration;
-
 /**
  * Created by ivan on 03/07/16.
  */
@@ -28,4 +26,5 @@ public enum Category {
     public String getName() { return name; }
     public int getId() { return id; }
     public int getIcon() {return icon;}
+
 }

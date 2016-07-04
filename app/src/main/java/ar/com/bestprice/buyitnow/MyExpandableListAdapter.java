@@ -8,19 +8,23 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckedTextView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Map;
 
 import ar.com.bestprice.buyitnow.dto.Item;
 
 
 public class MyExpandableListAdapter extends BaseExpandableListAdapter {
 
-    private final SparseArray<Group> groups;
+    private final Map<Integer, PurchasesGroup> groups;
     public LayoutInflater inflater;
     public Activity activity;
 
-    public MyExpandableListAdapter(Activity act, SparseArray<Group> groups) {
+    public MyExpandableListAdapter(Activity act, Map<Integer, PurchasesGroup> groups) {
         activity = act;
         this.groups = groups;
         inflater = act.getLayoutInflater();
@@ -51,9 +55,7 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         TextView text = (TextView) convertView.findViewById(R.id.listrow_item_description);
         text.setText(children.getDescription());
 
-        Category category = children.getCategory();
-
-        int icon = R.drawable.wallet_icon;
+        int icon = Category.MERCADERIA.getIcon();
         if (children.getCategory() != null) {
                 icon = children.getCategory().getIcon();
         }
@@ -66,9 +68,10 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         text.setText(String.format("%.2f", children.getPrice()) + " $");
 
         convertView.setOnClickListener(new OnClickListener() {
+
             @Override
             public void onClick(View v) {
-                Toast.makeText(activity, "ID:" + children.getId(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "Category:" + children.getCategory().toString(), Toast.LENGTH_SHORT).show();
             }
         });
         return convertView;
@@ -112,20 +115,49 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.listrow_group, null);
         }
+        //TODO Please try to separate text from numbers by no using tabs
+        CheckedTextView textView = (CheckedTextView) ((LinearLayout)convertView).getChildAt(0);
+        ImageView image = (ImageView) ((LinearLayout)convertView).getChildAt(1);
 
-        Group group = (Group) getGroup(groupPosition);
 
-        float total = 0;
-        for(Item item:group.children){
-            total += item.getPrice();
+        PurchasesGroup purchasesByMonth = (PurchasesGroup) getGroup(groupPosition);
+        PurchasesGroup previousPurchasesByMonth = purchasesByMonth;
+
+        if(groupPosition > 0) {
+            previousPurchasesByMonth = (PurchasesGroup) getGroup(groupPosition - 1);
+
+           if (purchasesByMonth.getPurchasesTotalPrice() == previousPurchasesByMonth.getPurchasesTotalPrice()) {
+
+                image.setImageResource(R.drawable.icon_minus_24);
+
+           } else if (purchasesByMonth.getPurchasesTotalPrice() > previousPurchasesByMonth.getPurchasesTotalPrice()) {
+
+                image.setImageResource(R.drawable.arrow_up_icon_24);
+
+           } else {
+                image.setImageResource(R.drawable.down_icon_24);
+           }
+        } else {
+            image.setImageResource(R.drawable.run_icon_24);
         }
-        if(total >= 1000) {
-            ((CheckedTextView) convertView).setCheckMarkDrawable(R.drawable.ic_trending_up_black_18dp);
-        }else {
-            ((CheckedTextView) convertView).setCheckMarkDrawable(R.drawable.ic_trending_down_black_18dp);
-        }
-        ((CheckedTextView) convertView).setText(group.string + "\t\t" + "$" + total);
-        ((CheckedTextView) convertView).setChecked(isExpanded);
+
+        textView.setText(String.format("%s\t\t $ %.2f", purchasesByMonth.getString(), purchasesByMonth.getPurchasesTotalPrice()));
+
+
+
+        //TODO Please try to separate text from numbers by no using tabs
+       /* CheckedTextView textView = (CheckedTextView) ((LinearLayout)convertView).getChildAt(0);
+        TextView textView2 = (TextView) ((LinearLayout)convertView).getChildAt(1);*/
+
+
+       /* ((CheckedTextView) convertView).setText(String.format("%s\t\t\t\t $ %.2f", purchasesGroup.getString(), purchasesGroup.getPurchasesTotalPrice()));
+        ((CheckedTextView) convertView).setChecked(isExpanded);*/
+/*
+        textView.setText(String.format("%s\t\t\t\t $ %.2f", purchasesGroup.getString(), purchasesGroup.getPurchasesTotalPrice()));
+        textView.setChecked(isExpanded);
+*/
+   //     textView2.setText(String.format("%s\t\t $ %.2f", purchasesByMonth.getString(), purchasesByMonth.getPurchasesTotalPrice()));
+
         return convertView;
     }
 

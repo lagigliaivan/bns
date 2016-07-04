@@ -1,38 +1,35 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:background="#fff"
-    android:layout_margin="0dp"
-    android:padding="0dp"
-    tools:context=".MainActivity">
-
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clickable="true"
     android:orientation="horizontal"
     android:paddingLeft="30dp"
-    android:background="@drawable/border"
     tools:context=".MainActivity"
-    android:baselineAligned="false">
+    android:baselineAligned="false"
+    android:contextClickable="true"
+    android:layout_alignParentBottom="true"
+    style="@style/Base.Widget.AppCompat.ListView"
+    android:longClickable="true"
+    android:backgroundTintMode="src_in">
 
 
     <TextView
         android:drawableLeft="@drawable/steak_icon"
         android:id="@+id/listrow_item_description"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:drawablePadding="5dp"
+        android:drawablePadding="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="left"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:clickable="true"
+        android:contextClickable="true"
+        android:focusable="true" />
 
     <TextView
         android:layout_width="wrap_content"
-        android:background="@drawable/border"
         android:layout_height="match_parent"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:id="@+id/item_price"
@@ -45,5 +42,3 @@
 
 
     </RelativeLayout>
-
-</RelativeLayout>

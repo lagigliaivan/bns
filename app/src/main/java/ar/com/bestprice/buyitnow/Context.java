@@ -76,7 +76,7 @@ public class Context {
         }
         return sha1;
     }
-    private static String byteToHex(final byte[] hash)
+    public static String byteToHex(final byte[] hash)
     {
         Formatter formatter = new Formatter();
         for (byte b : hash)
