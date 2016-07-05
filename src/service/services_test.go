@@ -275,17 +275,6 @@ func Test_GET_items_returns_a_list_of_items(t *testing.T){
 	}
 
 }
-/*
-func Test_POSTing_Date_Is_Stored_When_Item_Is_Saved(t *testing.T) {
-
-	server := getServer(NewItemService(NewMemDb()))
-	defer server.Close()
-
-	if httpPOST(*server) != nil {
-		t.FailNow();
-	}
-
-}*/
 
 //Testing functions that are not exposed as REST services.
 func Test_returns_an_error_when_item_does_NOT_exist (t *testing.T) {

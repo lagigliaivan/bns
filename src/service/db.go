@@ -66,11 +66,11 @@ func (catDb DynamoDB) GetPurchase(time time.Time) Purchase  {
 
 func (catDb DynamoDB) SavePurchase( p Purchase, userId string) error {
 
-	tname := PURCHASES
+	tableName := PURCHASES
 
 	it := buildDynamoItem(p, userId)
 
-	putItem := dynamodb.PutItemInput{Item:it, TableName:&tname}
+	putItem := dynamodb.PutItemInput{Item:it, TableName:&tableName}
 
 	result, err := catDb.svc.PutItem(&putItem)
 
