@@ -6,6 +6,7 @@ package ar.com.bestprice.buyitnow;
 public enum Month {
 
 
+    //DO NOT CHANGE THE ORDER. This will affect the way the purchases are shown on the screen
     JANUARY ("January", 1),
     FEBRUARY   ("February", 2),
     MARCH   ("March", 3),

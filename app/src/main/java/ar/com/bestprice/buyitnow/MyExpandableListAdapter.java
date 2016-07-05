@@ -116,7 +116,7 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.listrow_group, null);
         }
-        //TODO Please try to separate text from numbers by no using tabs
+
         RelativeLayout relativeLayout = (RelativeLayout) ((LinearLayout)convertView).getChildAt(0);
 
         CheckedTextView checkedTextView = (CheckedTextView) relativeLayout.getChildAt(0);
@@ -136,13 +136,13 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
 
            } else if (purchasesByMonth.getPurchasesTotalPrice() > previousPurchasesByMonth.getPurchasesTotalPrice()) {
 
-                image.setImageResource(R.drawable.arrow_up_icon_24);
+                image.setImageResource(R.drawable.thumbs_down_24);
 
            } else {
-                image.setImageResource(R.drawable.down_icon_24);
+                image.setImageResource(R.drawable.thumbs_up_24);
            }
         } else {
-            image.setImageResource(R.drawable.run_icon_24);
+            image.setImageResource(R.drawable.icon_minus_24);
         }
         checkedTextView.setText(purchasesByMonth.getString());
         textView.setText(String.format("$%.2f",purchasesByMonth.getPurchasesTotalPrice()));

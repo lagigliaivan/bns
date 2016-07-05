@@ -91,27 +91,39 @@ public class MainActivity extends AppCompatActivity {
 
     private Map<Integer, PurchasesGroup> getPurchasesByMonth(List<PurchasesByMonth> purchasesByMonth) {
 
+        Map<Month, PurchasesByMonth> sortedPurchases = new HashMap<>();
+
+        for (PurchasesByMonth purchases : purchasesByMonth) {
+
+            sortedPurchases.put(Month.valueOf(purchases.getMonth().toUpperCase()), purchases);
+
+        }
+
         Map<Integer, PurchasesGroup> groups = new HashMap<>();
 
         int j = 0;
-        for (PurchasesByMonth purchases:purchasesByMonth) {
+        for (Month month : Month.values()){
 
-            PurchasesGroup purchasesGroup = new PurchasesGroup(Month.valueOf(purchases.getMonth().toUpperCase()));
+            if (sortedPurchases.get(month) != null){
 
-            for (Purchase purchase : purchases.getPurchases()){
+                PurchasesGroup purchasesGroup = new PurchasesGroup(month);
 
-                float purchaseTotalPrice = 0;
+                for (Purchase purchase : sortedPurchases.get(month).getPurchases()){
 
-                for(Item item: purchase.getItems()) {
+                    float purchaseTotalPrice = 0;
 
-                    purchaseTotalPrice += item.getPrice();
-                    purchasesGroup.children.add(item);
+                    for(Item item: purchase.getItems()) {
+
+                        purchaseTotalPrice += item.getPrice();
+                        purchasesGroup.children.add(item);
+                    }
+
+                    purchasesGroup.setPurchasesTotalPrice(purchaseTotalPrice);
                 }
-
-                purchasesGroup.setPurchasesTotalPrice(purchaseTotalPrice);
+                groups.put(j, purchasesGroup);
+                j++;
             }
-            groups.put(j, purchasesGroup);
-            j++;
+
         }
 
         return groups;

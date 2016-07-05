@@ -9,8 +9,13 @@
         app:showAsAction="always"
         android:title="@string/refresh_purchases_list"/>
 
+    <item android:id="@+id/search_purchases"
+        android:icon="@drawable/ic_search_white_24dp"
+        app:showAsAction="always"
+        android:title="@string/refresh_purchases_list"/>
+
     <item android:id="@+id/add_item"
-        android:icon="@drawable/cart_plus"
+        android:icon="@drawable/ic_monetization_on_white_24dp"
         app:showAsAction="always"
         android:title="@string/add_item_no_barcode"/>
 
