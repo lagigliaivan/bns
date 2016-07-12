@@ -33,13 +33,22 @@ type DynamoDB struct {
 
 func NewDynamoDB(endpoint, region string) (*DynamoDB, error) {
 
-	if strings.Compare(endpoint, "") == 0 || strings.Compare(region, "") == 0 {
-		return nil, errors.New("endpoint or region cannot be nil")
+
+	var config *aws.Config
+
+	if strings.Compare(region, "") == 0 {
+		return nil, errors.New("region cannot be nil")
+	}
+
+	if strings.Compare(endpoint, "") == 0 {
+		config = &aws.Config{Region: aws.String(region)}
+	}else{
+		config = &aws.Config{Region: aws.String(region), Endpoint:&endpoint}
 	}
 
 	catalogDB := new(DynamoDB)
 	catalogDB.endpoint = endpoint
-	catalogDB.svc = dynamodb.New(session.New(&aws.Config{Region: aws.String(region), Endpoint:&catalogDB.endpoint}))
+	catalogDB.svc = dynamodb.New(session.New(config))
 
 	return catalogDB, nil
 }
@@ -155,7 +164,6 @@ func (catDb DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month]
 		}
 		purchasesByMonth[t.Month()] = append(purchasesByMonth[t.Month()], purchase)
 
-		fmt.Println(purchase)
 	}
 
 

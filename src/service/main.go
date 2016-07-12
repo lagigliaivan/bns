@@ -13,8 +13,9 @@ import (
 func main() {
 
 	router := NewRouter()
-	//db := NewMemDb()
-	db, _ := NewDynamoDB("http://localhost:8000", "us-west-2")
+	//db, _ := NewDynamoDB("http://localhost:8000", "us-west-2")
+
+	db, _ := NewDynamoDB("", "us-west-2")
 
 	/*
 	itemsService := NewItemService(db)
