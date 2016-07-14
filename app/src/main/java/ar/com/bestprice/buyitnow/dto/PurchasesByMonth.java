@@ -1,6 +1,7 @@
 package ar.com.bestprice.buyitnow.dto;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,6 +25,18 @@ public class PurchasesByMonth {
     }
 
     public void setPurchases(List<Purchase> purchases) {
-        this.purchases = purchases;
+
+        if(purchases != null) {
+            this.purchases = purchases;
+        }
+    }
+
+    public void addPurchase(Purchase purchase) {
+
+        if(getPurchases() == null){
+           setPurchases(new ArrayList<Purchase>());
+        }
+
+        getPurchases().add(purchase);
     }
 }

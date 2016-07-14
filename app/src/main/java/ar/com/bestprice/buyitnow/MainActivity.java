@@ -1,16 +1,21 @@
 package ar.com.bestprice.buyitnow;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,14 +27,16 @@ import java.util.concurrent.Future;
 import ar.com.bestprice.buyitnow.dto.Item;
 import ar.com.bestprice.buyitnow.dto.Purchase;
 import ar.com.bestprice.buyitnow.dto.PurchasesByMonth;
-import ar.com.bestprice.buyitnow.dto.PurchasesContainer;
+import ar.com.bestprice.buyitnow.dto.PurchasesByMonthContainer;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DialogInterface.OnClickListener{
 
 
     private ExpandableListView listView = null;
 
+    //Contains the purchases returned by the server
+    private PurchasesByMonthContainer purchasesContainer = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private MyExpandableListAdapter getListViewAdapter(PurchasesContainer purchasesContainer) {
+    private MyExpandableListAdapter getListViewAdapter(PurchasesByMonthContainer purchasesContainer) {
 
         Map<Integer, PurchasesGroup> groups = getPurchasesByMonth(purchasesContainer.getPurchasesByMonth());
         return new MyExpandableListAdapter(this, groups);
@@ -150,6 +157,35 @@ public class MainActivity extends AppCompatActivity {
 
                 renderPurchasesList();
                 break;
+
+            case R.id.search_purchases:
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Ingrese descripcion a buscar");
+
+                // Set up the input
+                final EditText input = new EditText(this);
+                // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                builder.setView(input);
+
+                // Set up the buttons
+                builder.setPositiveButton("OK", this);/* new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String m_Text = input.getText().toString();
+                    }
+                }*/
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.show();
+
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -158,7 +194,14 @@ public class MainActivity extends AppCompatActivity {
     private void renderPurchasesList() {
 
         String jsonString = sendHttpRequest();
-        PurchasesContainer purchasesContainer = parseJsonString(jsonString);
+        purchasesContainer = parseJsonString(jsonString);
+
+        renderList(purchasesContainer);
+
+    }
+
+    private void renderList(PurchasesByMonthContainer purchasesContainer) {
+
         MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
 
         ExpandableListView listView = getListView();
@@ -176,14 +219,14 @@ public class MainActivity extends AppCompatActivity {
         purchasesAverage = purchasesAverage / purchases.size();
 
         TextView average = (TextView) findViewById(R.id.average);
-        average.setText(String.format("Month average: %.2f", purchasesAverage));
 
+        average.setText(String.format("Month average: %.2f", purchasesAverage));
     }
 
-    private PurchasesContainer parseJsonString(String json){
+    private PurchasesByMonthContainer parseJsonString(String json){
 
         Gson gson = new Gson();
-        PurchasesContainer p = gson.fromJson(json, PurchasesContainer.class);
+        PurchasesByMonthContainer p = gson.fromJson(json, PurchasesByMonthContainer.class);
         return p;
     }
 
@@ -199,4 +242,63 @@ public class MainActivity extends AppCompatActivity {
         renderPurchasesList();
     }
 
+    private List<PurchasesByMonth> lookForAStringIn(String pattern, List<PurchasesByMonth> purchasesByMonths){
+
+        List<PurchasesByMonth> byMonths = new ArrayList<>();
+
+
+        for(PurchasesByMonth pByMonth : purchasesByMonths){
+
+            PurchasesByMonth pByMonthWhereItemWasFound = null;
+
+            for (Purchase purchase : pByMonth.getPurchases()){
+
+
+                Purchase pWhereItemWasFound = null;
+
+                for(Item item: purchase.getItems()){
+
+
+                    if(item.getDescription().contains(pattern)){
+
+                        if (pWhereItemWasFound == null){
+                            pWhereItemWasFound = new Purchase();
+                            pWhereItemWasFound.setTime(purchase.getTime());
+                        }
+
+                        pWhereItemWasFound.addItem(item);
+                    }
+
+                }
+
+                if(pWhereItemWasFound != null){
+                    if(pByMonthWhereItemWasFound == null) {
+                        pByMonthWhereItemWasFound = new PurchasesByMonth();
+                        pByMonthWhereItemWasFound.setMonth(pByMonth.getMonth());
+                    }
+                    pByMonthWhereItemWasFound.addPurchase(pWhereItemWasFound);
+                }
+            }
+
+            if(pByMonthWhereItemWasFound != null) {
+                byMonths.add(pByMonthWhereItemWasFound);
+            }
+        }
+
+        return byMonths;
+    }
+
+    @Override
+    public void onClick(DialogInterface dialog, int which) {
+
+
+        String pattern = "Mate";
+
+        List purchasesByMonth = lookForAStringIn(pattern, this.purchasesContainer.getPurchasesByMonth());
+
+        PurchasesByMonthContainer container = new PurchasesByMonthContainer();
+        container.setPurchasesByMonth(purchasesByMonth);
+
+        renderList(container);
+    }
 }

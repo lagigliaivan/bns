@@ -32,12 +32,12 @@
             android:label="Add new purchase"/>
 
         <activity android:name=".MainActivity"
-                android:label="@string/app_name">
+                android:label="@string/app_name"/>
 
         <!-- <activity android:name=".MainActivityWithToolBar"
                  android:label="@string/app_name">-->
-        <!--activity android:name="ar.com.bestprice.buyitnow.SingleSignOn"
-            android:label="Single Sign On">-->
+        <activity android:name="ar.com.bestprice.buyitnow.LogInActivity"
+            android:label="Login">
 
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />

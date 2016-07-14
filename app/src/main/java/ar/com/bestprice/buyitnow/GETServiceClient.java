@@ -31,7 +31,7 @@ public class GETServiceClient implements Callable {
 
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
-        //PurchasesContainer p = null;
+        //PurchasesByMonthContainer p = null;
         String purchases = "";
         try {
 

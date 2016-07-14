@@ -1,5 +1,6 @@
 package ar.com.bestprice.buyitnow.dto;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -9,7 +10,7 @@ import java.util.List;
 public class Purchase {
 
     String time;
-    List<Item> items;
+    List<Item> items = new ArrayList<>();
 
     public List<Item> getItems() {
         return items;
@@ -25,5 +26,12 @@ public class Purchase {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    public void addItem(Item item) {
+
+        if(item != null) {
+            this.items.add(item);
+        }
     }
 }
