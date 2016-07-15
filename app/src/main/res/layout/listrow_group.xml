@@ -31,26 +31,10 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Medium Text"
             android:id="@+id/month_total_amount"
-            android:layout_toStartOf="@+id/listrow_group_item_image"
-            android:layout_alignParentTop="true"
-            android:layout_alignBottom="@+id/listrow_group_item_image"
             android:inputType="none"
             android:textAlignment="center"
-            android:gravity="top|bottom" />
-
-        <ImageView xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/listrow_group_item_image"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="1dp"
-            android:gravity="left"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:paddingLeft="32dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-
-            android:layout_width="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignBottom="@+id/listrow_group_item_description"
+            android:gravity="top|bottom"
+            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true" />
 
         <Space

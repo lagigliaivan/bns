@@ -1,6 +1,8 @@
 package ar.com.bestprice.buyitnow;
 
 import android.app.Activity;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,7 +54,6 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
             convertView = inflater.inflate(R.layout.listrow_details, null);
         }
 
-
         TextView text = (TextView) convertView.findViewById(R.id.listrow_item_description);
         text.setText(children.getDescription());
 
@@ -62,10 +63,7 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         }
 
         text.setCompoundDrawablesWithIntrinsicBounds(icon, 0, 0, 0);
-
         text = (TextView) convertView.findViewById(R.id.item_price);
-
-
         text.setText(String.format("%.2f", children.getPrice()) + " $");
 
         convertView.setOnClickListener(new OnClickListener() {
@@ -75,6 +73,7 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
                 Toast.makeText(activity, "Category:" + children.getCategory().toString(), Toast.LENGTH_SHORT).show();
             }
         });
+
         return convertView;
     }
 
@@ -121,30 +120,18 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
 
         CheckedTextView checkedTextView = (CheckedTextView) relativeLayout.getChildAt(0);
         TextView textView = (TextView) relativeLayout.getChildAt(1);
-        ImageView image = (ImageView) relativeLayout.getChildAt(2);
-
 
         PurchasesGroup purchasesByMonth = (PurchasesGroup) getGroup(groupPosition);
-        PurchasesGroup previousPurchasesByMonth = purchasesByMonth;
+        PurchasesGroup previousPurchasesByMonth = (PurchasesGroup) getGroup( ( (groupPosition > 0) ? (groupPosition - 1) : 0) );
 
-        if(groupPosition > 0) {
-            previousPurchasesByMonth = (PurchasesGroup) getGroup(groupPosition - 1);
-
-           if (purchasesByMonth.getPurchasesTotalPrice() == previousPurchasesByMonth.getPurchasesTotalPrice()) {
-
-                image.setImageResource(R.drawable.icon_minus_24);
-
-           } else if (purchasesByMonth.getPurchasesTotalPrice() > previousPurchasesByMonth.getPurchasesTotalPrice()) {
-
-                image.setImageResource(R.drawable.thumbs_down_24);
-
-           } else {
-                image.setImageResource(R.drawable.thumbs_up_24);
-           }
+        if (purchasesByMonth.getPurchasesTotalPrice() > previousPurchasesByMonth.getPurchasesTotalPrice()) {
+           textView.setBackgroundColor(Color.RED);
         } else {
-            image.setImageResource(R.drawable.icon_minus_24);
+           textView.setBackgroundColor(Color.GREEN);
         }
+
         checkedTextView.setText(purchasesByMonth.getString());
+
         textView.setText(String.format("$%.2f",purchasesByMonth.getPurchasesTotalPrice()));
 
         return convertView;

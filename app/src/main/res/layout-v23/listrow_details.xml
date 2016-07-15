@@ -22,30 +22,20 @@
     android:longClickable="true"
     android:backgroundTintMode="src_in">
 
-    <LinearLayout
-        android:orientation="horizontal"
+
+    <TextView
+        android:drawableLeft="@drawable/steak_icon"
+        android:id="@+id/listrow_item_description"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:drawablePadding="10dp"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:id="@+id/linearLayout">
-
-        <TextView
-            android:drawableLeft="@drawable/steak_icon"
-            android:id="@+id/listrow_item_description"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:drawablePadding="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="left"
-            android:layout_alignParentTop="false"
-            android:layout_alignParentStart="true"
-            android:clickable="true"
-            android:contextClickable="true"
-            android:focusable="true"
-            android:layout_toStartOf="@+id/space2" />
-
-    </LinearLayout>
-
-</RelativeLayout>
+        android:layout_height="wrap_content"
+        android:gravity="left"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:clickable="true"
+        android:contextClickable="true"
+        android:focusable="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -53,11 +43,11 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:id="@+id/item_price"
         android:textStyle="bold"
+        android:textAlignment="center"
         android:layout_gravity="center"
         android:gravity="left|center_vertical"
         android:layout_alignParentTop="true"
-        android:autoText="false"
-        android:text="$00000.00"
-        android:singleLine="true" />
-
+        android:layout_alignBottom="@+id/listrow_item_description"
+        android:layout_alignParentEnd="true" />
+    </RelativeLayout>
 </LinearLayout>
