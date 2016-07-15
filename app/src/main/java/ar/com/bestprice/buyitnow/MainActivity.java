@@ -30,7 +30,7 @@ import ar.com.bestprice.buyitnow.dto.PurchasesByMonth;
 import ar.com.bestprice.buyitnow.dto.PurchasesByMonthContainer;
 
 
-public class MainActivity extends AppCompatActivity implements DialogInterface.OnClickListener{
+public class MainActivity extends AppCompatActivity {
 
 
     private ExpandableListView listView = null;
@@ -170,12 +170,21 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
                 builder.setView(input);
 
                 // Set up the buttons
-                builder.setPositiveButton("OK", this);/* new DialogInterface.OnClickListener() {
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+
                         String m_Text = input.getText().toString();
+
+                        List purchasesByMonth = lookForAStringIn(m_Text, purchasesContainer.getPurchasesByMonth());
+
+                        PurchasesByMonthContainer container = new PurchasesByMonthContainer();
+                        container.setPurchasesByMonth(purchasesByMonth);
+
+                        renderList(container);
                     }
-                }*/
+                });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -210,17 +219,20 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
 
         Map<Integer, PurchasesGroup> purchases = getPurchasesByMonth(purchasesContainer.getPurchasesByMonth());
 
-        float purchasesAverage = 0;
+        float purchasesAccum = 0;
 
         for (PurchasesGroup group : purchases.values()) {
-            purchasesAverage += group.getPurchasesTotalPrice();
+            purchasesAccum += group.getPurchasesTotalPrice();
         }
 
-        purchasesAverage = purchasesAverage / purchases.size();
+        float purchasesAverage = purchasesAccum / purchases.size();
 
         TextView average = (TextView) findViewById(R.id.average);
+        TextView accumulated = (TextView) findViewById(R.id.accumulated);
 
-        average.setText(String.format("Month average: %.2f", purchasesAverage));
+        average.setText(String.format("Promedio mensual: %.2f", purchasesAverage));
+        accumulated.setText(String.format("Acumulado: %.2f", purchasesAccum));
+
     }
 
     private PurchasesByMonthContainer parseJsonString(String json){
@@ -286,19 +298,5 @@ public class MainActivity extends AppCompatActivity implements DialogInterface.O
         }
 
         return byMonths;
-    }
-
-    @Override
-    public void onClick(DialogInterface dialog, int which) {
-
-
-        String pattern = "Mate";
-
-        List purchasesByMonth = lookForAStringIn(pattern, this.purchasesContainer.getPurchasesByMonth());
-
-        PurchasesByMonthContainer container = new PurchasesByMonthContainer();
-        container.setPurchasesByMonth(purchasesByMonth);
-
-        renderList(container);
     }
 }
