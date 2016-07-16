@@ -7,9 +7,9 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="39dp"
+        android:layout_height="wrap_content"
         android:weightSum="1"
-        android:background="@drawable/abc_list_longpressed_holo">
+        android:background="@android:color/holo_orange_light">
 
         <TextView
             android:layout_width="152dp"
@@ -18,7 +18,9 @@
             android:text="Medium Text"
             android:id="@+id/accumulated"
             android:layout_weight="0.79"
-            android:textColor="@color/abc_background_cache_hint_selector_material_light" />
+            android:enabled="false"
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="184dp"
@@ -29,22 +31,27 @@
             android:inputType="none"
             android:textAlignment="gravity"
             android:textIsSelectable="false"
-            android:textColor="@color/abc_background_cache_hint_selector_material_light" />
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
     </LinearLayout>
 
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="fill_parent"
+        android:clickable="true">
 
         <ExpandableListView
             android:id="@+id/listView_show_purchases"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:clickable="true"
-            android:divider="#000000"
-            android:dividerHeight="4px"
-            android:visibility="visible">
+            android:visibility="visible"
+            android:contextClickable="true"
+            android:fastScrollAlwaysVisible="false"
+            android:fastScrollEnabled="false"
+            android:layout_alignParentStart="false"
+            android:layout_above="@+id/main_tool_bar">
         </ExpandableListView>
 
         <android.support.v7.widget.Toolbar
@@ -56,9 +63,11 @@
             android:layout_height="wrap_content"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
             app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            android:layout_alignParentBottom="true"
             android:layout_alignParentStart="true"
-            android:background="@drawable/abc_list_longpressed_holo" />
+            android:background="@color/blue_grey_900_ivan"
+            android:visibility="visible"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true" />
 
     </RelativeLayout>
 

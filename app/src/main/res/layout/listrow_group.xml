@@ -8,8 +8,10 @@
     android:orientation="horizontal">
 
     <RelativeLayout
+
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/blue_grey_900_ivan">
 
         <CheckedTextView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/listrow_group_item_description"
@@ -23,19 +25,51 @@
         android:text="@string/test"
         android:textStyle="bold"
         android:layout_width="wrap_content"
-        android:layout_marginBottom="3dp" />
+        android:layout_marginBottom="3dp"
+            android:textColor="@android:color/white" />
 
         <TextView
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Medium Text"
             android:id="@+id/month_total_amount"
             android:inputType="none"
+            android:textAlignment="viewEnd"
+            android:gravity="top|bottom"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:textColor="@android:color/white"
+            android:layout_below="@+id/space"
+            android:layout_alignBottom="@+id/space3"
+            android:layout_alignParentEnd="true" />
+
+        <Space
+            android:layout_width="40px"
+            android:layout_height="50px"
+            android:id="@+id/space3"
+            android:layout_alignBottom="@+id/listrow_group_item_description"
+            android:layout_toStartOf="@+id/month_total_amount"
+            android:layout_alignParentTop="true" />
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="% +15"
+            android:id="@+id/textView4"
+            android:inputType="none"
             android:textAlignment="center"
             android:gravity="top|bottom"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_toStartOf="@+id/space3"
+            android:background="@color/common_plus_signin_btn_text_dark_disabled"
+            android:layout_alignBottom="@+id/month_total_amount"
+            android:paddingEnd="10dp"
+            android:paddingStart="10dp"
+            android:textColor="@android:color/white"
+            android:layout_alignTop="@+id/month_total_amount" />
 
         <Space
             android:layout_width="20px"

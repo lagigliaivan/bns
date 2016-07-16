@@ -64,7 +64,7 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
 
         text.setCompoundDrawablesWithIntrinsicBounds(icon, 0, 0, 0);
         text = (TextView) convertView.findViewById(R.id.item_price);
-        text.setText(String.format("%.2f", children.getPrice()) + " $");
+        text.setText(String.format("$%.2f", children.getPrice()));
 
         convertView.setOnClickListener(new OnClickListener() {
 
@@ -119,20 +119,27 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         RelativeLayout relativeLayout = (RelativeLayout) ((LinearLayout)convertView).getChildAt(0);
 
         CheckedTextView checkedTextView = (CheckedTextView) relativeLayout.getChildAt(0);
-        TextView textView = (TextView) relativeLayout.getChildAt(1);
+        TextView amountPerMonth = (TextView) relativeLayout.getChildAt(1);
+        TextView differencePerMonth = (TextView) relativeLayout.getChildAt(3);
 
         PurchasesGroup purchasesByMonth = (PurchasesGroup) getGroup(groupPosition);
         PurchasesGroup previousPurchasesByMonth = (PurchasesGroup) getGroup( ( (groupPosition > 0) ? (groupPosition - 1) : 0) );
 
         if (purchasesByMonth.getPurchasesTotalPrice() > previousPurchasesByMonth.getPurchasesTotalPrice()) {
-           textView.setBackgroundColor(Color.RED);
+            differencePerMonth.setBackgroundColor(Color.rgb(139,00,00)); //RED
         } else {
-           textView.setBackgroundColor(Color.GREEN);
+            differencePerMonth.setBackgroundColor(Color.rgb(34,139,34)); //GREEN
         }
 
         checkedTextView.setText(purchasesByMonth.getString());
 
-        textView.setText(String.format("$%.2f",purchasesByMonth.getPurchasesTotalPrice()));
+
+        float diff = purchasesByMonth.getPurchasesTotalPrice() - previousPurchasesByMonth.getPurchasesTotalPrice();
+
+        diff = (diff * 100) / previousPurchasesByMonth.getPurchasesTotalPrice();
+
+        differencePerMonth.setText(String.format("%+.2f%%",diff));
+        amountPerMonth.setText(String.format("$%.2f",purchasesByMonth.getPurchasesTotalPrice()));
 
         return convertView;
     }

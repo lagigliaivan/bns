@@ -237,6 +237,12 @@ public class MainActivity extends AppCompatActivity {
                 "\t\t\t     \t\t\"price\":32.0,\n" +
                 "\t\t\t     \t\t\"category\":\"SALUD\"\n" +
                 "\t\t\t   \t\t},\n" +
+                "\t\t\t   \t\t{\n" +
+                "                        \"id\":\"1233123\",\n" +
+                "                        \"description\":\"no se\",\n" +
+                "                        \"price\":32.0,\n" +
+                "                        \"category\":\"MERCADERIA\"\n" +
+                "                    },\n" +
                 "\t\t\t\t\t{\n" +
                 "\t\t\t     \t\t\"id\":\"1234343123\",\n" +
                 "\t\t\t     \t\t\"description\":\"very long long long description of a product which has really a long long long description. Not sure what will happen\",\n" +
@@ -247,7 +253,34 @@ public class MainActivity extends AppCompatActivity {
                 "\t\t\t  \t\t]\t\n" +
                 "\t\t\t\t}\n" +
                 "\t  \t\t ]\n" +
-                "\t\t}\n" +
+                "\t\t},{ \"month\" : \"April\",\n" +
+                "          \t\t  \"purchases\":[\n" +
+                "          \t\t\t\t{\n" +
+                "          \t\t  \t\t\"time\":\"2016-04-12T00:06:22.364Z\",\n" +
+                "          \t\t  \t\t\"items\":[\n" +
+                "          \t\t\t   \t\t{\n" +
+                "          \t\t\t     \t\t\"id\":\"1233123\",\n" +
+                "          \t\t\t     \t\t\"description\":\"no se\",\n" +
+                "          \t\t\t     \t\t\"price\":2.0,\n" +
+                "          \t\t\t     \t\t\"category\":\"DIVERSION\"\n" +
+                "          \t\t\t   \t\t},\n" +
+                "          \t\t\t   \t\t{\n" +
+                "                                  \"id\":\"1233123\",\n" +
+                "                                  \"description\":\"no se\",\n" +
+                "                                  \"price\":3.0,\n" +
+                "                                  \"category\":\"MERCADERIA\"\n" +
+                "                              },\n" +
+                "          \t\t\t\t\t{\n" +
+                "          \t\t\t     \t\t\"id\":\"1234343123\",\n" +
+                "          \t\t\t     \t\t\"description\":\"very long long long description of a product which has really a long long long description. Not sure what will happen\",\n" +
+                "          \t\t\t     \t\t\"price\":22.0,\n" +
+                "          \t\t\t     \t\t\"category\":\"SERVICIOS\"\n" +
+                "          \t\t\t   \t\t}\n" +
+                "\n" +
+                "          \t\t\t  \t\t]\n" +
+                "          \t\t\t\t}\n" +
+                "          \t  \t\t ]\n" +
+                "          \t\t}\n" +
                 "\n" +
                 "]}";
         purchasesContainer = parseJsonString(jsonString);
@@ -277,8 +310,8 @@ public class MainActivity extends AppCompatActivity {
         TextView average = (TextView) findViewById(R.id.average);
         TextView accumulated = (TextView) findViewById(R.id.accumulated);
 
-        average.setText(String.format("Promedio mensual: %.2f", purchasesAverage));
-        accumulated.setText(String.format("Acumulado: %.2f", purchasesAccum));
+        average.setText(String.format("Promedio mensual: $%.2f", purchasesAverage));
+        accumulated.setText(String.format("Acumulado: $%.2f", purchasesAccum));
 
     }
 
