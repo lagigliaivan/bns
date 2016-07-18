@@ -5,7 +5,9 @@
     android:gravity="left"
     android:divider="#000000"
     android:dividerHeight="4px"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:clickable="false"
+    android:contextClickable="false">
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
@@ -61,8 +63,7 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="false"
             android:layout_toEndOf="@+id/linearLayout"
-            android:layout_alignParentBottom="true"
-            android:textAlignment="textEnd" />
+            android:layout_alignParentBottom="true" />
 
     </RelativeLayout>
 

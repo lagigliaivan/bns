@@ -1,23 +1,23 @@
-<LinearLayout android:layout_height="wrap_content"
+<!--<LinearLayout android:layout_height="wrap_content"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:weightSum="1"
     android:gravity="left"
-    android:orientation="horizontal">
+    android:orientation="horizontal">-->
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="74dp"
-        android:clickable="true"
+        android:clickable="false"
         android:orientation="horizontal"
         android:paddingLeft="10dp"
         tools:context=".MainActivity"
         android:baselineAligned="false"
-        android:contextClickable="true"
+        android:contextClickable="false"
         android:layout_alignParentBottom="true"
         style="@style/Base.Widget.AppCompat.ListView"
-        android:longClickable="true"
+        android:longClickable="false"
 
         android:backgroundTintMode="src_in">
 
@@ -38,9 +38,9 @@
                 android:gravity="left|center"
                 android:layout_alignParentTop="false"
                 android:layout_alignParentStart="true"
-                android:clickable="true"
-                android:contextClickable="true"
-                android:focusable="true"
+                android:clickable="false"
+                android:contextClickable="false"
+                android:focusable="false"
                 android:layout_toStartOf="@+id/space2" />
 
             <Space
@@ -66,4 +66,5 @@
 
     </RelativeLayout>
 
-</LinearLayout>
+<!--
+</LinearLayout>-->

@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
@@ -295,6 +296,13 @@ public class MainActivity extends AppCompatActivity {
 
         ExpandableListView listView = getListView();
         listView.setAdapter(adapter);
+
+        listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+            @Override
+            public boolean onChildClick(ExpandableListView expandableListView, View view, int i, int i1, long l) {
+               return true;
+            }
+        });
 
 
         Map<Integer, PurchasesGroup> purchases = getPurchasesByMonth(purchasesContainer.getPurchasesByMonth());

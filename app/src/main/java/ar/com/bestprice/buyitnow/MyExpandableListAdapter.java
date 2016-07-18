@@ -44,6 +44,7 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         return 0;
     }
 
+
     @Override
     public View getChildView(int groupPosition, final int childPosition,
                              boolean isLastChild, View convertView, ViewGroup parent) {
@@ -66,13 +67,13 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         text = (TextView) convertView.findViewById(R.id.item_price);
         text.setText(String.format("$%.2f", children.getPrice()));
 
-        convertView.setOnClickListener(new OnClickListener() {
+        /*convertView.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
                 Toast.makeText(activity, "Category:" + children.getCategory().toString(), Toast.LENGTH_SHORT).show();
             }
-        });
+        });*/
 
         return convertView;
     }
@@ -151,6 +152,6 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {
-        return false;
+        return true;
     }
 }
