@@ -3,6 +3,7 @@ package ar.com.bestprice.buyitnow;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.support.design.widget.SwipeDismissBehavior;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.support.design.widget.CoordinatorLayout.LayoutParams;
 
 import java.util.Map;
 
@@ -52,8 +54,26 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         final Item children = (Item) getChild(groupPosition, childPosition);
 
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.listrow_details, null);
+            //convertView = inflater.inflate(R.layout.listrow_details, null);
+            convertView = inflater.inflate(R.layout.listrow_details_coordinator, null);
         }
+
+        RelativeLayout mCardView = (RelativeLayout) convertView.findViewById(R.id.listrow_details_relative_layout);
+
+        final SwipeDismissBehavior<RelativeLayout> swipe = new SwipeDismissBehavior();
+        swipe.setSwipeDirection(SwipeDismissBehavior.SWIPE_DIRECTION_ANY);
+
+        swipe.setListener(new SwipeDismissBehavior.OnDismissListener() {
+            @Override public void onDismiss(View view) {
+                /*Toast.makeText(convertView.getContext(),
+                        "Card swiped !!", Toast.LENGTH_SHORT).show();*/
+            }
+
+            @Override public void onDragStateChanged(int state) {}
+        });
+
+        LayoutParams coordinatorParams = (LayoutParams) mCardView.getLayoutParams();
+        coordinatorParams.setBehavior(swipe);
 
         TextView text = (TextView) convertView.findViewById(R.id.listrow_item_description);
         text.setText(children.getDescription());
