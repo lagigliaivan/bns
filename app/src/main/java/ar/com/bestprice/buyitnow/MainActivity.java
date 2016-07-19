@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -297,10 +298,28 @@ public class MainActivity extends AppCompatActivity {
         ExpandableListView listView = getListView();
         listView.setAdapter(adapter);
 
+
+        final SwipeDetector swipeDetector = new SwipeDetector();
+        listView.setOnTouchListener(swipeDetector);
+
         listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+
+
             @Override
-            public boolean onChildClick(ExpandableListView expandableListView, View view, int i, int i1, long l) {
-               return true;
+            public boolean onChildClick(ExpandableListView expandableListView, View view, int i, int i1, long l){
+
+
+                if(swipeDetector.swipeDetected()){
+
+                     if (swipeDetector.getSwipeDetected() == SwipeDetector.Action.LR) {
+
+
+                         Toast.makeText(view.getContext(), "Category:", Toast.LENGTH_SHORT).show();
+
+                     }
+                }
+
+                return true;
             }
         });
 

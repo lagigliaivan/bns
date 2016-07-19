@@ -8,7 +8,7 @@ import android.view.View;
  */
 public class SwipeDetector implements View.OnTouchListener{
 
-    public static enum Action {
+    public enum Action {
         LR,
         RL,
         TB,
@@ -69,6 +69,10 @@ public class SwipeDetector implements View.OnTouchListener{
         }
 
         return false;
+    }
+
+    public Action getSwipeDetected(){
+        return this.mSwipeDetected;
     }
 
 }
