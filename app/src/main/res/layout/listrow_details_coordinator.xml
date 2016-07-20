@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent">
+-->
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
@@ -39,7 +41,9 @@
                 android:clickable="false"
                 android:contextClickable="false"
                 android:focusable="false"
-                android:layout_toStartOf="@+id/space2" />
+                android:layout_toStartOf="@+id/space2"
+                android:textStyle="normal"
+                android:textColor="@android:color/black" />
 
             <Space
                 android:layout_width="29dp"
@@ -63,4 +67,5 @@
             android:textColor="@android:color/black" />
 
     </RelativeLayout>
-</android.support.design.widget.CoordinatorLayout>
+<!--
+</android.support.design.widget.CoordinatorLayout>-->

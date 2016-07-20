@@ -55,6 +55,7 @@ public class SwipeDetector implements View.OnTouchListener{
                         return true;
                     }
                 } else {
+
                     if (Math.abs(deltaY) > VERTICAL_MIN_DISTANCE){
                         if(deltaY < 0){
                             mSwipeDetected = Action.TB;

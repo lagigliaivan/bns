@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.design.widget.SwipeDismissBehavior;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,10 +30,13 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
     public LayoutInflater inflater;
     public Activity activity;
 
+    private SparseBooleanArray mSelectedItemsIds;
+
     public MyExpandableListAdapter(Activity act, Map<Integer, PurchasesGroup> groups) {
         activity = act;
         this.groups = groups;
         inflater = act.getLayoutInflater();
+        mSelectedItemsIds = new SparseBooleanArray();
     }
 
     @Override
@@ -58,22 +62,8 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
             convertView = inflater.inflate(R.layout.listrow_details_coordinator, null);
         }
 
-        RelativeLayout mCardView = (RelativeLayout) convertView.findViewById(R.id.listrow_details_relative_layout);
+        //RelativeLayout relativeLayout = (RelativeLayout) convertView.findViewById(R.id.listrow_details_relative_layout);
 
-        final SwipeDismissBehavior<RelativeLayout> swipe = new SwipeDismissBehavior();
-        swipe.setSwipeDirection(SwipeDismissBehavior.SWIPE_DIRECTION_ANY);
-
-        swipe.setListener(new SwipeDismissBehavior.OnDismissListener() {
-            @Override public void onDismiss(View view) {
-                /*Toast.makeText(convertView.getContext(),
-                        "Card swiped !!", Toast.LENGTH_SHORT).show();*/
-            }
-
-            @Override public void onDragStateChanged(int state) {}
-        });
-
-        LayoutParams coordinatorParams = (LayoutParams) mCardView.getLayoutParams();
-        coordinatorParams.setBehavior(swipe);
 
         TextView text = (TextView) convertView.findViewById(R.id.listrow_item_description);
         text.setText(children.getDescription());
@@ -173,5 +163,36 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {
         return true;
+    }
+
+    public void toggleSelection(int position) {
+        selectView(position, !mSelectedItemsIds.get(position));
+    }
+
+    public void remove(Object object) {
+        //worldpopulationlist.remove(object);
+        notifyDataSetChanged();
+    }
+
+    public void removeSelection() {
+        mSelectedItemsIds = new SparseBooleanArray();
+        notifyDataSetChanged();
+    }
+
+    public int getSelectedCount() {
+        return mSelectedItemsIds.size();
+    }
+
+    public SparseBooleanArray getSelectedIds() {
+        return mSelectedItemsIds;
+    }
+
+    public void selectView(int position, boolean value) {
+        if (value)
+            mSelectedItemsIds.put(position, value);
+        else
+            mSelectedItemsIds.delete(position);
+
+        notifyDataSetChanged();
     }
 }

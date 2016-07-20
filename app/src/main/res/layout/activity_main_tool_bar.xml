@@ -49,6 +49,7 @@
             android:fastScrollAlwaysVisible="false"
             android:fastScrollEnabled="false"
             android:layout_alignParentStart="false"
+            android:animateLayoutChanges="true"
             android:layout_above="@+id/main_tool_bar">
         </ExpandableListView>
 

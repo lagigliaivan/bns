@@ -87,3 +87,4 @@
 
 useful:
 https://www.youtube.com/watch?v=D19W_XvlnOA 
+http://www.androidbegin.com/tutorial/android-delete-multiple-selected-items-listview-tutorial/

@@ -7,11 +7,15 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.util.SparseBooleanArray;
+import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -293,35 +297,73 @@ public class MainActivity extends AppCompatActivity {
 
     private void renderList(PurchasesByMonthContainer purchasesContainer) {
 
-        MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
+        final MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
 
-        ExpandableListView listView = getListView();
+        final ExpandableListView listView = getListView();
         listView.setAdapter(adapter);
+        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
 
 
-        final SwipeDetector swipeDetector = new SwipeDetector();
-        listView.setOnTouchListener(swipeDetector);
-
-        listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+        // Capture ListView item click
+        listView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
 
 
             @Override
-            public boolean onChildClick(ExpandableListView expandableListView, View view, int i, int i1, long l){
+            public void onItemCheckedStateChanged(ActionMode mode,
+                                                  int position, long id, boolean checked) {
+                // Capture total checked items
 
+                int checkedCount = listView.getCheckedItemCount();
+                // Set the CAB title according to total checked items
+                mode.setTitle(checkedCount + " Selected");
+                // Calls toggleSelection method from ListViewAdapter Class
+                adapter.toggleSelection(position);
+            }
 
-                if(swipeDetector.swipeDetected()){
-
-                     if (swipeDetector.getSwipeDetected() == SwipeDetector.Action.LR) {
-
-
-                         Toast.makeText(view.getContext(), "Category:", Toast.LENGTH_SHORT).show();
-
-                     }
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.delete:
+                        // Calls getSelectedIds method from ListViewAdapter Class
+                        SparseBooleanArray selected = adapter.getSelectedIds();
+                        // Captures all selected ids with a loop
+                        for (int i = (selected.size() - 1); i >= 0; i--) {
+                            if (selected.valueAt(i)) {
+                                /*WorldPopulation selecteditem = listviewadapter
+                                        .getItem(selected.keyAt(i));
+                                // Remove selected items following the ids
+                                listviewadapter.remove(selecteditem);*//**/
+                            }
+                        }
+                        // Close CAB
+                        mode.finish();
+                        return true;
+                    default:
+                        return false;
                 }
 
+            }
+
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                mode.getMenuInflater().inflate(R.menu.delete_item_menu, menu);
                 return true;
             }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                // TODO Auto-generated method stub
+                adapter.removeSelection();
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                // TODO Auto-generated method stub
+                return false;
+            }
         });
+
+
 
 
         Map<Integer, PurchasesGroup> purchases = getPurchasesByMonth(purchasesContainer.getPurchasesByMonth());
