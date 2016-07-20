@@ -2,22 +2,20 @@ package ar.com.bestprice.buyitnow;
 
 import android.app.Activity;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.support.design.widget.SwipeDismissBehavior;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
+
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckedTextView;
-import android.widget.ImageView;
+
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.support.design.widget.CoordinatorLayout.LayoutParams;
+
 
 import java.util.Map;
 
@@ -31,12 +29,14 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
     public Activity activity;
 
     private SparseBooleanArray mSelectedItemsIds;
+    private SparseArray<SparseBooleanArray> checkedPositions = new SparseArray<SparseBooleanArray>();
 
     public MyExpandableListAdapter(Activity act, Map<Integer, PurchasesGroup> groups) {
         activity = act;
         this.groups = groups;
         inflater = act.getLayoutInflater();
         mSelectedItemsIds = new SparseBooleanArray();
+        checkedPositions = new SparseArray<SparseBooleanArray>();
     }
 
     @Override
@@ -58,12 +58,8 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         final Item children = (Item) getChild(groupPosition, childPosition);
 
         if (convertView == null) {
-            //convertView = inflater.inflate(R.layout.listrow_details, null);
-            convertView = inflater.inflate(R.layout.listrow_details_coordinator, null);
+            convertView = inflater.inflate(R.layout.listrow_details, null);
         }
-
-        //RelativeLayout relativeLayout = (RelativeLayout) convertView.findViewById(R.id.listrow_details_relative_layout);
-
 
         TextView text = (TextView) convertView.findViewById(R.id.listrow_item_description);
         text.setText(children.getDescription());
@@ -73,17 +69,10 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
                 icon = children.getCategory().getIcon();
         }
 
-        text.setCompoundDrawablesWithIntrinsicBounds(icon, 0, 0, 0);
+        text.setCompoundDrawablesWithIntrinsicBounds(R.drawable.checked_32, 0, 0, 0);
         text = (TextView) convertView.findViewById(R.id.item_price);
         text.setText(String.format("$%.2f", children.getPrice()));
 
-        /*convertView.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(activity, "Category:" + children.getCategory().toString(), Toast.LENGTH_SHORT).show();
-            }
-        });*/
 
         return convertView;
     }
@@ -194,5 +183,98 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
             mSelectedItemsIds.delete(position);
 
         notifyDataSetChanged();
+    }
+
+
+    /**
+     * Multiple choice for all the groups
+     */
+    public static final int CHOICE_MODE_MULTIPLE = AbsListView.CHOICE_MODE_MULTIPLE;
+
+    // TODO: Coverage this case
+    // Example:
+    //https://github.com/commonsguy/cw-omnibus/blob/master/ActionMode/ActionModeMC/src/com/commonsware/android/actionmodemc/ActionModeDemo.java
+    public static final int CHOICE_MODE_MULTIPLE_MODAL = AbsListView.CHOICE_MODE_MULTIPLE_MODAL;
+
+    /**
+     * No child could be selected
+     */
+    public static final int CHOICE_MODE_NONE = AbsListView.CHOICE_MODE_NONE;
+
+    /**
+     * One single choice per group
+     */
+    public static final int CHOICE_MODE_SINGLE_PER_GROUP = AbsListView.CHOICE_MODE_SINGLE;
+
+    /**
+     * One single choice for all the groups
+     */
+    public static final int CHOICE_MODE_SINGLE_ABSOLUTE = 10001;
+
+    private int choiceMode = CHOICE_MODE_MULTIPLE;
+
+    public void setClicked(int groupPosition, int childPosition) {
+        switch (choiceMode) {
+            case CHOICE_MODE_MULTIPLE:
+                SparseBooleanArray checkedChildPositionsMultiple = checkedPositions.get(groupPosition);
+                // if in the group there was not any child checked
+                if (checkedChildPositionsMultiple == null) {
+                    checkedChildPositionsMultiple = new SparseBooleanArray();
+                    // By default, the status of a child is not checked
+                    // So a click will enable it
+                    checkedChildPositionsMultiple.put(childPosition, true);
+                    checkedPositions.put(groupPosition, checkedChildPositionsMultiple);
+                } else {
+                    boolean oldState = checkedChildPositionsMultiple.get(childPosition);
+                    checkedChildPositionsMultiple.put(childPosition, !oldState);
+                }
+                break;
+            // TODO: Implement it
+            case CHOICE_MODE_MULTIPLE_MODAL:
+                throw new RuntimeException("The choice mode CHOICE_MODE_MULTIPLE_MODAL " +
+                        "has not implemented yet");
+            case CHOICE_MODE_NONE:
+                checkedPositions.clear();
+                break;
+            case CHOICE_MODE_SINGLE_PER_GROUP:
+                SparseBooleanArray checkedChildPositionsSingle = checkedPositions.get(groupPosition);
+                // If in the group there was not any child checked
+                if (checkedChildPositionsSingle == null) {
+                    checkedChildPositionsSingle = new SparseBooleanArray();
+                    // By default, the status of a child is not checked
+                    checkedChildPositionsSingle.put(childPosition, true);
+                    checkedPositions.put(groupPosition, checkedChildPositionsSingle);
+                } else {
+                    boolean oldState = checkedChildPositionsSingle.get(childPosition);
+                    // If the old state was false, set it as the unique one which is true
+                    if (!oldState) {
+                        checkedChildPositionsSingle.clear();
+                        checkedChildPositionsSingle.put(childPosition, !oldState);
+                    } // Else does not allow the user to uncheck it
+                }
+                break;
+            // This mode will remove all the checked positions from other groups
+            // and enable just one from the selected group
+            case CHOICE_MODE_SINGLE_ABSOLUTE:
+                checkedPositions.clear();
+                SparseBooleanArray checkedChildPositionsSingleAbsolute = new SparseBooleanArray();
+                checkedChildPositionsSingleAbsolute.put(childPosition, true);
+                checkedPositions.put(groupPosition, checkedChildPositionsSingleAbsolute);
+                break;
+        }
+
+        // Notify that some data has been changed
+        notifyDataSetChanged();
+    }
+
+    public void setChoiceMode(int choiceMode) {
+        this.choiceMode = choiceMode;
+        // For now the choice mode CHOICE_MODEL_MULTIPLE_MODAL
+        // is not implemented
+        if (choiceMode == CHOICE_MODE_MULTIPLE_MODAL) {
+            throw new RuntimeException("The choice mode CHOICE_MODE_MULTIPLE_MODAL " +
+                    "has not implemented yet");
+        }
+        checkedPositions.clear();
     }
 }

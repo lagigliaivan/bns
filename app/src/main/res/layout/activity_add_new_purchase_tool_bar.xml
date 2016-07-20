@@ -10,8 +10,9 @@
         android:id="@+id/listview_show_items_in_a_purchase"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:clickable="true"
-        android:visibility="visible">
+        android:clickable="false"
+        android:visibility="visible"
+        android:layout_above="@+id/new_purchase_toolbar">
     </ListView>
 
     <android.support.v7.widget.Toolbar

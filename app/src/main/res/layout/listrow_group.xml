@@ -11,7 +11,7 @@
 
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/blue_grey_900_ivan">
+        android:background="@color/blue_grey_900_ivan_light">
 
         <CheckedTextView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/listrow_group_item_description"
@@ -36,7 +36,6 @@
             android:text="Medium Text"
             android:id="@+id/month_total_amount"
             android:inputType="none"
-            android:textAlignment="viewEnd"
             android:gravity="top|bottom"
             android:paddingStart="10dp"
             android:paddingEnd="10dp"

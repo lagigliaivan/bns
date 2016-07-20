@@ -12,4 +12,5 @@
     <color name="blue_grey_900">#263238</color>
     <color name="blue_grey_500_ivan">#d3e4eb</color>
     <color name="blue_grey_900_ivan">#122642</color>
+    <color name="blue_grey_900_ivan_light">#295490</color>
 </resources>

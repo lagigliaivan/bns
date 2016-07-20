@@ -301,9 +301,18 @@ public class MainActivity extends AppCompatActivity {
 
         final ExpandableListView listView = getListView();
         listView.setAdapter(adapter);
-        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
 
+        listView.setChoiceMode(ExpandableListView.CHOICE_MODE_MULTIPLE_MODAL);
 
+        listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v,
+                                        int groupPosition, int childPosition, long id) {
+                adapter.setClicked(groupPosition, childPosition);
+                return false;
+            }
+        });
         // Capture ListView item click
         listView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
 
@@ -362,9 +371,6 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-
-
-
 
         Map<Integer, PurchasesGroup> purchases = getPurchasesByMonth(purchasesContainer.getPurchasesByMonth());
 

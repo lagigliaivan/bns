@@ -1,14 +1,7 @@
-<!--<LinearLayout android:layout_height="wrap_content"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:weightSum="1"
-    android:gravity="left"
-    android:orientation="horizontal">-->
-
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="74dp"
+        android:layout_height="50dp"
         android:clickable="false"
         android:orientation="horizontal"
         android:paddingLeft="10dp"
@@ -18,7 +11,6 @@
         android:layout_alignParentBottom="true"
         style="@style/Base.Widget.AppCompat.ListView"
         android:longClickable="false"
-
         android:backgroundTintMode="src_in">
 
         <LinearLayout
@@ -34,7 +26,7 @@
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:drawablePadding="10dp"
                 android:layout_width="254dp"
-                android:layout_height="80dp"
+                android:layout_height="match_parent"
                 android:gravity="left|center"
                 android:layout_alignParentTop="false"
                 android:layout_alignParentStart="true"
@@ -44,8 +36,8 @@
                 android:layout_toStartOf="@+id/space2" />
 
             <Space
-                android:layout_width="29dp"
-                android:layout_height="84dp" />
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
         </LinearLayout>
 
@@ -65,6 +57,3 @@
             android:textColor="@android:color/black" />
 
     </RelativeLayout>
-
-<!--
-</LinearLayout>-->
