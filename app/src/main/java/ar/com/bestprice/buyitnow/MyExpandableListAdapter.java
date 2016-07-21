@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
 import android.view.ViewGroup;
@@ -12,6 +15,7 @@ import android.widget.AbsListView;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckedTextView;
 
+import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -22,7 +26,7 @@ import java.util.Map;
 import ar.com.bestprice.buyitnow.dto.Item;
 
 
-public class MyExpandableListAdapter extends BaseExpandableListAdapter {
+public class MyExpandableListAdapter extends BaseExpandableListAdapter implements AbsListView.MultiChoiceModeListener, ExpandableListView.OnChildClickListener {
 
     private final Map<Integer, PurchasesGroup> groups;
     public LayoutInflater inflater;
@@ -30,6 +34,8 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
 
     private SparseBooleanArray mSelectedItemsIds;
     private SparseArray<SparseBooleanArray> checkedPositions = new SparseArray<SparseBooleanArray>();
+    private ExpandableListView parent;
+    private boolean mInEdition = false;
 
     public MyExpandableListAdapter(Activity act, Map<Integer, PurchasesGroup> groups) {
         activity = act;
@@ -154,9 +160,6 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         return true;
     }
 
-    public void toggleSelection(int position) {
-        selectView(position, !mSelectedItemsIds.get(position));
-    }
 
     public void remove(Object object) {
         //worldpopulationlist.remove(object);
@@ -213,26 +216,97 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
 
     private int choiceMode = CHOICE_MODE_MULTIPLE;
 
-    public void setClicked(int groupPosition, int childPosition) {
-        switch (choiceMode) {
-            case CHOICE_MODE_MULTIPLE:
-                SparseBooleanArray checkedChildPositionsMultiple = checkedPositions.get(groupPosition);
-                // if in the group there was not any child checked
-                if (checkedChildPositionsMultiple == null) {
-                    checkedChildPositionsMultiple = new SparseBooleanArray();
-                    // By default, the status of a child is not checked
-                    // So a click will enable it
-                    checkedChildPositionsMultiple.put(childPosition, true);
-                    checkedPositions.put(groupPosition, checkedChildPositionsMultiple);
-                } else {
-                    boolean oldState = checkedChildPositionsMultiple.get(childPosition);
-                    checkedChildPositionsMultiple.put(childPosition, !oldState);
+
+   /* public void setChoiceMode(int choiceMode) {
+        this.choiceMode = choiceMode;
+        // For now the choice mode CHOICE_MODEL_MULTIPLE_MODAL
+        // is not implemented
+        if (choiceMode == CHOICE_MODE_MULTIPLE_MODAL) {
+            throw new RuntimeException("The choice mode CHOICE_MODE_MULTIPLE_MODAL " +
+                    "has not implemented yet");
+        }
+        checkedPositions.clear();
+    }*/
+
+    @Override
+    public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+        // Capture total checked items
+        checkedPositions.clear();
+        //int checkedCount = listView.getCheckedItemCount();
+        // Set the CAB title according to total checked items
+        mode.setTitle(mSelectedItemsIds.size() + " Selected");
+       
+        mInEdition = true;
+        // Calls toggleSelection method from ListViewAdapter Class
+        selectView(position, !mSelectedItemsIds.get(position));
+    }
+
+    @Override
+    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        mode.getMenuInflater().inflate(R.menu.delete_item_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        return false;
+    }
+
+    @Override
+    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.delete:
+                // Calls getSelectedIds method from ListViewAdapter Class
+                SparseBooleanArray selected = getSelectedIds();
+                // Captures all selected ids with a loop
+                for (int i = (selected.size() - 1); i >= 0; i--) {
+                    if (selected.valueAt(i)) {
+                                /*WorldPopulation selecteditem = listviewadapter
+                                        .getItem(selected.keyAt(i));
+                                // Remove selected items following the ids
+                                listviewadapter.remove(selecteditem);*//**/
+                    }
+                }
+                mInEdition = false;
+                // Close CAB
+                mode.finish();
+                return true;
+            default:
+                mInEdition = false;
+                return false;
+        }
+    }
+
+    @Override
+    public void onDestroyActionMode(ActionMode mode) {
+        removeSelection();
+    }
+
+    @Override
+    public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+
+
+      //  parent.getChildAt(id).setBackgroundColor(@android:color/darker_gray);
+
+        switch (parent.getChoiceMode()) {
+            case CHOICE_MODE_MULTIPLE_MODAL:
+
+                if(mInEdition) {
+                    SparseBooleanArray checkedChildPositionsMultiple = checkedPositions.get(groupPosition);
+                    // if in the group there was not any child checked
+                    if (checkedChildPositionsMultiple == null) {
+                        checkedChildPositionsMultiple = new SparseBooleanArray();
+                        checkedChildPositionsMultiple.put(childPosition, true);
+                        checkedPositions.put(groupPosition, checkedChildPositionsMultiple);
+                        v.setBackgroundColor(Color.TRANSPARENT);
+
+                    } else {
+                        boolean oldState = checkedChildPositionsMultiple.get(childPosition);
+                        checkedChildPositionsMultiple.put(childPosition, !oldState);
+                        v.setBackgroundColor(Color.GRAY);
+                    }
                 }
                 break;
-            // TODO: Implement it
-            case CHOICE_MODE_MULTIPLE_MODAL:
-                throw new RuntimeException("The choice mode CHOICE_MODE_MULTIPLE_MODAL " +
-                        "has not implemented yet");
             case CHOICE_MODE_NONE:
                 checkedPositions.clear();
                 break;
@@ -265,16 +339,10 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
 
         // Notify that some data has been changed
         notifyDataSetChanged();
+        return false;
     }
 
-    public void setChoiceMode(int choiceMode) {
-        this.choiceMode = choiceMode;
-        // For now the choice mode CHOICE_MODEL_MULTIPLE_MODAL
-        // is not implemented
-        if (choiceMode == CHOICE_MODE_MULTIPLE_MODAL) {
-            throw new RuntimeException("The choice mode CHOICE_MODE_MULTIPLE_MODAL " +
-                    "has not implemented yet");
-        }
-        checkedPositions.clear();
+    public void setParent(ExpandableListView parent) {
+        this.parent = parent;
     }
 }

@@ -30,7 +30,9 @@
                 android:gravity="left|center"
                 android:layout_alignParentTop="false"
                 android:layout_alignParentStart="true"
+                android:ellipsize="end"
                 android:clickable="false"
+                android:maxLines="2"
                 android:contextClickable="false"
                 android:focusable="false"
                 android:layout_toStartOf="@+id/space2" />

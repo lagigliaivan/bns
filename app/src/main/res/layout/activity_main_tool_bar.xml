@@ -63,7 +63,7 @@
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
             app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             android:layout_alignParentStart="true"
-            android:background="@color/blue_grey_900_ivan_light"
+            android:background="@color/blue_grey_900_ivan"
             android:visibility="visible"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true" />

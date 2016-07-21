@@ -297,80 +297,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void renderList(PurchasesByMonthContainer purchasesContainer) {
 
-        final MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
-
         final ExpandableListView listView = getListView();
+        final MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
+        adapter.setParent(listView);
+
+
         listView.setAdapter(adapter);
-
+        listView.setOnChildClickListener(adapter);
+        listView.setMultiChoiceModeListener(adapter);
         listView.setChoiceMode(ExpandableListView.CHOICE_MODE_MULTIPLE_MODAL);
-
-        listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-
-            @Override
-            public boolean onChildClick(ExpandableListView parent, View v,
-                                        int groupPosition, int childPosition, long id) {
-                adapter.setClicked(groupPosition, childPosition);
-                return false;
-            }
-        });
-        // Capture ListView item click
-        listView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
-
-
-            @Override
-            public void onItemCheckedStateChanged(ActionMode mode,
-                                                  int position, long id, boolean checked) {
-                // Capture total checked items
-
-                int checkedCount = listView.getCheckedItemCount();
-                // Set the CAB title according to total checked items
-                mode.setTitle(checkedCount + " Selected");
-                // Calls toggleSelection method from ListViewAdapter Class
-                adapter.toggleSelection(position);
-            }
-
-            @Override
-            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.delete:
-                        // Calls getSelectedIds method from ListViewAdapter Class
-                        SparseBooleanArray selected = adapter.getSelectedIds();
-                        // Captures all selected ids with a loop
-                        for (int i = (selected.size() - 1); i >= 0; i--) {
-                            if (selected.valueAt(i)) {
-                                /*WorldPopulation selecteditem = listviewadapter
-                                        .getItem(selected.keyAt(i));
-                                // Remove selected items following the ids
-                                listviewadapter.remove(selecteditem);*//**/
-                            }
-                        }
-                        // Close CAB
-                        mode.finish();
-                        return true;
-                    default:
-                        return false;
-                }
-
-            }
-
-            @Override
-            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                mode.getMenuInflater().inflate(R.menu.delete_item_menu, menu);
-                return true;
-            }
-
-            @Override
-            public void onDestroyActionMode(ActionMode mode) {
-                // TODO Auto-generated method stub
-                adapter.removeSelection();
-            }
-
-            @Override
-            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                // TODO Auto-generated method stub
-                return false;
-            }
-        });
 
         Map<Integer, PurchasesGroup> purchases = getPurchasesByMonth(purchasesContainer.getPurchasesByMonth());
 
