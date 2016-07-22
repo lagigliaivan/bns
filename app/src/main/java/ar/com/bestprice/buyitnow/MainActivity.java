@@ -7,17 +7,12 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
-import android.util.SparseBooleanArray;
-import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AbsListView;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -123,15 +118,15 @@ public class MainActivity extends AppCompatActivity {
 
                 for (Purchase purchase : sortedPurchases.get(month).getPurchases()){
 
-                    float purchaseTotalPrice = 0;
+                    //float purchaseTotalPrice = 0;
 
                     for(Item item: purchase.getItems()) {
-
-                        purchaseTotalPrice += item.getPrice();
-                        purchasesGroup.children.add(item);
+                        item.setTime(purchase.getTime());
+                       // purchaseTotalPrice += item.getPrice();
+                        purchasesGroup.addItem(item);
                     }
-
-                    purchasesGroup.setPurchasesTotalPrice(purchaseTotalPrice);
+                    purchasesGroup.addPurchase(purchase);
+                    //purchasesGroup.setPurchasesTotalPrice(purchaseTotalPrice);
                 }
                 groups.put(j, purchasesGroup);
                 j++;
@@ -300,12 +295,15 @@ public class MainActivity extends AppCompatActivity {
         final ExpandableListView listView = getListView();
         final MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
         adapter.setParent(listView);
-
-
         listView.setAdapter(adapter);
-        listView.setOnChildClickListener(adapter);
-        listView.setMultiChoiceModeListener(adapter);
-        listView.setChoiceMode(ExpandableListView.CHOICE_MODE_MULTIPLE_MODAL);
+
+        listView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
+            @Override
+            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+                return false;
+            }
+        });
+
 
         Map<Integer, PurchasesGroup> purchases = getPurchasesByMonth(purchasesContainer.getPurchasesByMonth());
 

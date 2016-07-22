@@ -34,4 +34,8 @@ public class Purchase {
             this.items.add(item);
         }
     }
+
+    public void removeItem(Item item){
+        items.remove(item);
+    }
 }

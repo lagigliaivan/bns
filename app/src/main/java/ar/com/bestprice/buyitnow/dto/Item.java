@@ -10,6 +10,7 @@ import ar.com.bestprice.buyitnow.Category;
 public class Item implements Serializable{
 
     private String id;
+    private String time;
     private String description;
     private Float price;
     private String category = "";
@@ -57,5 +58,13 @@ public class Item implements Serializable{
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
     }
 }

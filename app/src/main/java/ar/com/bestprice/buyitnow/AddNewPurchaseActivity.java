@@ -128,7 +128,6 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
                 Date date = new Date(System.currentTimeMillis());
 
                 Purchases purchases = new Purchases();
-
                 Purchase purchase = new Purchase();
                 purchase.setItems(items);
                 purchase.setTime(datetime.format(date));
