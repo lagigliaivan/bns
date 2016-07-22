@@ -19,6 +19,10 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import ar.com.bestprice.buyitnow.dto.Item;
 import ar.com.bestprice.buyitnow.dto.Purchase;
@@ -88,14 +92,33 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
                     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                         switch (item.getItemId()) {
                             case R.id.delete:
+                                final ExecutorService service = Executors.newFixedThreadPool(1);
+                                final Future<Integer> task;
+
                                 ((RelativeLayout)((view.getParent()).getParent())).setBackground(color);
 
+
+                                Purchases purchases = new Purchases();
                                 PurchasesGroup group = (PurchasesGroup) getGroup(groupPosition);
                                 group.removeItemAt(childPosition);
 
                                 Purchase purchase = group.getPurchase(children.getTime());
 
+                                ArrayList<Purchase> ps = new ArrayList<>();
+                                ps.add(purchase);
 
+                                purchases.setPurchases(ps);
+
+                                String serviceURL = Context.getContext().getServiceURL();
+                                task = service.submit(new POSTServiceClient(serviceURL + "/purchases", purchases));
+
+                                try {
+                                    Integer status = task.get();
+                                } catch (final InterruptedException | ExecutionException ex) {
+                                    ex.printStackTrace();
+                                } finally {
+                                    service.shutdownNow();
+                                }
                                 mode.finish(); // Action picked, so close the CAB
                                 notifyDataSetChanged();
                                 return true;
