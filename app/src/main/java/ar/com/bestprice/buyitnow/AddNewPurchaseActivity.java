@@ -101,8 +101,6 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
 
-        // Handling action bar item clicks
-
         switch (menuItem.getItemId()){
 
             case R.id.add_item:
@@ -136,7 +134,10 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
                 ArrayList<Purchase> ps = new ArrayList<>();
                 ps.add(purchase);
 
-                purchases.setPurchases(ps);
+                PurchasesService purchasesService = new PurchasesService();
+                purchasesService.savePurchases(ps);
+
+               /* purchases.setPurchases(ps);
 
                 String serviceURL = Context.getContext().getServiceURL();
                 task = service.submit(new POSTServiceClient(serviceURL + "/purchases", purchases));
@@ -147,8 +148,7 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
                     ex.printStackTrace();
                 } finally {
                     service.shutdownNow();
-                }
-
+                }*/
                 finish();
                 break;
         }

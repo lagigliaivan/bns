@@ -34,7 +34,6 @@ public class POSTServiceClient implements Callable {
     public Object call() throws Exception {
         HttpURLConnection urlConnection = null;
         int responseCode = 203;
-        // BufferedReader reader = null;
         try {
 
             URL url = new URL(this.url);
@@ -53,12 +52,10 @@ public class POSTServiceClient implements Callable {
             OutputStream os = urlConnection.getOutputStream();
             BufferedWriter writer = new BufferedWriter(
                     new OutputStreamWriter(os, "UTF-8"));
-            //writer.write(getPostDataString(postDataParams));
             writer.write(it);
             writer.flush();
             writer.close();
             os.close();
-
 
             responseCode = urlConnection.getResponseCode();
 

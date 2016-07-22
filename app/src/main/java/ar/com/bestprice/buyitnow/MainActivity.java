@@ -118,15 +118,11 @@ public class MainActivity extends AppCompatActivity {
 
                 for (Purchase purchase : sortedPurchases.get(month).getPurchases()){
 
-                    //float purchaseTotalPrice = 0;
-
                     for(Item item: purchase.getItems()) {
                         item.setTime(purchase.getTime());
-                       // purchaseTotalPrice += item.getPrice();
                         purchasesGroup.addItem(item);
                     }
                     purchasesGroup.addPurchase(purchase);
-                    //purchasesGroup.setPurchasesTotalPrice(purchaseTotalPrice);
                 }
                 groups.put(j, purchasesGroup);
                 j++;
@@ -178,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
 
                         String m_Text = input.getText().toString();
 
-                        List purchasesByMonth = lookForAStringIn(m_Text, purchasesContainer.getPurchasesByMonth());
+                        List purchasesByMonth = searchStringInPurchases(m_Text, purchasesContainer.getPurchasesByMonth());
 
                         PurchasesByMonthContainer container = new PurchasesByMonthContainer();
                         container.setPurchasesByMonth(purchasesByMonth);
@@ -307,19 +303,19 @@ public class MainActivity extends AppCompatActivity {
 
         Map<Integer, PurchasesGroup> purchases = getPurchasesByMonth(purchasesContainer.getPurchasesByMonth());
 
-        float purchasesAccum = 0;
+        float accumPurchases = 0;
 
         for (PurchasesGroup group : purchases.values()) {
-            purchasesAccum += group.getPurchasesTotalPrice();
+            accumPurchases += group.getPurchasesTotalPrice();
         }
 
-        float purchasesAverage = purchasesAccum / purchases.size();
+        float purchasesAverage = accumPurchases / purchases.size();
 
         TextView average = (TextView) findViewById(R.id.average);
         TextView accumulated = (TextView) findViewById(R.id.accumulated);
 
         average.setText(String.format("Promedio mensual: $%.2f", purchasesAverage));
-        accumulated.setText(String.format("Acumulado: $%.2f", purchasesAccum));
+        accumulated.setText(String.format("Acumulado: $%.2f", accumPurchases));
 
     }
 
@@ -342,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
         renderPurchasesList();
     }
 
-    private List<PurchasesByMonth> lookForAStringIn(String pattern, List<PurchasesByMonth> purchasesByMonths){
+    private List<PurchasesByMonth> searchStringInPurchases(String pattern, List<PurchasesByMonth> purchasesByMonths){
 
         List<PurchasesByMonth> byMonths = new ArrayList<>();
 

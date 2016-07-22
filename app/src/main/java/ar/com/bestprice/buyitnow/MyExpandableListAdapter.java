@@ -97,7 +97,6 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
 
                                 ((RelativeLayout)((view.getParent()).getParent())).setBackground(color);
 
-
                                 Purchases purchases = new Purchases();
                                 PurchasesGroup group = (PurchasesGroup) getGroup(groupPosition);
                                 group.removeItemAt(childPosition);
@@ -107,7 +106,10 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
                                 ArrayList<Purchase> ps = new ArrayList<>();
                                 ps.add(purchase);
 
-                                purchases.setPurchases(ps);
+                                PurchasesService purchasesService = new PurchasesService();
+                                purchasesService.savePurchases(ps);
+
+                               /* purchases.setPurchases(ps);
 
                                 String serviceURL = Context.getContext().getServiceURL();
                                 task = service.submit(new POSTServiceClient(serviceURL + "/purchases", purchases));
@@ -118,7 +120,7 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
                                     ex.printStackTrace();
                                 } finally {
                                     service.shutdownNow();
-                                }
+                                }*/
                                 mode.finish(); // Action picked, so close the CAB
                                 notifyDataSetChanged();
                                 return true;
@@ -144,7 +146,7 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
             icon = children.getCategory().getIcon();
         }
 
-        text.setCompoundDrawablesWithIntrinsicBounds(R.drawable.mercaderia_32, 0, 0, 0);
+        text.setCompoundDrawablesWithIntrinsicBounds(R.drawable.tag_mercaderia_32, 0, 0, 0);
         text = (TextView) convertView.findViewById(R.id.item_price);
         text.setText(String.format("$%.2f", children.getPrice()));
 
