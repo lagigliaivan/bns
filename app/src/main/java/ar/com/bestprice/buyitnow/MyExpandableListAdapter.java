@@ -109,18 +109,6 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
                                 PurchasesService purchasesService = new PurchasesService();
                                 purchasesService.savePurchases(ps);
 
-                               /* purchases.setPurchases(ps);
-
-                                String serviceURL = Context.getContext().getServiceURL();
-                                task = service.submit(new POSTServiceClient(serviceURL + "/purchases", purchases));
-
-                                try {
-                                    Integer status = task.get();
-                                } catch (final InterruptedException | ExecutionException ex) {
-                                    ex.printStackTrace();
-                                } finally {
-                                    service.shutdownNow();
-                                }*/
                                 mode.finish(); // Action picked, so close the CAB
                                 notifyDataSetChanged();
                                 return true;
@@ -146,7 +134,7 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
             icon = children.getCategory().getIcon();
         }
 
-        text.setCompoundDrawablesWithIntrinsicBounds(R.drawable.tag_mercaderia_32, 0, 0, 0);
+        text.setCompoundDrawablesWithIntrinsicBounds(icon, 0, 0, 0);
         text = (TextView) convertView.findViewById(R.id.item_price);
         text.setText(String.format("$%.2f", children.getPrice()));
 

@@ -13,6 +13,10 @@ public class Purchase {
     List<Item> items = new ArrayList<>();
 
     public List<Item> getItems() {
+
+        if(items == null) {
+            items = new ArrayList<>();
+        }
         return items;
     }
 

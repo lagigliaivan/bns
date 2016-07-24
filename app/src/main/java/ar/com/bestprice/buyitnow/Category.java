@@ -5,12 +5,12 @@ package ar.com.bestprice.buyitnow;
  */
 public enum Category {
 
-    MERCADERIA ("Mercaderia", 1, R.drawable.shop_cart_icon_32),
-    DIVERSION   ("Diversion", 2, R.drawable.face_laugh_icon_32),
-    IMPUESTOS   ("Impuestos", 3, R.drawable.taxes_icon_32),
-    SERVICIOS ("Servicios", 4, R.drawable.payment_icon_32),
-    SALUD ("Salud", 5, R.drawable.pill_icon_32),
-    OTROS  ("Otros",6, R.drawable.basket_full_icon_32);
+    MERCADERIA ("Mercaderia", 1, R.drawable.ic_mercaderia_24dp),
+    DIVERSION   ("Diversion", 2, R.drawable.ic_diversion_24dp),
+    IMPUESTOS   ("Impuestos", 3, R.drawable.ic_impuestos_24dp),
+    SERVICIOS ("Servicios", 4, R.drawable.ic_servicios_24dp),
+    SALUD ("Salud", 5, R.drawable.ic_salud_24dp),
+    OTROS  ("Otros",6, R.drawable.ic_otros_24dp);
 
 
     private final String name;

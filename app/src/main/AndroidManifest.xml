@@ -31,14 +31,14 @@
         <activity android:name="ar.com.bestprice.buyitnow.AddNewPurchaseActivity"
             android:label="Add new purchase"/>
 
-        <!--<activity android:name=".MainActivity"
+       <!-- <activity android:name=".MainActivity"
                 android:label="@string/app_name"/>-->
 
          <activity android:name=".MainActivity"
                  android:label="@string/app_name">
-       <!-- <activity android:name="ar.com.bestprice.buyitnow.LogInActivity"
-            android:label="Login">-->
-
+        <!--<activity android:name="ar.com.bestprice.buyitnow.LogInActivity"
+            android:label="Login">
+-->
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
 
