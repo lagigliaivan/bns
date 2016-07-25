@@ -1,12 +1,16 @@
 package ar.com.bestprice.buyitnow;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
@@ -25,6 +29,7 @@ import java.util.concurrent.Future;
 import ar.com.bestprice.buyitnow.dto.Item;
 import ar.com.bestprice.buyitnow.dto.Purchase;
 import ar.com.bestprice.buyitnow.dto.Purchases;
+import ar.com.bestprice.buyitnow.dto.PurchasesByMonthContainer;
 
 /**
  * Created by ivan on 08/04/16.
@@ -116,40 +121,60 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
 
             case R.id.save_purchase:
 
-                final ExecutorService service = Executors.newFixedThreadPool(1);
-                final Future<Integer> task;
+                final StringBuilder shop = new StringBuilder();
 
-                //2016-05-05T18:54:03.5102707-03:00
-                SimpleDateFormat datetime = new SimpleDateFormat ("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZZZZZ", Locale.US);
-                datetime.setTimeZone(TimeZone.getTimeZone("UTC"));
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Ingrese lugar de compra");
 
-                Date date = new Date(System.currentTimeMillis());
+                // Set up the input
+                final EditText input = new EditText(this);
+                // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                builder.setView(input);
 
-                Purchases purchases = new Purchases();
-                Purchase purchase = new Purchase();
-                purchase.setItems(items);
-                purchase.setTime(datetime.format(date));
+                // Set up the buttons
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        shop.append(input.getText().toString());
+                        //2016-05-05T18:54:03.5102707-03:00
+                        SimpleDateFormat datetime = new SimpleDateFormat ("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSZZZZZ", Locale.US);
+                        datetime.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+                        Date date = new Date(System.currentTimeMillis());
+
+                        Purchase purchase = new Purchase();
+
+                        if(shop.toString().isEmpty()){
+                            shop.append("No especificado");
+                        }
+                        purchase.setShop(shop.toString());
+                        purchase.setItems(items);
+                        purchase.setTime(datetime.format(date));
 
 
-                ArrayList<Purchase> ps = new ArrayList<>();
-                ps.add(purchase);
+                        ArrayList<Purchase> ps = new ArrayList<>();
+                        ps.add(purchase);
 
-                PurchasesService purchasesService = new PurchasesService();
-                purchasesService.savePurchases(ps);
+                        PurchasesService purchasesService = new PurchasesService();
+                        purchasesService.savePurchases(ps);
 
-               /* purchases.setPurchases(ps);
+                        finish();
 
-                String serviceURL = Context.getContext().getServiceURL();
-                task = service.submit(new POSTServiceClient(serviceURL + "/purchases", purchases));
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
 
-                try {
-                    Integer status = task.get();
-                } catch (final InterruptedException | ExecutionException ex) {
-                    ex.printStackTrace();
-                } finally {
-                    service.shutdownNow();
-                }*/
-                finish();
+                builder.show();
+
+
                 break;
         }
 

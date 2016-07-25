@@ -10,6 +10,7 @@ import java.util.List;
 public class Purchase {
 
     String time;
+    String shop;
     List<Item> items = new ArrayList<>();
 
     public List<Item> getItems() {
@@ -41,5 +42,13 @@ public class Purchase {
 
     public void removeItem(Item item){
         items.remove(item);
+    }
+
+    public String getShop() {
+        return shop;
+    }
+
+    public void setShop(String shop) {
+        this.shop = shop;
     }
 }

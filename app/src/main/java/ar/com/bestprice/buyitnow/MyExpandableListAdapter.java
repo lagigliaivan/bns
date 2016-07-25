@@ -16,6 +16,7 @@ import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -67,10 +68,35 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
         TextView text = (TextView) convertView.findViewById(R.id.listrow_item_description);
         text.setText(children.getDescription());
 
+        text.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+
+                PurchasesGroup group = (PurchasesGroup) getGroup(groupPosition);
+
+                Purchase purchase = group.getPurchase(children.getTime());
+
+                purchase.getShop();
+
+
+                //Context context = Context.getContext();
+
+                CharSequence text = "Lugar de compra: " + purchase.getShop() + " [" + purchase.getTime() + "]";
+                int duration = Toast.LENGTH_LONG;
+
+                Toast toast = Toast.makeText(parent.getContext(), text, duration);
+
+                toast.show();
+
+            }
+        });
+
         text.setOnLongClickListener(new View.OnLongClickListener() {
 
             @Override
             public boolean onLongClick(final View view) {
+
                 final Drawable color = ((RelativeLayout)view.getParent().getParent()).getBackground();
                 ((RelativeLayout)((view.getParent()).getParent())).setBackgroundColor(Color.LTGRAY);
                 myParentExpandableView.startActionMode(new ActionMode.Callback() {// Called when the action mode is created; startActionMode() was called
@@ -90,10 +116,9 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
 
                     @Override
                     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+
                         switch (item.getItemId()) {
                             case R.id.delete:
-                                final ExecutorService service = Executors.newFixedThreadPool(1);
-                                final Future<Integer> task;
 
                                 ((RelativeLayout)((view.getParent()).getParent())).setBackground(color);
 

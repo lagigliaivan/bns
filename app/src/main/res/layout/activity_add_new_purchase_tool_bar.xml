@@ -12,7 +12,8 @@
         android:layout_height="wrap_content"
         android:clickable="false"
         android:visibility="visible"
-        android:layout_above="@+id/new_purchase_toolbar">
+        android:layout_above="@+id/new_purchase_toolbar"
+        android:divider="@android:color/black">
     </ListView>
 
     <android.support.v7.widget.Toolbar
