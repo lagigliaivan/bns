@@ -6,17 +6,14 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"encoding/json"
 	"io"
-	"reflect"
 	"crypto/sha1"
 	"time"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 
@@ -24,7 +21,7 @@ func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
-var (
+/*var (
 	setOfItems = []Item{
 
 		{
@@ -337,10 +334,12 @@ func createItemDto() Item {
 	id := "12345"
 	price := float32(10.1)
 	descr := "milk 100 cm3"
+	category := "Mercaderia"
 
-	return Item{id, descr, price}
+	return Item{id, descr, price, category }
 }
-
+*/
+/*
 //API to be tested
 func getURLToBeTested(base_url string, params ... string) string {
 
@@ -356,6 +355,7 @@ func getURLToBeTested(base_url string, params ... string) string {
 
 	return base_url + catalog_api + p;
 }
+
 
 func httpPOST(user string, server httptest.Server) error{
 
@@ -387,6 +387,7 @@ func httpPut(user, url string, item Stringifiable) (resp * http.Response, err er
 	resp, err = http.DefaultClient.Do(req)
 	return resp, err
 }
+*/
 
 func httpGet(user, url string) (*http.Response, error){
 
@@ -431,7 +432,7 @@ func getServer(service Service) *httptest.Server {
 func isHTTPStatus(httpStatus int, res *http.Response, err error ) bool {
 	return !( (err != nil) || (res.StatusCode != httpStatus) )
 }
-
+/*
 func createItemFromJson(itemAsJson io.ReadCloser) Item {
 
 	item := new(Item)
@@ -446,7 +447,7 @@ func createItemFromJson(itemAsJson io.ReadCloser) Item {
 	}
 
 	return *item
-}
+}*/
 
 
 
@@ -839,6 +840,7 @@ var dts = []string{
 		"2016-04-11T00:06:23Z",
 	  }
 
+/*
 func Test_aws_items_creation(t *testing.T) {
 
 	count := 0
@@ -876,7 +878,8 @@ func Test_aws_items_creation(t *testing.T) {
 
 	log.Printf("%d items were inserted", count)
 
-	/*key := map[string]* dynamodb.AttributeValue {
+	*/
+/*key := map[string]* dynamodb.AttributeValue {
 		"id": {
 			S: aws.String(id),
 		},
@@ -892,9 +895,11 @@ func Test_aws_items_creation(t *testing.T) {
 		return
 	}
 
-	log.Println("Result:%s ", itemResult)*/
-}
+	log.Println("Result:%s ", itemResult)*//*
 
+}
+*/
+/*
 func Test_aws_items_query(t *testing.T){
 
 	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
@@ -940,7 +945,7 @@ func Test_aws_items_query(t *testing.T){
 
 	parseQueryResponse(resp.Items)
 
-}
+}*/
 
 
 func parseQueryResponse (items []map[string]*dynamodb.AttributeValue) {

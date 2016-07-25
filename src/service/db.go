@@ -166,7 +166,6 @@ func (catDb DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month]
 
 	}
 
-
 	return purchasesByMonth
 }
 
@@ -195,8 +194,6 @@ func (catDb DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.Que
 	}
 
 	resp, err := catDb.svc.Query(params)
-
-	log.Println(resp)
 
 	if err != nil {
 		fmt.Println(err.Error())

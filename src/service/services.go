@@ -180,7 +180,6 @@ func (service PurchaseService) getPurchasesByMonth(user string, year int) map[ti
 		sortedPurchases[time.Month(key)] = purchases[time.Month(key)];
 	}
 
-	log.Printf("Sorted Purchases:", sortedPurchases);
 	return  sortedPurchases;
 }
 
