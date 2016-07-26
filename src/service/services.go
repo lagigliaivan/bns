@@ -49,7 +49,9 @@ func NewPurchaseService(db DB) *PurchaseService {
 	service.purchasesHandler = make(map[string] func(http.ResponseWriter,*http.Request))
 	service.purchasesHandler[http.MethodGet] = service.handleGetPurchases
 	service.purchasesHandler[http.MethodPost] = service.handlePostPurchases
+	service.purchasesHandler[http.MethodDelete]  = service.handleDeletePurchase
 	service.purchasesHandler[service.error]  = service.handleDefaultError
+
 
 	return service
 }
@@ -154,6 +156,12 @@ func (service PurchaseService) handlePostPurchases(w http.ResponseWriter, r *htt
 
 	service.savePurchases(purchases.Purchases, user)
 	w.WriteHeader(http.StatusCreated)
+}
+
+
+func (service PurchaseService) handleDeletePurchase (w http.ResponseWriter, r *http.Request) {
+
+	service.db.DeletePurchase()
 }
 
 func (service PurchaseService) getPurchases(userId string) []Purchase {

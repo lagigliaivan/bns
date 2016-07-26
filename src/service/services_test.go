@@ -13,7 +13,7 @@ import (
 	"crypto/sha1"
 	"time"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/aws"
+//	"github.com/aws/aws-sdk-go/aws"
 )
 
 
@@ -420,6 +420,24 @@ func httpPost(user, url string, values Stringifiable) (*http.Response, error){
 	return resp, err
 }
 
+
+func httpDelete(user, url string) (*http.Response, error){
+
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	if err != nil {
+		log.Printf("Error when creating DELETE request %d.", err)
+		return nil, err
+	}
+	req.Header.Add(HEADER, user)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Printf("Error when creating DELETE request %d.", err)
+		return nil, err
+	}
+	return resp, err
+}
+
 func getServer(service Service) *httptest.Server {
 
 	router := NewRouter()
@@ -455,6 +473,7 @@ var user1 string
 var user2 string
 
 func init() {
+
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	sha := sha1.New()
 	io.WriteString(sha, "mayname:password@gmail.com.ar")
@@ -468,7 +487,13 @@ func init() {
 
 const STATUS_ERROR_MESSAGE string = "%s %s Received status code: %d different from what was expected: %d"
 
+const tt = "2016-01-12T00:01:23Z"
+
 var (
+	purchaseTime = time.Now()
+
+
+
 	itemsPurchaseA = []Item{
 
 		{
@@ -517,24 +542,26 @@ var (
 		},
 	}
 
+	timeToTest,_ = time.Parse(time.RFC3339,tt)
+
 	setOfPurchases = []Purchase{
 
 		{
-			Time: time.Now(),
+			Time: timeToTest,
 			Point:NewPoint(-31.4165791, -64.1855098),
 			Shop:"Libertad",
 			Items:itemsPurchaseA,
 		},
 		{
-			Time: time.Now().AddDate(0,0,1),
+			Time: purchaseTime.AddDate(0,0,1),
 			Items:itemsPurchaseB,
 		},
 		{
-			Time: time.Now().AddDate(0,1,1),
+			Time: purchaseTime.AddDate(0,1,1),
 			Items:itemsPurchaseB,
 		},
 		{
-			Time: time.Now().AddDate(0,2,1),
+			Time: purchaseTime.AddDate(0,2,1),
 			Items:itemsPurchaseA,
 		},
 
@@ -792,6 +819,74 @@ func Test_GET_Purchases_From_Other_User_Responds_different_purchases(t *testing.
 	log.Printf("GET items returned OK %s", body)
 }
 
+func Test_DELETE_A_Purchase(t *testing.T) {
+
+	server := getServer(NewPurchaseService(NewMemDb()))
+	defer server.Close()
+
+	res, err := httpPost(user1, getURL(server.URL), postPurchases)
+
+	if !isHTTPStatus(http.StatusCreated, res, err){
+		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
+		t.FailNow()
+	}
+
+	purchaseToDelete := getURL(server.URL) + "/" + tt;
+
+	log.Printf("%s", purchaseToDelete)
+
+	res, err = httpDelete(user1, purchaseToDelete)
+
+	if !isHTTPStatus(http.StatusOK, res, err){
+		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
+		t.FailNow()
+	}
+
+	res, err = httpGet(user1, getURL(server.URL) + "?groupBy=month")
+
+	if !isHTTPStatus(http.StatusOK, res, err){
+		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
+		t.FailNow()
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		log.Fatal("Error")
+		t.FailNow()
+	}
+
+	purchases := new(PurchasesByMonthContainer)
+
+	if err := json.Unmarshal(body, purchases); err != nil {
+
+		log.Printf("Error when reading response %s", err)
+		t.FailNow()
+	}
+
+	var purchasesByMonth []PurchasesByMonth  = purchases.PurchasesByMonth;
+
+
+	for _, purchases := range purchasesByMonth {
+
+		for _, p := range purchases.Purchases {
+			if p.Time == timeToTest {
+				log.Printf("%s %s", p.Time, timeToTest)
+				t.Fail()
+			}
+		}
+	}
+
+	/*if len(purchases.PurchasesByMonth) != 3 {
+		log.Printf("Error: Expected items quantity is different from the received one")
+		t.FailNow()
+
+	}*/
+
+
+	log.Printf("GET items returned OK %s", body)
+}
+/*
 func getDynamoDBItem(id string, dt string, user string, shop string, items ItemContainer) map[string]* dynamodb.AttributeValue {
 
 	it := map[string]* dynamodb.AttributeValue {
@@ -840,7 +935,7 @@ var dts = []string{
 		"2016-04-11T00:06:23Z",
 	  }
 
-/*
+
 func Test_aws_items_creation(t *testing.T) {
 
 	count := 0

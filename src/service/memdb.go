@@ -13,16 +13,16 @@ type Mem_DB struct {
 	lockI *sync.RWMutex
 	lockP  *sync.RWMutex
 	items items
-	/*purchases map[time.Time] Purchase
-	purchasesByMonth map[time.Month] []Purchase*/
+	purchasesById map[string] map[time] []Purchase
+	/*purchasesByMonth map[time.Month] []Purchase*/
 	purchasesByUser  map[string] map[time.Month] []Purchase
 }
 
 func NewMemDb() (Mem_DB) {
 	db := Mem_DB{}
 	db.items = make(map[string]Item)
-	/*db.purchases = make(map[time.Time]Purchase)
-	db.purchasesByMonth = make(map[time.Month][]Purchase)*/
+	db.purchasesById = make (map[string] map[time] []Purchase)
+	/*db.purchasesByMonth = make(map[time.Month][]Purchase)*/
 	db.purchasesByUser = make (map[string] map[time.Month] []Purchase)
 	db.lockP = new(sync.RWMutex)
 	db.lockI = new(sync.RWMutex)
@@ -98,4 +98,15 @@ func (db Mem_DB) GetPurchasesByMonth(userId string, year int) map[time.Month][]P
 
 func (db Mem_DB) GetPurchasesByUser(user string) []Purchase  {
 	return []Purchase{}
+}
+
+func (db Mem_DB) DeletePurchase(user, id string) {
+
+	purchasesByUser := db.purchasesByUser[user]
+
+	for _, p := range purchasesByUser[id] {
+
+
+
+	}
 }

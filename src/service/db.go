@@ -24,6 +24,8 @@ type DB interface {
 	GetPurchases(string) []Purchase
 	GetPurchasesByMonth(string, int) map[time.Month][]Purchase
 
+	DeletePurchase(string, string)
+
 }
 
 type DynamoDB struct {
@@ -167,6 +169,10 @@ func (catDb DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month]
 	}
 
 	return purchasesByMonth
+}
+
+func (catDb DynamoDB) DeletePurchase(user string, id string)  {
+
 }
 
 func (catDb DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.QueryOutput, error) {
