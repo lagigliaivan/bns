@@ -9,6 +9,8 @@ import (
 	"encoding/json"
 	"sort"
 	"time"
+//	"net/url"
+	"strings"
 )
 
 type Service interface {
@@ -58,6 +60,7 @@ func NewPurchaseService(db DB) *PurchaseService {
 //This method sets what resources are going to be managed by the router
 func (service PurchaseService) ConfigureRouter(router Router) {
 	router.HandleFunc("/purchases", service.handleRequestPurchases)
+	router.HandleFunc("/purchases/{id}", service.handleRequestPurchases)
 }
 
 func (service PurchaseService) handleDefaultError(w http.ResponseWriter, r *http.Request) {
@@ -115,12 +118,12 @@ func (service PurchaseService) handleGetPurchasesByMonth(w http.ResponseWriter, 
 		year = params["year"]
 	}*/
 
-	var purchasesByMonth map[time.Month][]Purchase
+	var purchasesByMonth map[time.Month] []Purchase
 
 
 	purchasesByMonth = service.getPurchasesByMonth(user, year)
 
-	pByMonthContainer := PurchasesByMonthContainer{make([]PurchasesByMonth, 0)}
+	pByMonthContainer := PurchasesByMonthContainer{PurchasesByMonth: make([]PurchasesByMonth, 0)}
 	pByMonth := PurchasesByMonth{}
 
 	for month, purchases := range purchasesByMonth {
@@ -146,22 +149,33 @@ func (service PurchaseService) handlePostPurchases(w http.ResponseWriter, r *htt
 	user := r.Header.Get(HEADER)
 	body, _ := ioutil.ReadAll(r.Body)
 
-	purchases := new(PurchaseContainer)
+	purchasesContainer := new(PurchaseContainer)
 
-	if err := json.Unmarshal(body, purchases); err != nil {
+	if err := json.Unmarshal(body, purchasesContainer); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Printf("POST items. The request contains a wrong format %s", err)
 		return
 	}
 
-	service.savePurchases(purchases.Purchases, user)
+	for k, purchases := range purchasesContainer.Purchases {
+		if strings.Compare(purchases.Id, "") == 0 {
+			purchasesContainer.Purchases[k].Id = fmt.Sprintf("%d", purchases.Time.Unix())
+		}
+	}
+	service.savePurchases(purchasesContainer.Purchases, user)
 	w.WriteHeader(http.StatusCreated)
 }
 
 
 func (service PurchaseService) handleDeletePurchase (w http.ResponseWriter, r *http.Request) {
 
-	service.db.DeletePurchase()
+	user := r.Header.Get(HEADER)
+	vars := getPathParams(r)
+
+	itemId := vars["id"]
+
+	log.Printf("Deleting item %s", itemId)
+	service.db.DeletePurchase(user, itemId)
 }
 
 func (service PurchaseService) getPurchases(userId string) []Purchase {
@@ -170,7 +184,7 @@ func (service PurchaseService) getPurchases(userId string) []Purchase {
 	return  purchases;
 }
 
-func (service PurchaseService) getPurchasesByMonth(user string, year int) map[time.Month][]Purchase {
+func (service PurchaseService) getPurchasesByMonth(user string, year int) map[time.Month] []Purchase {
 
 	log.Printf("Getting purchases from DB")
 

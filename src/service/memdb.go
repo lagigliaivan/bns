@@ -4,6 +4,8 @@ import (
 	"sync"
 	"log"
 	"time"
+	"fmt"
+	"strings"
 )
 
 type items map[string] Item
@@ -13,17 +15,17 @@ type Mem_DB struct {
 	lockI *sync.RWMutex
 	lockP  *sync.RWMutex
 	items items
-	purchasesById map[string] map[time] []Purchase
+	/*purchasesById map[string] map[string] []Purchase*/
 	/*purchasesByMonth map[time.Month] []Purchase*/
-	purchasesByUser  map[string] map[time.Month] []Purchase
+	purchasesByUser  map[string] map[time.Month] map[string]Purchase
 }
 
 func NewMemDb() (Mem_DB) {
 	db := Mem_DB{}
 	db.items = make(map[string]Item)
-	db.purchasesById = make (map[string] map[time] []Purchase)
+	//db.purchasesById = make (map[string] map[string] []Purchase)
 	/*db.purchasesByMonth = make(map[time.Month][]Purchase)*/
-	db.purchasesByUser = make (map[string] map[time.Month] []Purchase)
+	db.purchasesByUser = make (map[string] map[time.Month] map[string]Purchase)
 	db.lockP = new(sync.RWMutex)
 	db.lockI = new(sync.RWMutex)
 	return  db
@@ -64,13 +66,16 @@ func (db Mem_DB) SavePurchase( p Purchase, userId string) error {
 	userPurchasesByMonth := db.purchasesByUser[userId]
 
 	if  userPurchasesByMonth == nil {
-		userPurchasesByMonth = make(map[time.Month] []Purchase, 0)
+		userPurchasesByMonth = make(map[time.Month] map[string]Purchase, 0)
 	}
 
-	userPurchasesByMonth[p.Time.Month()] = append(userPurchasesByMonth[p.Time.Month()],p)
+	if userPurchasesByMonth[p.Time.Month()] == nil {
+		userPurchasesByMonth[p.Time.Month()] = make(map[string]Purchase, 0)
+	}
+	time := fmt.Sprintf("%d", p.Time.Unix())
+	userPurchasesByMonth[p.Time.Month()][time] = p
 
 	db.purchasesByUser[userId] = userPurchasesByMonth
-
 
 	return nil
 }
@@ -83,30 +88,47 @@ func (db Mem_DB) GetPurchases(userId string) []Purchase  {
 	defer db.lockP.Unlock()
 
 	for _, ps := range db.purchasesByUser[userId] {
-		for _, p := range ps {
-			purchases = append(purchases, p)
+		for k := range ps {
+			purchases = append(purchases, ps[k])
 		}
 	}
 
 	return purchases
 }
 
-func (db Mem_DB) GetPurchasesByMonth(userId string, year int) map[time.Month][]Purchase  {
+func (db Mem_DB) GetPurchasesByMonth(userId string, year int) map[time.Month] []Purchase  {
 
-	return db.purchasesByUser[userId]
+	purchases := make(map[time.Month] []Purchase)
+	for t, p_by_month := range db.purchasesByUser[userId] {
+
+		for _, p := range p_by_month {
+			purchases[t] = append(purchases[t], p)
+		}
+	}
+
+	return purchases
 }
 
 func (db Mem_DB) GetPurchasesByUser(user string) []Purchase  {
 	return []Purchase{}
 }
 
-func (db Mem_DB) DeletePurchase(user, id string) {
-
-	purchasesByUser := db.purchasesByUser[user]
-
-	for _, p := range purchasesByUser[id] {
+func (db Mem_DB) DeletePurchase(userId string, id string) {
 
 
+	db.lockP.Lock()
+	defer db.lockP.Unlock()
 
+	for time, ps_by_month := range db.purchasesByUser[userId] {
+
+		for id, purchase := range ps_by_month {
+
+			if strings.Compare(purchase.Id, id) == 0 {
+				log.Printf("Deleting item: %s for user: %s ", id, userId)
+				delete(db.purchasesByUser[userId][time], id)
+				return
+			}
+		}
 	}
+
 }

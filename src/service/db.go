@@ -22,7 +22,7 @@ type DB interface {
 
 	SavePurchase(Purchase, string) error
 	GetPurchases(string) []Purchase
-	GetPurchasesByMonth(string, int) map[time.Month][]Purchase
+	GetPurchasesByMonth(string, int) map[time.Month] []Purchase
 
 	DeletePurchase(string, string)
 

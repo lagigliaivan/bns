@@ -15,8 +15,9 @@ func main() {
 	router := NewRouter()
 	//db, _ := NewDynamoDB("http://localhost:8000", "us-west-2")
 
-	db, _ := NewDynamoDB("", "us-west-2")
+	//db, _ := NewDynamoDB("", "us-west-2")
 
+	db := NewMemDb()
 	/*
 	itemsService := NewItemService(db)
 	itemsService.ConfigureRouter(router)

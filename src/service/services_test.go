@@ -12,8 +12,9 @@ import (
 	"io"
 	"crypto/sha1"
 	"time"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
+//	"github.com/aws/aws-sdk-go/service/dynamodb"
 //	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
 
@@ -542,7 +543,7 @@ var (
 		},
 	}
 
-	timeToTest,_ = time.Parse(time.RFC3339,tt)
+	timeToTest,_ = time.Parse(time.RFC3339, tt)
 
 	setOfPurchases = []Purchase{
 
@@ -553,7 +554,7 @@ var (
 			Items:itemsPurchaseA,
 		},
 		{
-			Time: purchaseTime.AddDate(0,0,1),
+			Time: timeToTest.AddDate(0,0,1),
 			Items:itemsPurchaseB,
 		},
 		{
@@ -724,12 +725,12 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 	}
 
 	if len(purchases.PurchasesByMonth) != 3{
-		log.Printf("Error: Expected items quantity is different from the received one")
+		log.Printf("Error: Expected items quantity is different from the received one: %d", len(purchases.PurchasesByMonth))
 		t.FailNow()
 
 	}
 
-	log.Printf("GET items returned OK %s", body)
+	//log.Printf("GET items returned OK %s", body)
 }
 
 func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_By_Month(t *testing.T) {
@@ -772,8 +773,6 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 		t.FailNow()
 
 	}
-
-	log.Printf("GET items returned OK %s", body)
 }
 
 func Test_GET_Purchases_From_Other_User_Responds_different_purchases(t *testing.T) {
@@ -831,9 +830,7 @@ func Test_DELETE_A_Purchase(t *testing.T) {
 		t.FailNow()
 	}
 
-	purchaseToDelete := getURL(server.URL) + "/" + tt;
-
-	log.Printf("%s", purchaseToDelete)
+	purchaseToDelete := getURL(server.URL) + "/" + fmt.Sprintf("%d",timeToTest.Unix());
 
 	res, err = httpDelete(user1, purchaseToDelete)
 
@@ -870,21 +867,18 @@ func Test_DELETE_A_Purchase(t *testing.T) {
 	for _, purchases := range purchasesByMonth {
 
 		for _, p := range purchases.Purchases {
-			if p.Time == timeToTest {
+			if strings.Compare(p.Id, fmt.Sprintf("%d", timeToTest.Unix()) ) == 0 {
 				log.Printf("%s %s", p.Time, timeToTest)
 				t.Fail()
 			}
 		}
 	}
 
-	/*if len(purchases.PurchasesByMonth) != 3 {
+	if len(purchases.PurchasesByMonth) != 3 {
 		log.Printf("Error: Expected items quantity is different from the received one")
 		t.FailNow()
 
-	}*/
-
-
-	log.Printf("GET items returned OK %s", body)
+	}
 }
 /*
 func getDynamoDBItem(id string, dt string, user string, shop string, items ItemContainer) map[string]* dynamodb.AttributeValue {
