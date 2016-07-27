@@ -210,15 +210,10 @@ func (catDb DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.Que
 }
 
 
-//func buildDynamoItem(id, dt, user, shop, items string) map[string]* dynamodb.AttributeValue {
 func buildDynamoItem(purchase Purchase, user string) map[string]* dynamodb.AttributeValue {
 
 
 	shop := purchase.Shop
-
-	if shop == "" {
-		shop = "-"
-	}
 
 	itemsContainer := ItemContainer{}
 
@@ -231,7 +226,10 @@ func buildDynamoItem(purchase Purchase, user string) map[string]* dynamodb.Attri
 			S: aws.String(user),
 		},
 		"dt": {
-			S: aws.String(purchase.Time.Format(time.RFC3339)),
+			S: aws.String(purchase.Time.UTC().Unix()),
+		},
+		"date": {
+			S: aws.String(purchase.Time.UTC().Format(time.RFC3339)),
 		},
 		"user":{
 			S: aws.String(user),
