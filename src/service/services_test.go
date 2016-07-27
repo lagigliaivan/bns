@@ -15,6 +15,8 @@ import (
 //	"github.com/aws/aws-sdk-go/service/dynamodb"
 //	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws"
 )
 
 
@@ -565,6 +567,10 @@ var (
 			Time: purchaseTime.AddDate(0,2,1),
 			Items:itemsPurchaseA,
 		},
+		{
+			Time: purchaseTime.AddDate(0,3,1),
+			Items:itemsPurchaseA,
+		},
 
 	}
 
@@ -724,7 +730,7 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 		t.FailNow()
 	}
 
-	if len(purchases.PurchasesByMonth) != 3{
+	if len(purchases.PurchasesByMonth) != 4{
 		log.Printf("Error: Expected items quantity is different from the received one: %d", len(purchases.PurchasesByMonth))
 		t.FailNow()
 
@@ -768,7 +774,7 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 		t.FailNow()
 	}
 
-	if len(purchases.PurchasesByMonth) != 3{
+	if len(purchases.PurchasesByMonth) != 4{
 		log.Printf("Error: Expected items quantity is different from the received one")
 		t.FailNow()
 
@@ -874,13 +880,14 @@ func Test_DELETE_A_Purchase(t *testing.T) {
 		}
 	}
 
-	if len(purchases.PurchasesByMonth) != 3 {
+	fmt.Printf("purchases %s", purchases.PurchasesByMonth)
+	if len(purchases.PurchasesByMonth) != 4 {
 		log.Printf("Error: Expected items quantity is different from the received one")
 		t.FailNow()
 
 	}
 }
-/*
+
 func getDynamoDBItem(id string, dt string, user string, shop string, items ItemContainer) map[string]* dynamodb.AttributeValue {
 
 	it := map[string]* dynamodb.AttributeValue {
@@ -888,7 +895,7 @@ func getDynamoDBItem(id string, dt string, user string, shop string, items ItemC
 			S: aws.String(id),
 		},
 		"dt": {
-			S: aws.String(dt),
+			N: aws.String(dt),
 		},
 		"user":{
 			S: aws.String(user),
@@ -908,36 +915,46 @@ func getDynamoDBItem(id string, dt string, user string, shop string, items ItemC
 var endpoint = "http://localhost:8000"
 var tname = "Purchases"
 
-
+/*
 var dts = []string{
 
-		"2016-01-12T00:01:23Z",
-		"2016-02-12T10:06:23Z",
-		"2016-03-12T11:06:23Z",
-		"2016-04-12T12:06:23Z",
-		"2016-05-12T00:06:23Z",
-		"2016-06-12T13:06:23Z",
-		"2016-07-12T00:06:23Z",
-		"2016-08-12T00:06:23Z",
-		"2016-09-12T01:06:23Z",
-		"2016-10-12T14:06:23Z",
-		"2016-11-12T00:06:23Z",
-
-		"2016-01-13T00:06:23Z",
-		"2016-02-14T20:06:23Z",
-		"2016-03-19T00:06:23Z",
-		"2016-04-11T00:06:23Z",
+		fmt.Sprint("%d", now),
+		fmt.Sprint("%d", now + 1),
+		fmt.Sprint("%d", now + 2),
+		fmt.Sprint("%d", now + 3),
+		fmt.Sprint("%d", now + 4),
+		fmt.Sprint("%d", now + 5),
+		fmt.Sprint("%d", now + 6),
+		fmt.Sprint("%d", now + 7),
 	  }
+*/
 
 
-func Test_aws_items_creation(t *testing.T) {
+func Test_aws_purchases_creation(t *testing.T) {
 
-	count := 0
+	//var now = time.Now().Unix()
+
+
+	var dts [10]int
+
+	for i:=10; i<10; i++ {
+		dts[i] = (10 + i)
+	}
+
+
+
+
+	/*count := 0
 
 	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
+*/
+	for i :=0 ; i< 10 ; i++ {
+		log.Printf("%d", dts[i])
+	}
 
+	return
 
-	for _, dt := range dts {
+	/*for _, dt := range dts {
 
 
 		items := []Item { Item{Id:"12312313", Description:"Cafe la morenita", Price:10},  Item{Id:"3332", Description:"Jabon de tocador", Price:13.4}}
@@ -967,13 +984,14 @@ func Test_aws_items_creation(t *testing.T) {
 
 	log.Printf("%d items were inserted", count)
 
-	*/
-/*key := map[string]* dynamodb.AttributeValue {
+
+	key := map[string]* dynamodb.AttributeValue {
+
 		"id": {
-			S: aws.String(id),
+			S: aws.String(user1),
 		},
 		"dt": {
-			S: aws.String(dt),
+			N: aws.String(fmt.Sprintf("%d",dts[1])),
 		},
 	}
 
@@ -984,11 +1002,10 @@ func Test_aws_items_creation(t *testing.T) {
 		return
 	}
 
-	log.Println("Result:%s ", itemResult)*//*
+	log.Println("Result:%s ", itemResult)*/
 
 }
-*/
-/*
+
 func Test_aws_items_query(t *testing.T){
 
 	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
@@ -1010,10 +1027,10 @@ func Test_aws_items_query(t *testing.T){
 				S:    aws.String(id),
 			},
 			":v2": {
-				S:    aws.String("2016-01-00T00:00:00Z"),
+				N:    aws.String(fmt.Sprintf("%d",time.Now().Unix())),
 			},
 			":v3": {
-				S:    aws.String("2016-12-31T00:00:00Z"),
+				N:    aws.String(fmt.Sprintf("%d",time.Now().Unix())),
 			},
 		},
 		KeyConditionExpression: aws.String("id = :v1 AND dt BETWEEN :v2 AND :v3 "),
@@ -1034,7 +1051,7 @@ func Test_aws_items_query(t *testing.T){
 
 	parseQueryResponse(resp.Items)
 
-}*/
+}
 
 
 func parseQueryResponse (items []map[string]*dynamodb.AttributeValue) {

@@ -77,6 +77,9 @@ func (db Mem_DB) SavePurchase( p Purchase, userId string) error {
 
 	db.purchasesByUser[userId] = userPurchasesByMonth
 
+
+	log.Printf("saving purchase %d", p.Time.Unix())
+
 	return nil
 }
 
