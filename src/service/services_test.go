@@ -914,7 +914,6 @@ func getDynamoDBItem(id string, dt string, user string, shop string, items ItemC
 			S: aws.String(shop),
 		},
 		"items":{
-			//S: aws.String("[{\"itemid\":\"12313213\",\"description\":\"fadfaf\",\"price\":20},{\"itemid\":\"12313213\",\"description\":\"fadfa\",\"price\":20},{\"itemid\":\"12313213\",\"description\":\"fadfa\",\"price\":20},{\"itemid\":\"12313213\",\"description\":\"fadsfadf\",\"price\":20},{\"itemid\":\"12313213\",\"description\":\"fadfadf\",\"price\":20},]"),
 			S: aws.String(items.ToJsonString()),
 		},
 	}
@@ -939,10 +938,6 @@ func init(){
 
 func Test_aws_purchases_creation(t *testing.T) {
 
-/*
-	for i :=int64(0); i<10; i++ {
-		dts[i] = (now + i)
-	}*/
 	count := 0
 
 	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
@@ -1002,11 +997,9 @@ func Test_aws_purchases_creation(t *testing.T) {
 func Test_aws_get_items(t *testing.T) {
 
 
-
 	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
 
-	for k, d := range dts {
-		log.Printf("k: %d dts:%d", k, d)
+	for _, d := range dts {
 		key := map[string]*dynamodb.AttributeValue{
 
 			"id": {
@@ -1103,6 +1096,47 @@ func parseQueryResponse (items []map[string]*dynamodb.AttributeValue) {
 		}
 
 }
+
+
+
+
+func Test_DeletePurchase(t *testing.T)  {
+
+	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
+	params := &dynamodb.DeleteItemInput{
+
+		Key: map[string]*dynamodb.AttributeValue{ // Required
+			"id": {
+				S:    aws.String(user1),
+			},
+			"dt": {
+				N:    aws.String(fmt.Sprintf("%d", now)),
+			},
+		},
+		TableName:           aws.String(TABLE_PURCHASES), // Required
+		/*ConditionExpression: aws.String("dt = :v1"),
+
+		ExpressionAttributeValues: map[string] *dynamodb.AttributeValue {
+			":v1": {
+				S:    aws.String(fmt.Sprintf("%d", now)),
+			},
+		},*/
+	}
+
+	resp, err := svc.DeleteItem(params)
+
+	if err != nil {
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		fmt.Println(err.Error())
+		return
+	}
+
+	// Pretty-print the response data.
+	fmt.Println(resp)
+}
+
+
 
 func getURL(url string) string{
 	return url + "/catalog/purchases"
