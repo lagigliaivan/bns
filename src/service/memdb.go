@@ -124,11 +124,11 @@ func (db Mem_DB) DeletePurchase(userId string, id string) {
 
 	for time, ps_by_month := range db.purchasesByUser[userId] {
 
-		for id, purchase := range ps_by_month {
+		for k, purchase := range ps_by_month {
 
 			if strings.Compare(purchase.Id, id) == 0 {
 				log.Printf("Deleting item: %s for user: %s ", id, userId)
-				delete(db.purchasesByUser[userId][time], id)
+				delete(db.purchasesByUser[userId][time], k)
 				return
 			}
 		}

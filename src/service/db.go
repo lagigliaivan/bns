@@ -85,7 +85,6 @@ func (catDb DynamoDB) SavePurchase( p Purchase, userId string) error {
 
 	_, err := catDb.svc.PutItem(&putItem)
 
-
 	if err != nil {
 		log.Println(err)
 		return err
@@ -107,7 +106,13 @@ func (catDb DynamoDB) GetPurchases(user string) []Purchase  {
 
 	for _, p := range resp.Items{
 
-		t, err := time.Parse(time.RFC3339, *(p["dt"].S))
+		t, err := time.Parse(time.RFC3339, *(p["date"].S))
+
+		if err != nil {
+			fmt.Println("Error %s", err)
+		}
+
+		id := *(p["dt"].N)
 
 		if err != nil {
 			fmt.Printf("Error while parsing Purchase date: %s \n", err)
@@ -121,7 +126,7 @@ func (catDb DynamoDB) GetPurchases(user string) []Purchase  {
 			return []Purchase{}
 		}
 
-		purchase := Purchase{Time:t, Shop:*(p["shop"].S), Items:itemsContainer.Items}
+		purchase := Purchase{Id: id, Time:t, Shop:*(p["shop"].S), Items:itemsContainer.Items}
 
 		purchases = append(purchases, purchase)
 		fmt.Println(purchase)
@@ -142,6 +147,7 @@ func (catDb DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month]
 
 	purchasesByMonth := make(map[time.Month][]Purchase)
 
+	return purchasesByMonth
 	for _, p := range resp.Items{
 
 		t, err := time.Parse(time.RFC3339, *(p["date"].S))
@@ -158,7 +164,7 @@ func (catDb DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month]
 			return make(map[time.Month][]Purchase)
 		}
 
-		purchase := Purchase{Id:*(p["dt"].S), Time:t, Shop:*(p["shop"].S), Items:itemsContainer.Items}
+		purchase := Purchase{Id:*(p["dt"].N), Time:t, Shop:*(p["shop"].S), Items:itemsContainer.Items}
 
 		if purchasesByMonth[t.Month()] == nil {
 			purchasesByMonth[t.Month()] = make([]Purchase,0)
@@ -174,16 +180,15 @@ func (catDb DynamoDB) DeletePurchase(user string, id string)  {
 
 	params := &dynamodb.DeleteItemInput{
 
-		Key: map[string]*dynamodb.AttributeValue{ // Required
+		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
 				S:    aws.String(user),
 			},
 			"dt": {
-				N:    aws.String(fmt.Sprintf("%d", id)),
+				N:    aws.String(id),
 			},
 		},
-		TableName:aws.String(TABLE_PURCHASES), // Required
-
+		TableName:aws.String(TABLE_PURCHASES),
 	}
 
 	resp, err := catDb.svc.DeleteItem(params)
@@ -195,8 +200,6 @@ func (catDb DynamoDB) DeletePurchase(user string, id string)  {
 		return
 	}
 
-	// Pretty-print the response data.
-	fmt.Println(resp)
 }
 
 func (catDb DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.QueryOutput, error) {
@@ -220,7 +223,6 @@ func (catDb DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.Que
 		return nil, err
 	}
 
-
 	params := &dynamodb.QueryInput{
 		TableName: aws.String(TABLE_PURCHASES),
 		ConsistentRead: aws.Bool(true),
@@ -229,10 +231,10 @@ func (catDb DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.Que
 				S:    aws.String(user),
 			},
 			":v2": {
-				S:    aws.String(fmt.Sprintf("%d", fromInMillis.Unix())),
+				N:    aws.String(fmt.Sprintf("%d", fromInMillis.Unix())),
 			},
 			":v3": {
-				S:    aws.String(fmt.Sprintf("%d", toInMillis.Unix())),
+				N:    aws.String(fmt.Sprintf("%d", toInMillis.Unix())),
 			},
 		},
 		KeyConditionExpression: aws.String("id = :v1 AND dt BETWEEN :v2 AND :v3 "),
@@ -261,11 +263,12 @@ func buildDynamoItem(purchase Purchase, user string) map[string]* dynamodb.Attri
 	}
 
 	it := map[string]* dynamodb.AttributeValue {
+
 		"id": {
 			S: aws.String(user),
 		},
 		"dt": {
-			S: aws.String(fmt.Sprintf("%d", purchase.Time.UTC().Unix())),
+			N: aws.String(fmt.Sprintf("%d", purchase.Time.UTC().Unix())),
 		},
 		"date": {
 			S: aws.String(purchase.Time.UTC().Format(time.RFC3339)),
