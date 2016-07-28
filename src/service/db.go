@@ -83,7 +83,7 @@ func (catDb DynamoDB) SavePurchase( p Purchase, userId string) error {
 
 	putItem := dynamodb.PutItemInput{Item:it, TableName:&tableName}
 
-	result, err := catDb.svc.PutItem(&putItem)
+	_, err := catDb.svc.PutItem(&putItem)
 
 
 	if err != nil {
@@ -91,7 +91,6 @@ func (catDb DynamoDB) SavePurchase( p Purchase, userId string) error {
 		return err
 	}
 
-	log.Println(result)
 	return nil
 }
 
