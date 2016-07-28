@@ -154,4 +154,3 @@ func (point Point) toString() string {
 	return fmt.Sprintf("%s %s", point.Lat, point.Long)
 
 }
-

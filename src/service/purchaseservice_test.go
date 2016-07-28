@@ -460,6 +460,3 @@ func Test_DELETE_A_Purchase(t *testing.T) {
 func getURL(url string) string{
 	return url + "/catalog/purchases"
 }
-
-
-
