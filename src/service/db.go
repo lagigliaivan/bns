@@ -175,22 +175,16 @@ func (catDb DynamoDB) DeletePurchase(user string, id string)  {
 
 	params := &dynamodb.DeleteItemInput{
 
-		/*Key: map[string]*dynamodb.AttributeValue{ // Required
-			"Key": {
+		Key: map[string]*dynamodb.AttributeValue{ // Required
+			"id": {
 				S:    aws.String(user),
 			},
-		},*/
-		TableName:           aws.String(TABLE_PURCHASES), // Required
-		ConditionExpression: aws.String("id = :v1 AND dt = :v2"),
-
-		ExpressionAttributeValues: map[string] *dynamodb.AttributeValue {
-			":v1": {
-				S:    aws.String(user),
-			},
-			":v2": {
-				S:    aws.String(id),
+			"dt": {
+				N:    aws.String(fmt.Sprintf("%d", id)),
 			},
 		},
+		TableName:aws.String(TABLE_PURCHASES), // Required
+
 	}
 
 	resp, err := catDb.svc.DeleteItem(params)
