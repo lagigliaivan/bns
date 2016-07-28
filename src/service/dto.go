@@ -78,11 +78,11 @@ func (items ItemContainer) IsEmpty() bool{
 
 
 type Purchase struct {
-	Id string `json:"id"`
-	Time time.Time `json:"time"`//DateTime when this purchase was done.
-	Items [] Item `json:"items"`
-	Point Point `json:"location"`
-	Shop string `json:"shop"`
+	Id       string `json:"id"`
+	Time     time.Time `json:"time"`//DateTime when this purchase was done.
+	Items    [] Item `json:"items"`
+	Location Point `json:"location"`
+	Shop     string `json:"shop"`
 }
 
 type PurchaseContainer struct {

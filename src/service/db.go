@@ -279,6 +279,9 @@ func buildDynamoItem(purchase Purchase, user string) map[string]* dynamodb.Attri
 		"shop":{
 			S: aws.String(shop),
 		},
+		"location":{
+			S: aws.String(purchase.Location.toString()),
+		},
 		"items":{
 			S: aws.String(itemsContainer.ToJsonString()),
 		},

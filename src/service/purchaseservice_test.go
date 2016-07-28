@@ -116,7 +116,7 @@ var (
 
 		{
 			Time: timeToTest,
-			Point:NewPoint(-31.4165791, -64.1855098),
+			Location:NewPoint(-31.4165791, -64.1855098),
 			Shop:"Libertad",
 			Items:itemsPurchaseA,
 		},
@@ -255,8 +255,8 @@ func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) 
 	p := purchases.GetPurchase(purchaseWithLatAndLong.Time.UTC().Unix())
 
 	if p == nil ||
-	p.Point.Lat != purchaseWithLatAndLong.Point.Lat ||
-	p.Point.Long != purchaseWithLatAndLong.Point.Long ||
+	p.Location.Lat != purchaseWithLatAndLong.Location.Lat ||
+	p.Location.Long != purchaseWithLatAndLong.Location.Long ||
 	p.Shop != purchaseWithLatAndLong.Shop {
 		log.Print("Error, purchases saved not found")
 		t.FailNow();
