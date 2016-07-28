@@ -120,9 +120,9 @@ func (container PurchaseContainer) IsEmpty() bool{
 	return false
 }
 
-func (container PurchaseContainer) GetPurchase(time time.Time) *Purchase {
+func (container PurchaseContainer) GetPurchase(id int64) *Purchase {
 	for _, p := range container.Purchases{
-		if reflect.DeepEqual(p.Time, time) {
+		if reflect.DeepEqual(p.Time.UTC().Unix(), id) {
 			return &p
 		}
 	}

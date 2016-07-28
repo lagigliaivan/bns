@@ -147,7 +147,6 @@ func (catDb DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month]
 
 	purchasesByMonth := make(map[time.Month][]Purchase)
 
-	return purchasesByMonth
 	for _, p := range resp.Items{
 
 		t, err := time.Parse(time.RFC3339, *(p["date"].S))
@@ -169,6 +168,7 @@ func (catDb DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month]
 		if purchasesByMonth[t.Month()] == nil {
 			purchasesByMonth[t.Month()] = make([]Purchase,0)
 		}
+
 		purchasesByMonth[t.Month()] = append(purchasesByMonth[t.Month()], purchase)
 
 	}
@@ -191,7 +191,7 @@ func (catDb DynamoDB) DeletePurchase(user string, id string)  {
 		TableName:aws.String(TABLE_PURCHASES),
 	}
 
-	resp, err := catDb.svc.DeleteItem(params)
+	_, err := catDb.svc.DeleteItem(params)
 
 	if err != nil {
 		// Print the error, cast err to awserr.Error to get the Code and
@@ -217,6 +217,7 @@ func (catDb DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.Que
 	}
 
 	toInMillis, err := time.Parse(time.RFC3339, to)
+
 
 	if err != nil {
 		log.Printf("Error while parsing year to -- this error should not happen: %s", err.Error())
@@ -253,7 +254,6 @@ func (catDb DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.Que
 
 func buildDynamoItem(purchase Purchase, user string) map[string]* dynamodb.AttributeValue {
 
-
 	shop := purchase.Shop
 
 	itemsContainer := ItemContainer{}
@@ -268,10 +268,10 @@ func buildDynamoItem(purchase Purchase, user string) map[string]* dynamodb.Attri
 			S: aws.String(user),
 		},
 		"dt": {
-			N: aws.String(fmt.Sprintf("%d", purchase.Time.UTC().Unix())),
+			N: aws.String(purchase.Id),
 		},
 		"date": {
-			S: aws.String(purchase.Time.UTC().Format(time.RFC3339)),
+			S: aws.String(purchase.Time.Format(time.RFC3339)),
 		},
 		"user":{
 			S: aws.String(user),

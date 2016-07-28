@@ -157,10 +157,14 @@ func (service PurchaseService) handlePostPurchases(w http.ResponseWriter, r *htt
 	}
 
 	for k, purchases := range purchasesContainer.Purchases {
+
 		if strings.Compare(purchases.Id, "") == 0 {
-			purchasesContainer.Purchases[k].Id = fmt.Sprintf("%d", purchases.Time.Unix())
+			purchasesContainer.Purchases[k].Id = fmt.Sprintf("%d", purchases.Time.UTC().Unix())
 		}
+
+		purchasesContainer.Purchases[k].Time = purchases.Time.UTC()
 	}
+
 	service.savePurchases(purchasesContainer.Purchases, user)
 	w.WriteHeader(http.StatusCreated)
 }

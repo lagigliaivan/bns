@@ -62,8 +62,6 @@ const STATUS_ERROR_MESSAGE string = "%s %s Received status code: %d different fr
 const tt = "2016-01-12T00:01:23Z"
 
 var (
-	purchaseTime = time.Now()
-
 	itemsPurchaseA = []Item{
 
 		{
@@ -83,7 +81,7 @@ var (
 		},
 		{
 			Id: "4",
-			Description: "forth product",
+			Description: "fourth product",
 			Price: 22.0,
 		},
 	}
@@ -107,7 +105,7 @@ var (
 		},
 		{
 			Id: "400",
-			Description: "forth product",
+			Description: "fourth product",
 			Price: 212.0,
 		},
 	}
@@ -128,17 +126,17 @@ var (
 			Shop:"Libertad",
 		},
 		{
-			Time: purchaseTime.AddDate(0,1,1),
+			Time: timeToTest.AddDate(0,1,1),
 			Items:itemsPurchaseB,
 			Shop:"Libertad",
 		},
 		{
-			Time: purchaseTime.AddDate(0,2,1),
+			Time: timeToTest.AddDate(0,2,1),
 			Items:itemsPurchaseA,
 			Shop:"Libertad",
 		},
 		{
-			Time: purchaseTime.AddDate(0,3,1),
+			Time: timeToTest.AddDate(0,3,1),
 			Items:itemsPurchaseA,
 			Shop:"Libertad",
 		},
@@ -203,7 +201,7 @@ func Test_GET_Purchases_Returns_A_List_Of_Purchases_By_User(t *testing.T) {
 	}
 
 	for _, purchase := range postPurchases.Purchases {
-		p := purchases.GetPurchase(purchase.Time)
+		p := purchases.GetPurchase(purchase.Time.Unix())
 		if p == nil {
 			log.Print("Error, purchases saved not found")
 			t.FailNow();
@@ -254,13 +252,12 @@ func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) 
 
 	}
 	purchaseWithLatAndLong := postPurchases.Purchases[0]
-	p := purchases.GetPurchase(purchaseWithLatAndLong.Time)
+	p := purchases.GetPurchase(purchaseWithLatAndLong.Time.UTC().Unix())
 
 	if p == nil ||
 	p.Point.Lat != purchaseWithLatAndLong.Point.Lat ||
 	p.Point.Long != purchaseWithLatAndLong.Point.Long ||
 	p.Shop != purchaseWithLatAndLong.Shop {
-
 		log.Print("Error, purchases saved not found")
 		t.FailNow();
 	}
@@ -306,6 +303,8 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 		t.FailNow()
 
 	}
+
+
 
 }
 
@@ -461,246 +460,6 @@ func Test_DELETE_A_Purchase(t *testing.T) {
 func getURL(url string) string{
 	return url + "/catalog/purchases"
 }
-
-/*func getDynamoDBItem(id string, dt string, user string, shop string, items ItemContainer) map[string]* dynamodb.AttributeValue {
-
-	i, err := strconv.ParseInt(dt, 10, 64)
-	if err != nil {
-		panic(err)
-	}
-	tm := time.Unix(i, 0)
-
-	it := map[string]* dynamodb.AttributeValue {
-		"id": {
-			S: aws.String(id),
-		},
-		"dt": {
-			N: aws.String(dt),
-		},
-		"date": {
-			S: aws.String(tm.UTC().Format(time.RFC3339)),
-		},
-		"user":{
-			S: aws.String(user),
-		},
-		"shop":{
-			S: aws.String(shop),
-		},
-		"items":{
-			S: aws.String(items.ToJsonString()),
-		},
-	}
-
-	return it
-}
-
-var endpoint = "http://localhost:8000"
-var tname = "Purchases"
-
-/*
-
-var dts [10]int64
-var now int64 = 1469652314 //time.Unix()
-
-func init(){
-
-	for i :=int64(0); i<10; i++ {
-		dts[i] = (now + i)
-	}
-}
-
-func Test_aws_purchases_creation(t *testing.T) {
-
-	count := 0
-
-	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
-
-	for _, dt := range dts {
-
-
-		items := []Item { {Id:"12312313", Description:"Cafe la morenita", Price:10},  {Id:"3332", Description:"Jabon de tocador", Price:13.4}}
-		itemsContainer := new (ItemContainer)
-		itemsContainer.Items = items
-
-		user := "mayuser:password@gmail.com.ar"
-		buildDynamoItem(user1, user)
-
-		it := getDynamoDBItem(user1, fmt.Sprintf("%d", dt), user, "carrefour", *itemsContainer)
-		putItem := dynamodb.PutItemInput{Item:it, TableName:&tname}
-
-		result, err := svc.PutItem(&putItem)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		log.Println("Result :%s ", result)
-
-		user = "mayuser2:password@gmail.com.ar"
-		it = getDynamoDBItem(user2, fmt.Sprintf("%d", dt), user, "carrefour", *itemsContainer)
-		putItem = dynamodb.PutItemInput{Item:it, TableName:&tname}
-
-		count = count+2
-
-		//log.Println("Result :%s ", result)
-	}
-
-
-	log.Printf("%d items were inserted", count)
-
-
-	key := map[string]* dynamodb.AttributeValue {
-
-		"id": {
-			S: aws.String(user1),
-		},
-		"dt": {
-			N: aws.String(fmt.Sprintf("%d",dts[1])),
-		},
-	}
-
-	item := dynamodb.GetItemInput{Key:key, TableName:&tname}
-	itemResult, err := svc.GetItem(&item)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	log.Println("Result:%s ", itemResult)
-
-}
-
-func Test_aws_get_items(t *testing.T) {
-
-
-	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
-
-	for _, d := range dts {
-		key := map[string]*dynamodb.AttributeValue{
-
-			"id": {
-				S: aws.String(user1),
-			},
-			"dt": {
-				N: aws.String(fmt.Sprintf("%d", d)),
-			},
-		}
-
-		item := dynamodb.GetItemInput{Key:key, TableName:&tname}
-		itemResult, err := svc.GetItem(&item)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		log.Println("Result:%s ", itemResult)
-	}
-}
-
-
-func Test_aws_items_query(t *testing.T){
-
-
-
-	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
-
-
-	id := user1
-
-	params := &dynamodb.QueryInput{
-		TableName: aws.String(tname),
-		ConsistentRead:      aws.Bool(true),
-		ExpressionAttributeNames: map[string]*string{
-			"#s": aws.String("shop"),
-			"#i": aws.String("items"),
-			"#d": aws.String("dt"),
-			"#t": aws.String("date"),
-		},
-		ProjectionExpression: aws.String("#s, #i, #d, #t"),
-		ExpressionAttributeValues: map[string] *dynamodb.AttributeValue {
-			":v1": {
-				S:    aws.String(id),
-			},
-			":v2": {
-				N:    aws.String(fmt.Sprintf("%d",now)),
-			},
-			":v3": {
-				N:    aws.String(fmt.Sprintf("%d",now + 5)),
-			},
-		},
-		KeyConditionExpression: aws.String("id = :v1 AND dt BETWEEN :v2 AND :v3 "),
-
-	}
-	resp, err := svc.Query(params)
-
-	if err != nil {
-		// Print the error, cast err to awserr.Error to get the Code and
-		// Message from an error.
-		fmt.Println(err.Error())
-		return
-	}
-
-	parseQueryResponse(resp.Items)
-
-}
-
-
-func parseQueryResponse (items []map[string]*dynamodb.AttributeValue) {
-
-		for _, p := range items{
-			//fmt.Println(p)
-			t, err := time.Parse(time.RFC3339, *(p["date"].S))
-
-			if err != nil {
-				fmt.Println("Error %s", err)
-			}
-
-			id := *(p["dt"].N)
-
-			itemsContainer := new(ItemContainer)
-			if err := json.Unmarshal([]byte(*(p["items"].S)), itemsContainer); err != nil {
-
-				log.Printf("Error when reading response %s", err)
-				//t.FailNow()
-			}
-
-			purchase := Purchase{Id:id, Time:t, Shop:*(p["shop"].S), Items:itemsContainer.Items}
-			fmt.Println(purchase)
-		}
-
-}
-
-
-
-
-func Test_DeletePurchase(t *testing.T)  {
-
-	svc := dynamodb.New(session.New(&aws.Config{Region: aws.String("us-west-2"), Endpoint:&endpoint}))
-	params := &dynamodb.DeleteItemInput{
-
-		Key: map[string]*dynamodb.AttributeValue{ // Required
-			"id": {
-				S:    aws.String(user1),
-			},
-			"dt": {
-				N:    aws.String(fmt.Sprintf("%d", now)),
-			},
-		},
-		TableName:           aws.String(TABLE_PURCHASES), // Required
-	}
-
-	resp, err := svc.DeleteItem(params)
-
-	if err != nil {
-		// Print the error, cast err to awserr.Error to get the Code and
-		// Message from an error.
-		fmt.Println(err.Error())
-		return
-	}
-
-	// Pretty-print the response data.
-	fmt.Println(resp)
-}
-
-*/
 
 
 
