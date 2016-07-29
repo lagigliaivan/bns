@@ -50,6 +50,7 @@ public class PurchasesGroup {
     }
 
     public void removeItemAt(int childPosition) {
+
         Item item = children.remove(childPosition);
         Purchase purchase = time_purchases.get(item.getTime());
         purchase.removeItem(item);

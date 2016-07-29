@@ -79,9 +79,6 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
 
                 purchase.getShop();
 
-
-                //Context context = Context.getContext();
-
                 CharSequence text = "Lugar de compra: " + purchase.getShop() + " [" + purchase.getTime() + "]";
                 int duration = Toast.LENGTH_LONG;
 
@@ -118,23 +115,28 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
                     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 
                         switch (item.getItemId()) {
+
                             case R.id.delete:
 
                                 ((RelativeLayout)((view.getParent()).getParent())).setBackground(color);
 
-                                Purchases purchases = new Purchases();
                                 PurchasesGroup group = (PurchasesGroup) getGroup(groupPosition);
                                 group.removeItemAt(childPosition);
 
                                 Purchase purchase = group.getPurchase(children.getTime());
-
-                                ArrayList<Purchase> ps = new ArrayList<>();
-                                ps.add(purchase);
-
                                 PurchasesService purchasesService = new PurchasesService();
-                                purchasesService.savePurchases(ps);
 
-                                mode.finish(); // Action picked, so close the CAB
+                                if(purchase.isEmpty()){
+                                    purchasesService.deletePurchase(purchase);
+
+                                }else {
+
+                                    ArrayList<Purchase> ps = new ArrayList<>();
+                                    ps.add(purchase);
+                                    purchasesService.savePurchases(ps);
+                                }
+
+                                mode.finish();
                                 notifyDataSetChanged();
                                 return true;
 

@@ -11,7 +11,16 @@ public class Purchase {
 
     String time;
     String shop;
+    String id;
     List<Item> items = new ArrayList<>();
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public List<Item> getItems() {
 
@@ -50,5 +59,9 @@ public class Purchase {
 
     public void setShop(String shop) {
         this.shop = shop;
+    }
+
+    public boolean isEmpty(){
+        return items.isEmpty();
     }
 }

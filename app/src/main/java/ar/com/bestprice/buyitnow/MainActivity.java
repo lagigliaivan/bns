@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
@@ -20,10 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import ar.com.bestprice.buyitnow.dto.Item;
 import ar.com.bestprice.buyitnow.dto.Purchase;
@@ -62,27 +59,20 @@ public class MainActivity extends AppCompatActivity {
 
     private MyExpandableListAdapter getListViewAdapter(PurchasesByMonthContainer purchasesContainer) {
 
-        Map<Integer, PurchasesGroup> groups = getPurchasesByMonth(purchasesContainer.getPurchasesByMonth());
+        Map<Integer, PurchasesGroup> groups = getSortedPurchasesGroups(purchasesContainer.getPurchasesByMonth());
         return new MyExpandableListAdapter(this, groups);
 
     }
 
     private String sendHttpRequest() {
 
-        final ExecutorService service = Executors.newFixedThreadPool(1);
-        final Future<String> task;
-        String jsonString = "";
-
-        String serviceURL = Context.getContext().getServiceURL();
-
-        task = service.submit(new GETServiceClient(serviceURL + "/purchases?groupBy=month", Context.getContext().getSha1()));
+        String jsonString = null;
 
         try {
-            jsonString = task.get();
-        } catch (final InterruptedException | ExecutionException ex) {
+            PurchasesService service = new PurchasesService();
+            jsonString = service.getPurchases();
+        } catch (Exception ex) {
             ex.printStackTrace();
-        } finally {
-            service.shutdownNow();
         }
 
         return jsonString;
@@ -97,15 +87,9 @@ public class MainActivity extends AppCompatActivity {
         return listView;
     }
 
-    private Map<Integer, PurchasesGroup> getPurchasesByMonth(List<PurchasesByMonth> purchasesByMonth) {
+    private Map<Integer, PurchasesGroup> getSortedPurchasesGroups(List<PurchasesByMonth> purchasesByMonth) {
 
-        Map<Month, PurchasesByMonth> sortedPurchases = new HashMap<>();
-
-        for (PurchasesByMonth purchases : purchasesByMonth) {
-
-            sortedPurchases.put(Month.valueOf(purchases.getMonth().toUpperCase()), purchases);
-
-        }
+        Map<Month, PurchasesByMonth> sortedPurchases = sortPurchases(purchasesByMonth);
 
         Map<Integer, PurchasesGroup> groups = new HashMap<>();
 
@@ -132,6 +116,18 @@ public class MainActivity extends AppCompatActivity {
 
         return groups;
 
+    }
+
+    @NonNull
+    private Map<Month, PurchasesByMonth> sortPurchases(List<PurchasesByMonth> purchasesByMonth) {
+        Map<Month, PurchasesByMonth> sortedPurchases = new HashMap<>();
+
+        for (PurchasesByMonth purchases : purchasesByMonth) {
+
+            sortedPurchases.put(Month.valueOf(purchases.getMonth().toUpperCase()), purchases);
+
+        }
+        return sortedPurchases;
     }
 
     @Override
@@ -284,18 +280,16 @@ public class MainActivity extends AppCompatActivity {
 //                "]}";
 
 
-        if (!jsonString.isEmpty()){
+        if (jsonString != null){
             purchasesContainer = parseJsonString(jsonString);
             renderList(purchasesContainer);
         }
-
-
     }
 
     private void renderList(PurchasesByMonthContainer purchasesContainer) {
 
-        final ExpandableListView listView = getListView();
-        final MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
+        ExpandableListView listView = getListView();
+        MyExpandableListAdapter adapter = getListViewAdapter(purchasesContainer);
         adapter.setParent(listView);
         listView.setAdapter(adapter);
 
@@ -306,8 +300,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-        Map<Integer, PurchasesGroup> purchases = getPurchasesByMonth(purchasesContainer.getPurchasesByMonth());
+        Map<Integer, PurchasesGroup> purchases = getSortedPurchasesGroups(purchasesContainer.getPurchasesByMonth());
 
         float accumPurchases = 0;
 
