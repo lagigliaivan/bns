@@ -102,35 +102,7 @@ func (catDb DynamoDB) GetPurchases(user string) []Purchase  {
 		return []Purchase{}
 	}
 
-	purchases := []Purchase{}
-
-	for _, p := range resp.Items{
-
-		t, err := time.Parse(time.RFC3339, *(p["date"].S))
-
-		if err != nil {
-			fmt.Println("Error %s", err)
-		}
-
-		id := *(p["dt"].N)
-
-		if err != nil {
-			fmt.Printf("Error while parsing Purchase date: %s \n", err)
-			return []Purchase{}
-		}
-
-		itemsContainer := new(ItemContainer)
-		if err := json.Unmarshal([]byte(*(p["items"].S)), itemsContainer); err != nil {
-
-			log.Printf("Error when reading response %s", err)
-			return []Purchase{}
-		}
-
-		purchase := Purchase{Id: id, Time:t, Shop:*(p["shop"].S), Items:itemsContainer.Items}
-
-		purchases = append(purchases, purchase)
-		fmt.Println(purchase)
-	}
+	purchases := getPurchases(resp)
 
 	return purchases
 }
@@ -145,32 +117,17 @@ func (catDb DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month]
 		return make(map[time.Month][]Purchase)
 	}
 
+	purchases := getPurchases(resp)
+
 	purchasesByMonth := make(map[time.Month][]Purchase)
 
-	for _, p := range resp.Items{
 
-		t, err := time.Parse(time.RFC3339, *(p["date"].S))
+	for _, purchase := range purchases {
 
-		if err != nil {
-			fmt.Printf("Error while parsing Purchase date: %s \n", err)
-			return make(map[time.Month][]Purchase)
+		if purchasesByMonth[purchase.Time.Month()] == nil {
+			purchasesByMonth[purchase.Time.Month()] = make([]Purchase,0)
 		}
-
-		itemsContainer := new(ItemContainer)
-		if err := json.Unmarshal([]byte(*(p["items"].S)), itemsContainer); err != nil {
-
-			log.Printf("Error when reading response %s", err)
-			return make(map[time.Month][]Purchase)
-		}
-
-		purchase := Purchase{Id:*(p["dt"].N), Time:t, Shop:*(p["shop"].S), Items:itemsContainer.Items}
-
-		if purchasesByMonth[t.Month()] == nil {
-			purchasesByMonth[t.Month()] = make([]Purchase,0)
-		}
-
-		purchasesByMonth[t.Month()] = append(purchasesByMonth[t.Month()], purchase)
-
+		purchasesByMonth[purchase.Time.Month()] = append(purchasesByMonth[purchase.Time.Month()], purchase)
 	}
 
 	return purchasesByMonth
@@ -288,4 +245,33 @@ func buildDynamoItem(purchase Purchase, user string) map[string]* dynamodb.Attri
 	}
 
 	return it
+}
+
+
+func getPurchases(awsResponse *dynamodb.QueryOutput) []Purchase {
+
+	purchases := []Purchase{}
+
+	for _, p := range awsResponse.Items{
+
+		t, err := time.Parse(time.RFC3339, *(p["date"].S))
+
+		if err != nil {
+			fmt.Println("Error %s", err)
+		}
+
+		itemsContainer := new(ItemContainer)
+		if err := json.Unmarshal([]byte(*(p["items"].S)), itemsContainer); err != nil {
+
+			log.Printf("Error when reading response %s", err)
+			return []Purchase{}
+		}
+
+		purchase := Purchase{Id: *(p["dt"].N), Time:t, Shop:*(p["shop"].S), Items:itemsContainer.Items}
+
+		purchases = append(purchases, purchase)
+		fmt.Println(purchase)
+	}
+
+	return purchases
 }
