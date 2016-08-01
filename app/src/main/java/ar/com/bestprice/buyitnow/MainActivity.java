@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         String jsonString = null;
 
         try {
-            PurchasesService service = new PurchasesService();
+            PurchasesService service = new PurchasesService(Context.getContext());
             jsonString = service.getPurchases();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -120,13 +120,12 @@ public class MainActivity extends AppCompatActivity {
 
     @NonNull
     private Map<Month, PurchasesByMonth> sortPurchases(List<PurchasesByMonth> purchasesByMonth) {
+
         Map<Month, PurchasesByMonth> sortedPurchases = new HashMap<>();
-
         for (PurchasesByMonth purchases : purchasesByMonth) {
-
             sortedPurchases.put(Month.valueOf(purchases.getMonth().toUpperCase()), purchases);
-
         }
+
         return sortedPurchases;
     }
 

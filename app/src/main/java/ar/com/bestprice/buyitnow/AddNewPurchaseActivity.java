@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
 
@@ -158,9 +159,21 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
                         ArrayList<Purchase> ps = new ArrayList<>();
                         ps.add(purchase);
 
-                        PurchasesService purchasesService = new PurchasesService();
-                        purchasesService.savePurchases(ps);
+                        int httpCode = 400;
 
+                        PurchasesService purchasesService = new PurchasesService(Context.getContext());
+                        try {
+                            httpCode = purchasesService.savePurchases(ps);
+
+                        }catch (Exception e){
+                            Toast toast = Toast.makeText(null, "Error while trying to delete the item", Toast.LENGTH_LONG);
+                            toast.show();
+                        }
+
+                        if(httpCode != 201){
+                            Toast toast = Toast.makeText(null, "Error while trying to delete the item", Toast.LENGTH_LONG);
+                            toast.show();
+                        }
                         finish();
 
                     }

@@ -100,14 +100,8 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
                 stringBuffer.append(":");
                 stringBuffer.append(purchaseDateTime.get(Calendar.MINUTE));
 
-                int duration = Toast.LENGTH_LONG;
-
-                Toast toast = Toast.makeText(parent.getContext(), stringBuffer.toString(), duration);
-
+                Toast toast = Toast.makeText(parent.getContext(), stringBuffer.toString(), Toast.LENGTH_LONG);
                 toast.show();
-
-
-
             }
         });
 
@@ -143,24 +137,40 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
                                 ((RelativeLayout)((view.getParent()).getParent())).setBackground(color);
 
                                 PurchasesGroup group = (PurchasesGroup) getGroup(groupPosition);
-                                group.removeItemAt(childPosition);
-
                                 Purchase purchase = group.getPurchase(children.getTime());
-                                PurchasesService purchasesService = new PurchasesService();
+                                PurchasesService purchasesService = new PurchasesService(Context.getContext());
 
-                                if(purchase.isEmpty()){
-                                    purchasesService.deletePurchase(purchase);
+                                int httpCode = 200;
 
-                                }else {
+                                try {
 
-                                    ArrayList<Purchase> ps = new ArrayList<>();
-                                    ps.add(purchase);
-                                    purchasesService.savePurchases(ps);
+                                    if (purchase.isEmpty()) {
+                                        httpCode = purchasesService.deletePurchase(purchase);
+
+                                    } else {
+
+                                        ArrayList<Purchase> ps = new ArrayList<>();
+                                        ps.add(purchase);
+                                        httpCode = purchasesService.savePurchases(ps);
+                                    }
+
+                                    if(httpCode != 200){
+                                        Toast toast = Toast.makeText(parent.getContext(), "Error while trying to delete the item", Toast.LENGTH_LONG);
+                                        toast.show();
+                                        return false;
+                                    }
+
+                                    group.removeItemAt(childPosition);
+                                    mode.finish();
+                                    notifyDataSetChanged();
+
+                                    return true;
+
+                                }catch (Exception e){
+                                    Toast toast = Toast.makeText(parent.getContext(), "Error while trying to delete the item", Toast.LENGTH_LONG);
+                                    toast.show();
+                                    return false;
                                 }
-
-                                mode.finish();
-                                notifyDataSetChanged();
-                                return true;
 
                             default:
                                 return false;
