@@ -270,7 +270,6 @@ func getPurchases(awsResponse *dynamodb.QueryOutput) []Purchase {
 		purchase := Purchase{Id: *(p["dt"].N), Time:t, Shop:*(p["shop"].S), Items:itemsContainer.Items}
 
 		purchases = append(purchases, purchase)
-		fmt.Println(purchase)
 	}
 
 	return purchases
