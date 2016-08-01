@@ -1,0 +1,65 @@
+Although Amazon has a really good documentation about how to upload your docker image in their cloud infrastructure, I wanted to list the steps I followed the first time I run a docker container in EC2.
+
+
+##1) Login aws console##
+ (Credit card number is needed)
+
+##2) Install aws cli in your desktop   (http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
+     
+   **The AWS Command Line Interface is a unified tool to manage your AWS services**
+    $ python --version
+    $ curl -O https://bootstrap.pypa.io/get-pip.py
+    $ sudo python2.7 get-pip.py
+    $ sudo pip install awscli
+    $ sudo pip install --upgrade awscli
+   ** test aws installation **
+    $ aws help
+
+##3) Get your access and secret key and ID ##
+
+  "Access keys consist of an access key ID and secret access key, which are used to sign programmatic requests that you make to AWS"
+
+ - Go to https://console.aws.amazon.com/iam/home?#home
+ - Create a user
+ - Create access keys
+ - Attach policies permissions
+   AmazonEC2FullAccess
+   AmazonEC2ContainerRegistryFullAccess
+   AmazonDynamoDBFullAccess
+   AdministratorAccess
+   AmazonEC2ContainerServiceFullAccess
+   AmazonEC2ContainerServiceforEC2Role
+
+##4) Configure the aws command line interface  (http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html)##
+
+ $ aws configure
+
+ AWS Access Key ID [None]: AKIAIOSFODNN7EXAMPLE
+ AWS Secret Access Key [None]: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+ Default region name [None]: us-west-2
+ Default output format [None]: ENTER
+
+##5) Upload docker to the EC2 Container Registry##
+ - Go to https://console.aws.amazon.com/ecs/home?region=us-east-1#/repositories/create
+ - Create a repo
+
+
+##6) Create a key pair to be able to access the vm previously created. https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#KeyPairs:sort=keyName##
+ - Once you have named and creted the pem file run the followig:
+ $ chmod 400 mac.pem
+ $ ssh -i "/Users/elagiglia/Downloads/mac.pem" ubuntu@ec2-52-42-147-180.us-west-2.compute.amazonaws.com
+
+##7) Create and lunch a vm instance in https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#Instances:sort=instanceId##
+
+##8) install docker aws agent in the vm##
+
+sudo docker run --name ecs-agent --detach=true --restart=on-failure:10 --volume=/var/run/docker.sock:/var/run/docker.sock --volume=/var/log/ecs/:/log --volume=/var/lib/ecs/data:/data --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro --volume=/var/run/docker/execdriver/native:/var/lib/docker/execdriver/native:ro --publish=127.0.0.1:51678:51678 --env=ECS_LOGFILE=/log/ecs-agent.log --env=ECS_LOGLEVEL=info --env=ECS_DATADIR=/data --env=ECS_CLUSTER=bns amazon/amazon-ecs-agent:latest
+
+##9) Docker Registry Authentication##
+
+ $ aws ecr get-login
+
+  Execute the command returned by aws
+##10) Tag the docker image
+
+##11) Push the docker image
