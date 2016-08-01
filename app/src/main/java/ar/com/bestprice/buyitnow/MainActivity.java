@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import ar.com.bestprice.buyitnow.dto.Item;
@@ -49,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
         renderPurchasesList();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.main_tool_bar);
-
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
@@ -282,6 +282,8 @@ public class MainActivity extends AppCompatActivity {
         if (jsonString != null && !jsonString.isEmpty()){
             purchasesContainer = parseJsonString(jsonString);
             renderList(purchasesContainer);
+        } else {
+            //TODO add an error message
         }
     }
 

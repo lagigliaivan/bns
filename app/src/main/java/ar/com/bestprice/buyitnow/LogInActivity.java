@@ -79,10 +79,7 @@ public class LogInActivity extends AppCompatActivity {
         Context.getContext().setPass(password);
         Context.getContext().setUser(email);
 
-        //String credential = encryptPassword(user + ":" + password + "@" + mail);
-
-        //Context.getContext().setLogin(credential);
-
+        //add the error here to manage when login fails
         startActivity(intent);
 
         new android.os.Handler().postDelayed(

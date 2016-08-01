@@ -19,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import ar.com.bestprice.buyitnow.barcodereader.BarcodeCaptureActivity;
 import ar.com.bestprice.buyitnow.dto.Item;
@@ -38,15 +39,11 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
         setContentView(R.layout.activity_add_item);
         Spinner spinner = (Spinner) findViewById(R.id.add_item_spinner);
 
-        ArrayList arraySpinner = new ArrayList();
+        ArrayList<Category> arraySpinner = new ArrayList<>();
 
-        for (Category c : Category.values()) {
-            arraySpinner.add(c);
-        }
+        arraySpinner.addAll(Arrays.asList(Category.values()));
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_item, arraySpinner);
-
+        ArrayAdapter<Category> adapter = new ArrayAdapter<>(this,android.R.layout.simple_spinner_item, arraySpinner);
 
         spinner.setAdapter(adapter);
 
@@ -82,8 +79,6 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
 
                 String itemId = id.getText().toString();
 
-
-
                 if(itemId.isEmpty()){
 
                     MessageDigest crypt = null;
@@ -98,7 +93,6 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
                     }
 
                     itemId = Context.byteToHex(crypt.digest());
-
                 }
 
                 Item item = new Item();
@@ -108,8 +102,6 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
                 item.setCategory(category);
 
                 startActivity(item);
-
-                //do not need to wait for any activity result, so we can finish
                 finish();
                 break;
 

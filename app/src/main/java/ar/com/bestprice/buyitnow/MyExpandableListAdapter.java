@@ -85,7 +85,7 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
                 purchase.getShop();
 
                 Calendar purchaseDateTime = Calendar.getInstance();
-                StringBuffer stringBuffer = new StringBuffer();
+                StringBuilder stringBuffer = new StringBuilder();
 
                 Date date = new Date(Long.parseLong(purchase.getId()) * 1000);
                 purchaseDateTime.setTime(date);
@@ -140,7 +140,7 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
                                 Purchase purchase = group.getPurchase(children.getTime());
                                 PurchasesService purchasesService = new PurchasesService(Context.getContext());
 
-                                int httpCode = 200;
+                                int httpCode;
 
                                 try {
 
@@ -256,14 +256,12 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
 
         checkedTextView.setText(purchasesByMonth.getString());
 
-
         float diff = purchasesByMonth.getPurchasesTotalPrice() - previousPurchasesByMonth.getPurchasesTotalPrice();
 
         diff = (diff * 100) / previousPurchasesByMonth.getPurchasesTotalPrice();
 
         differencePerMonth.setText(String.format("%+.2f%%", diff));
         amountPerMonth.setText(String.format("$%.2f", purchasesByMonth.getPurchasesTotalPrice()));
-
 
         return convertView;
     }
