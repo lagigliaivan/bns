@@ -18,7 +18,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -79,12 +84,29 @@ public class MyExpandableListAdapter extends BaseExpandableListAdapter {
 
                 purchase.getShop();
 
-                CharSequence text = "Lugar de compra: " + purchase.getShop() + " [" + purchase.getTime() + "]";
+                Calendar purchaseDateTime = Calendar.getInstance();
+                StringBuffer stringBuffer = new StringBuffer();
+
+                Date date = new Date(Long.parseLong(purchase.getId()) * 1000);
+                purchaseDateTime.setTime(date);
+
+                stringBuffer.append("Dia: ");
+                stringBuffer.append(purchaseDateTime.get(Calendar.DAY_OF_MONTH));
+                stringBuffer.append("/");
+                stringBuffer.append(purchaseDateTime.get(Calendar.MONTH) + 1);  //do not know why, get returns one month less
+
+                stringBuffer.append(" ");
+                stringBuffer.append(purchaseDateTime.get(Calendar.HOUR));
+                stringBuffer.append(":");
+                stringBuffer.append(purchaseDateTime.get(Calendar.MINUTE));
+
                 int duration = Toast.LENGTH_LONG;
 
-                Toast toast = Toast.makeText(parent.getContext(), text, duration);
+                Toast toast = Toast.makeText(parent.getContext(), stringBuffer.toString(), duration);
 
                 toast.show();
+
+
 
             }
         });

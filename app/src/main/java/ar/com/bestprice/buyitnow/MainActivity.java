@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
 //                "]}";
 
 
-        if (jsonString != null){
+        if (jsonString != null && !jsonString.isEmpty()){
             purchasesContainer = parseJsonString(jsonString);
             renderList(purchasesContainer);
         }
@@ -308,8 +308,10 @@ public class MainActivity extends AppCompatActivity {
             accumPurchases += group.getPurchasesTotalPrice();
         }
 
-        float purchasesAverage = accumPurchases / purchases.size();
-
+        float purchasesAverage = 0;
+        if (purchases.size()!= 0) {
+            purchasesAverage = accumPurchases / purchases.size();
+        }
         TextView average = (TextView) findViewById(R.id.average);
         TextView accumulated = (TextView) findViewById(R.id.accumulated);
 

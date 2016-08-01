@@ -15,7 +15,7 @@ public class Context {
     private String pass = "password";
     private String login;
     //private String serviceURL = "http://ec2-52-39-112-162.us-west-2.compute.amazonaws.com:8080/catalog";
-    private String serviceURL = "http://192.168.0.4:8080/catalog";
+    private String serviceURL = "http://ec2-52-42-147-180.us-west-2.compute.amazonaws.com:8080/catalog";
 
     private Context(){}
 
