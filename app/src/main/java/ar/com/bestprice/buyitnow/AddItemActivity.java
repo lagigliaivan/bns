@@ -9,7 +9,6 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
@@ -136,7 +135,7 @@ public class AddItemActivity extends AppCompatActivity implements View.OnClickLi
        //and the item is passes as parameter
        } else {
 
-            Intent intent = new Intent(this.getApplicationContext(), AddNewPurchaseActivity.class);
+            Intent intent = new Intent(this.getApplicationContext(), AddPurchaseActivity.class);
             intent.putExtra(Constants.ITEM, item);
             startActivity(intent);
         }

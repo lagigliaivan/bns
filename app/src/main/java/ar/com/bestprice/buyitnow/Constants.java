@@ -10,6 +10,4 @@ public class Constants {
     public final static int MAIN_ACTIVITY = 2;
 
     public final static String ITEM = "Item";
-
-
 }

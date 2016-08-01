@@ -22,20 +22,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import ar.com.bestprice.buyitnow.dto.Item;
 import ar.com.bestprice.buyitnow.dto.Purchase;
-import ar.com.bestprice.buyitnow.dto.Purchases;
-import ar.com.bestprice.buyitnow.dto.PurchasesByMonthContainer;
 
 /**
  * Created by ivan on 08/04/16.
  */
-public class AddNewPurchaseActivity extends AppCompatActivity{
+public class AddPurchaseActivity extends AppCompatActivity{
 
     ListView listView = null;
     ArrayAdapter<String> adapter = null;
@@ -54,23 +48,19 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
             listView = (ListView) findViewById(R.id.listview_show_items_in_a_purchase);
             items.add(item);
 
-            List itemsAsString = new ArrayList();
+            List<String> itemsAsString = new ArrayList<>();
 
             for (Item i: items ){
                 itemsAsString.add(i.toString());
             }
 
-            adapter = new ArrayAdapter<>(this,
-                    android.R.layout.simple_list_item_1, android.R.id.text1, itemsAsString);
-
+            adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1, itemsAsString);
             listView.setAdapter(adapter);
         }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.new_purchase_toolbar);
 
         setSupportActionBar(toolbar);
-
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
@@ -85,14 +75,13 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
                     Item item = (Item) data.getSerializableExtra(Constants.ITEM);
                     items.add(item);
 
-                    List itemsAsString = new ArrayList();
+                    List<String> itemsAsString = new ArrayList<>();
 
                     for (Item i : items) {
                         itemsAsString.add(i.toString());
                     }
 
-                    ArrayAdapter adapter = new ArrayAdapter<>(this,
-                            android.R.layout.simple_list_item_1, android.R.id.text1, itemsAsString);
+                    ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1, itemsAsString);
 
                     listView.setAdapter(adapter);
             }
@@ -186,8 +175,6 @@ public class AddNewPurchaseActivity extends AppCompatActivity{
                 });
 
                 builder.show();
-
-
                 break;
         }
 

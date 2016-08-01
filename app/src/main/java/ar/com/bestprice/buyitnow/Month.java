@@ -7,32 +7,25 @@ public enum Month {
 
 
     //DO NOT CHANGE THE ORDER. This will affect the way the purchases are shown on the screen
-    JANUARY ("January", 1),
-    FEBRUARY   ("February", 2),
-    MARCH   ("March", 3),
-    APRIL ("April", 4),
-    MAY ("May", 5),
-    JUNE  ("June", 6),
-    JULY ("July", 7),
-    AUGUST  ("August", 8),
-    SEPTEMBER  ("September", 9),
-    OCTOBER  ("October", 10),
-    NOVEMBER  ("November", 11),
-    DECEMBER  ("December", 12);
+    JANUARY ("January"),
+    FEBRUARY ("February"),
+    MARCH ("March"),
+    APRIL ("April"),
+    MAY ("May"),
+    JUNE ("June"),
+    JULY ("July"),
+    AUGUST ("August"),
+    SEPTEMBER ("September"),
+    OCTOBER  ("October"),
+    NOVEMBER ("November"),
+    DECEMBER ("December");
 
 
     private final String name;
-    private final int position;
 
-
-    Month(String name, int position) {
+    Month(String name) {
         this.name = name;
-        this.position = position;
     }
 
     public String getName() { return name; }
-    public int getPosition() { return position; }
-
-
-
 }

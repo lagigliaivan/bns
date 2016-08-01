@@ -28,7 +28,7 @@
         <activity android:name="ar.com.bestprice.buyitnow.AddItemActivity"
             android:label="Add item"/>
 
-        <activity android:name="ar.com.bestprice.buyitnow.AddNewPurchaseActivity"
+        <activity android:name=".AddPurchaseActivity"
             android:label="Add new purchase"/>
 
        <!-- <activity android:name=".MainActivity"
