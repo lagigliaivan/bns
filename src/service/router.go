@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"log"
 	"strings"
+	"golang.org/x/oauth2/google"
+	"io/ioutil"
+	"golang.org/x/oauth2/jwt"
 )
 
 const(
@@ -56,10 +59,25 @@ func validateUser (request *http.Request) bool{
 
 	securityHeader := request.Header.Get(HEADER)
 
+
+
 	if len(securityHeader) == 0 {
 		log.Printf("Security Header needs to be present")
 		return false
 	}else {
+
+		/*conf := &oauth2.Config{
+			ClientID:     "YOUR_CLIENT_ID",
+			ClientSecret: "YOUR_CLIENT_SECRET",
+			RedirectURL:  "YOUR_REDIRECT_URL",
+			Scopes: []string{
+				"https://www.googleapis.com/auth/bigquery",
+				"https://www.googleapis.com/auth/blogger",
+			},
+			Endpoint: google.Endpoint,
+		}
+
+		url := conf.AuthCodeURL(securityHeader)*/
 
 		for _, allowedUser := range users {
 			if strings.Compare(securityHeader, allowedUser) == 0 {
@@ -72,6 +90,22 @@ func validateUser (request *http.Request) bool{
 	}
 
 	return false
+}
+
+func getJWTConfigFromJson() *jwt.Config {
+
+	data, err := ioutil.ReadFile("./client_id.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	conf, err := google.JWTConfigFromJSON(data, "https://www.googleapis.com/auth/userinfo.email")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return conf
+	/*client := conf.Client(oauth2.NoContext)
+	client.Get("...")*/
 }
 
 func ForbiddenHandler(w http.ResponseWriter, r *http.Request) { http.Error(w, "503 Forbidden", http.StatusForbidden) }
