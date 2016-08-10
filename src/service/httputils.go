@@ -59,7 +59,7 @@ func httpDelete(user, url string) (*http.Response, error){
 func getServer(service Service) *httptest.Server {
 
 	router := NewRouter()
-	service.ConfigureRouter(router)
+	service.ConfigureRouter(router.GetRouter())
 	server := httptest.NewServer(router)
 
 	return server

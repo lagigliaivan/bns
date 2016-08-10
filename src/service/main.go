@@ -48,7 +48,7 @@ func main() {
 	*/
 
 	purchasesService := NewPurchaseService(db)
-	purchasesService.ConfigureRouter(router)
+	purchasesService.ConfigureRouter(router.GetRouter())
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }

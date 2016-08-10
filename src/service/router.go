@@ -15,7 +15,7 @@ func NewRouter() *PreRouter{
 
 	router := mux.NewRouter();
 	router.Methods(http.MethodGet, http.MethodPut, http.MethodPost)
-	subRouter := router.PathPrefix("/catalog/").Subrouter()
+	subRouter := router.PathPrefix("/catalog/").Subrouter().StrictSlash(true)
 
 	return NewPreRouter(subRouter, validateUser)
 }
@@ -45,6 +45,11 @@ func (preRouter *PreRouter) ServeHTTP(resp http.ResponseWriter, request *http.Re
 func (preRouter PreRouter) HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) *mux.Route{
 	return preRouter.router.HandleFunc(path, f)
 }
+
+func (preRouter PreRouter) GetRouter() *mux.Router{
+	return preRouter.router
+}
+
 
 type Router interface  {
 	HandleFunc(string, func(http.ResponseWriter, *http.Request)) *mux.Route
