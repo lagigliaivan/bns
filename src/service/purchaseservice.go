@@ -10,10 +10,11 @@ import (
 	"sort"
 	"time"
 	"strings"
+//	"github.com/aws/aws-sdk-go/service"
 )
 
 type Service interface {
-	ConfigureRouter(router Router)
+	ConfigureRouter(router *mux.Router)
 }
 
 func getPathParams(r *http.Request) map[string]string {
@@ -57,9 +58,50 @@ func NewPurchaseService(db DB) *PurchaseService {
 	return service
 }
 //This method sets what resources are going to be managed by the router
-func (service PurchaseService) ConfigureRouter(router Router) {
-	router.HandleFunc("/purchases", service.handleRequestPurchases)
-	router.HandleFunc("/purchases/{id}", service.handleRequestPurchases)
+func (service PurchaseService) ConfigureRouter(router *mux.Router) {
+
+
+	routes := Routes{
+
+		Route{
+			"get_purchases",
+			"GET",
+			"/purchases",
+			service.handleGetPurchases,
+		},
+		Route{
+			"post_purchases",
+			"POST",
+			"/purchases",
+			service.handlePostPurchases,
+		},
+		Route{
+			"delete_purchase",
+			"DELETE",
+			"/purchases/{id}",
+			service.handleDeletePurchase,
+		},
+	}
+
+	for _, route := range routes {
+		var handler http.Handler
+
+		handler = route.HandlerFunc
+		//handler = Logger(handler, route.Name)
+
+		router.
+		Methods(route.Method).
+			Path(route.Pattern).
+			Name(route.Name).
+			Handler(handler)
+
+	}
+
+	//return router
+	/*router.HandleFunc("/purchases", service.handleRequestPurchases)
+	router.HandleFunc("/purchases/{id}", service.handleRequestPurchases)*/
+
+
 }
 
 func (service PurchaseService) handleDefaultError(w http.ResponseWriter, r *http.Request) {
@@ -88,23 +130,30 @@ func (service PurchaseService) handleRequestPurchases(w http.ResponseWriter, r *
 func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http.Request) {
 
 	user := r.Header.Get(HEADER)
+	params := r.URL.Query()
 
-	container := NewPurchaseContainer()
-	purchases := service.getPurchases(user)
+	if len(params) != 0 && params[GROUP_BY] != nil {
 
-	for _, purchase := range purchases {
-		container.Add(purchase)
+		service.handleGetPurchasesByMonth(w, r)
+
+	}else {
+		container := NewPurchaseContainer()
+		purchases := service.getPurchases(user)
+
+		for _, purchase := range purchases {
+			container.Add(purchase)
+		}
+
+		purchasesAsJson, err := json.Marshal(container)
+
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			log.Printf("Error")
+			return
+		}
+		fmt.Fprintf(w, "%s", purchasesAsJson)
 	}
 
-	purchasesAsJson, err := json.Marshal(container)
-
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("Error")
-		return
-	}
-
-	fmt.Fprintf(w, "%s", purchasesAsJson)
 }
 
 func (service PurchaseService) handleGetPurchasesByMonth(w http.ResponseWriter, r *http.Request) {
