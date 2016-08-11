@@ -162,8 +162,8 @@ func (service PurchaseService) handleGetPurchasesByMonth(w http.ResponseWriter, 
 	//params := r.URL.Query()
 
 	year := time.Now().Year()
-/*
-	if params["year"] != nil {
+
+	/*if params["year"] != nil {
 		year = params["year"]
 	}*/
 
