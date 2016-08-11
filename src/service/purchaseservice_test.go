@@ -460,3 +460,6 @@ func Test_DELETE_A_Purchase(t *testing.T) {
 func getURL(url string) string{
 	return url + "/catalog/purchases"
 }
+
+
+var users [2]string =  [...]string{"d563af2d08b4f672a11b3ed9065b7890a6412cab", "107cbb20a1d1e156beac1a9a7a331b36321300d4"}

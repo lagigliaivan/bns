@@ -3,46 +3,41 @@ package main
 import (
 	"github.com/gorilla/mux"
 	"net/http"
-	"log"
-	"strings"
-	"golang.org/x/oauth2/google"
-	"io/ioutil"
-	"golang.org/x/oauth2/jwt"
 )
 
-const(
-	HEADER = "Authorization"
-)
 
-func NewRouter() *PreRouter{
+func NewPreRouter(preRoutingRule func(request *http.Request) bool) *PreRouter{
 
 	router := mux.NewRouter();
-	router.Methods(http.MethodGet, http.MethodPut, http.MethodPost)
 	subRouter := router.PathPrefix("/catalog/").Subrouter().StrictSlash(true)
 
-	return NewPreRouter(subRouter, validateUser)
-}
-
-func NewPreRouter(fwRouter *mux.Router, rule func(request *http.Request) bool) *PreRouter{
-
-	preRouter := &PreRouter{router: fwRouter, rule: rule}
+	preRouter := &PreRouter{router: subRouter, evaluationRule: preRoutingRule}
 	return preRouter
 }
 
 type PreRouter struct {
-	router *mux.Router
-	rule func(request *http.Request) bool
+	router         *mux.Router
+	evaluationRule func(request *http.Request) bool
 }
 
+//This method is called by http.ListenAndServe when a request comes in
 func (preRouter *PreRouter) ServeHTTP(resp http.ResponseWriter, request *http.Request){
 
-	if !preRouter.rule(request){
+	//The purpose of PreRouter is to be able to make any processing before requests are evaluated
+	if !preRouter.evaluationRule(request){
 		ForbiddenHandler(resp, request)
 		return
 	}
 
+	//Here begins the processing of the different requests
 	preRouter.router.ServeHTTP(resp, request)
+}
 
+func (preRouter *PreRouter) AddService(service Service) *PreRouter{
+
+	service.ConfigureRouter(preRouter.GetRouter())
+
+	return preRouter
 }
 
 func (preRouter PreRouter) HandleFunc(path string, f func(http.ResponseWriter, *http.Request)) *mux.Route{
@@ -51,66 +46,6 @@ func (preRouter PreRouter) HandleFunc(path string, f func(http.ResponseWriter, *
 
 func (preRouter PreRouter) GetRouter() *mux.Router{
 	return preRouter.router
-}
-
-
-type Router interface  {
-	HandleFunc(string, func(http.ResponseWriter, *http.Request)) *mux.Route
-}
-
-var users [2]string =  [...]string{"d563af2d08b4f672a11b3ed9065b7890a6412cab", "107cbb20a1d1e156beac1a9a7a331b36321300d4"}
-
-func validateUser (request *http.Request) bool{
-
-	securityHeader := request.Header.Get(HEADER)
-
-
-
-	if len(securityHeader) == 0 {
-		log.Printf("Security Header needs to be present")
-		return false
-	}else {
-
-		/*conf := &oauth2.Config{
-			ClientID:     "YOUR_CLIENT_ID",
-			ClientSecret: "YOUR_CLIENT_SECRET",
-			RedirectURL:  "YOUR_REDIRECT_URL",
-			Scopes: []string{
-				"https://www.googleapis.com/auth/bigquery",
-				"https://www.googleapis.com/auth/blogger",
-			},
-			Endpoint: google.Endpoint,
-		}
-
-		url := conf.AuthCodeURL(securityHeader)*/
-
-		for _, allowedUser := range users {
-			if strings.Compare(securityHeader, allowedUser) == 0 {
-				log.Printf("user:%s\n", allowedUser)
-				return true
-			}
-		}
-
-		log.Printf("User %s is not allowed", securityHeader)
-	}
-
-	return false
-}
-
-func getJWTConfigFromJson() *jwt.Config {
-
-	data, err := ioutil.ReadFile("./client_id.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-	conf, err := google.JWTConfigFromJSON(data, "https://www.googleapis.com/auth/userinfo.email")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return conf
-	/*client := conf.Client(oauth2.NoContext)
-	client.Get("...")*/
 }
 
 func ForbiddenHandler(w http.ResponseWriter, r *http.Request) { http.Error(w, "503 Forbidden", http.StatusForbidden) }

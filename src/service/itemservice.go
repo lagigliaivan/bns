@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"encoding/json"
 	"io/ioutil"
+	"github.com/gorilla/mux"
 )
 
 
@@ -39,7 +40,7 @@ func NewItemService(db DB) *ItemsService {
 	return service
 }
 
-func (service ItemsService) ConfigureRouter(router Router) {
+func (service ItemsService) ConfigureRouter(router mux.Router) {
 
 	router.HandleFunc("/products/{id}", service.handleRequestProductId).Name("products+id")
 	router.HandleFunc("/products", service.handleRequestProducts).Name("products no slash")

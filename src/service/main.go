@@ -1,6 +1,5 @@
 /**
 This Package starts up a server which has the following APIs:
-GET /items
 GET /purchases
 **/
 package main
@@ -10,6 +9,11 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"encoding/json"
+	"io/ioutil"
+	"crypto/sha1"
+	"io"
+	"fmt"
 )
 
 const (
@@ -17,6 +21,7 @@ const (
 	LOCALDB = "LOCALDB"
 	MEMDB = "MEMDB"
 )
+
 
 func main() {
 
@@ -40,15 +45,50 @@ func main() {
 		log.Print("Using DYNAMODB")
 	}
 
-	router := NewRouter()
-
-	/*
-	itemsService := NewItemService(db)
-	itemsService.ConfigureRouter(router)
-	*/
-
 	purchasesService := NewPurchaseService(db)
-	purchasesService.ConfigureRouter(router.GetRouter())
+	preRouter := NewPreRouter(isAValidUser).AddService(purchasesService)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8080", preRouter))
+}
+
+const(
+	HEADER = "Authorization"
+	USER_ID = "User-ID"
+	GOOGLE_TOKEN_INFO_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=";
+
+)
+
+func isAValidUser(request *http.Request) bool{
+
+	userToken := request.Header.Get(HEADER)
+
+	if len(userToken) == 0 {
+
+		log.Printf("Security Header needs to be present")
+		return false
+
+	}else {
+
+		res, err := http.Get(GOOGLE_TOKEN_INFO_URL + userToken)
+
+		if !isHTTPStatus(http.StatusBadRequest, res, err){
+			log.Printf("Error while validating user token")
+			return false;
+		}
+
+		googleDto := new(GoogleSignInDto)
+		body, _ := ioutil.ReadAll(res.Body)
+		if err := json.Unmarshal(body, googleDto); err != nil {
+			log.Printf("Error while parsing google user token validation response: %s", err)
+			return false
+		}
+
+		sha := sha1.New()
+		io.WriteString(sha, googleDto.Email)
+
+		request.Header.Add(USER_ID,  fmt.Sprintf("%x", sha.Sum(nil)))
+
+	}
+
+	return false
 }

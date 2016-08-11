@@ -37,7 +37,7 @@ type PurchaseService struct {
 	error                string
 	name                 string
 	db                   DB
-	productIdsHandler    map[string] func(http.ResponseWriter,*http.Request)
+//	productIdsHandler    map[string] func(http.ResponseWriter,*http.Request)
 	purchasesHandler     map[string] func(http.ResponseWriter,*http.Request)
 }
 
@@ -47,13 +47,6 @@ func NewPurchaseService(db DB) *PurchaseService {
 	service.getRequestParameters = getPathParams
 	service.db = db
 	service.error = "ERROR"
-
-	service.purchasesHandler = make(map[string] func(http.ResponseWriter,*http.Request))
-	service.purchasesHandler[http.MethodGet] = service.handleGetPurchases
-	service.purchasesHandler[http.MethodPost] = service.handlePostPurchases
-	service.purchasesHandler[http.MethodDelete]  = service.handleDeletePurchase
-	service.purchasesHandler[service.error]  = service.handleDefaultError
-
 
 	return service
 }
@@ -87,7 +80,6 @@ func (service PurchaseService) ConfigureRouter(router *mux.Router) {
 		var handler http.Handler
 
 		handler = route.HandlerFunc
-		//handler = Logger(handler, route.Name)
 
 		router.
 		Methods(route.Method).
@@ -96,12 +88,6 @@ func (service PurchaseService) ConfigureRouter(router *mux.Router) {
 			Handler(handler)
 
 	}
-
-	//return router
-	/*router.HandleFunc("/purchases", service.handleRequestPurchases)
-	router.HandleFunc("/purchases/{id}", service.handleRequestPurchases)*/
-
-
 }
 
 func (service PurchaseService) handleDefaultError(w http.ResponseWriter, r *http.Request) {
@@ -109,27 +95,10 @@ func (service PurchaseService) handleDefaultError(w http.ResponseWriter, r *http
 	fmt.Fprint(w, "The request method is not supported for the requested resource")
 }
 
-func (service PurchaseService) handleRequestPurchases(w http.ResponseWriter, r *http.Request) {
-
-	params := r.URL.Query()
-
-	if len(params) != 0 {
-		if params[GROUP_BY] != nil {
-			service.handleGetPurchasesByMonth(w, r)
-		}
-	}else {
-		handler := service.purchasesHandler[r.Method]
-		if handler == nil {
-			service.purchasesHandler[service.error](w, r)
-		}else {
-			handler(w, r)
-		}
-	}
-}
 
 func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http.Request) {
 
-	user := r.Header.Get(HEADER)
+	user := r.Header.Get(USER_ID)
 	params := r.URL.Query()
 
 	if len(params) != 0 && params[GROUP_BY] != nil {
@@ -158,7 +127,7 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 
 func (service PurchaseService) handleGetPurchasesByMonth(w http.ResponseWriter, r *http.Request) {
 
-	user := r.Header.Get(HEADER)
+	user := r.Header.Get(USER_ID)
 	//params := r.URL.Query()
 
 	year := time.Now().Year()
@@ -195,7 +164,7 @@ func (service PurchaseService) handleGetPurchasesByMonth(w http.ResponseWriter, 
 
 func (service PurchaseService) handlePostPurchases(w http.ResponseWriter, r *http.Request) {
 
-	user := r.Header.Get(HEADER)
+	user := r.Header.Get(USER_ID)
 	body, _ := ioutil.ReadAll(r.Body)
 
 	purchasesContainer := new(PurchaseContainer)
@@ -222,7 +191,7 @@ func (service PurchaseService) handlePostPurchases(w http.ResponseWriter, r *htt
 
 func (service PurchaseService) handleDeletePurchase (w http.ResponseWriter, r *http.Request) {
 
-	user := r.Header.Get(HEADER)
+	user := r.Header.Get(USER_ID)
 	vars := getPathParams(r)
 
 	itemId := vars["id"]
@@ -264,17 +233,4 @@ func (service PurchaseService) savePurchases( purchases []Purchase, userId strin
 	for _, purchase := range purchases {
 		service.db.SavePurchase(purchase, userId)
 	}
-}
-
-func (service PurchaseService) addUpdateItem(item Item) int {
-
-	if item.Id == "" {
-		log.Printf("Error at trying to save an empty item.")
-		return -1
-	}
-
-	service.db.SaveItem(item)
-	log.Printf("PUT item_id: %s returned OK", item.Id)
-
-	return 0
 }
