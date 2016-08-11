@@ -28,8 +28,7 @@ sudo docker run -d -P --name web --link dynamodb:dynamodb training/webapp python
 
 
 ### Creating a table in a local dynamoDB
-aws dynamodb create-table --table-name Purchases --attribute-definitions AttributeName=id,AttributeType=S AttributeName=dt,AttributeType=S --key-schema AttributeName=id,KeyType=HASH AttributeName=dt,KeyType=range --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url  http://localhost:8000
-
+aws dynamodb create-table --table-name Purchases --attribute-definitions AttributeName=id,AttributeType=S AttributeName=dt,AttributeType=N --key-schema AttributeName=id,KeyType=HASH AttributeName=dt,KeyType=range --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url  http://localhost:8000
 aws dynamodb create-table --table-name Items --attribute-definitions AttributeName=user_purchase,AttributeType=S AttributeName=item,AttributeType=S --key-schema AttributeName=user_purchase,KeyType=HASH AttributeName=item,KeyType=range 
 --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 --endpoint-url http://172.17.0.2:8000
 

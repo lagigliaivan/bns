@@ -86,6 +86,7 @@ func (service PurchaseService) handleRequestPurchases(w http.ResponseWriter, r *
 }
 
 func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http.Request) {
+
 	user := r.Header.Get(HEADER)
 
 	container := NewPurchaseContainer()
@@ -112,8 +113,8 @@ func (service PurchaseService) handleGetPurchasesByMonth(w http.ResponseWriter, 
 	//params := r.URL.Query()
 
 	year := time.Now().Year()
-/*
-	if params["year"] != nil {
+
+	/*if params["year"] != nil {
 		year = params["year"]
 	}*/
 
