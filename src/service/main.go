@@ -22,6 +22,7 @@ const (
 	MEMDB = "MEMDB"
 )
 
+var androidAppClientID = os.Getenv("ANDROID_APP_ID")
 
 func main() {
 
@@ -68,10 +69,10 @@ func isAValidUser(request *http.Request) bool{
 		return false
 
 	}else {
-
+		log.Printf("Validating token agains " + GOOGLE_TOKEN_INFO_URL + userToken)
 		res, err := http.Get(GOOGLE_TOKEN_INFO_URL + userToken)
 
-		if !isHTTPStatus(http.StatusBadRequest, res, err){
+		if isHTTPStatus(http.StatusBadRequest, res, err){
 			log.Printf("Error while validating user token")
 			return false;
 		}
@@ -83,11 +84,20 @@ func isAValidUser(request *http.Request) bool{
 			return false
 		}
 
+		userEmail := googleDto.Email
+
+		if googleDto.Email == "" || googleDto.Azp != androidAppClientID {
+			return false
+		}
+
 		sha := sha1.New()
-		io.WriteString(sha, googleDto.Email)
+		io.WriteString(sha, userEmail)
 
 		request.Header.Add(USER_ID,  fmt.Sprintf("%x", sha.Sum(nil)))
 
+		log.Printf(fmt.Sprintf("%x", sha.Sum(nil)))
+
+		return true;
 	}
 
 	return false

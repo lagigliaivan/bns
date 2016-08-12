@@ -6,7 +6,7 @@ type GoogleSignInDto struct {
 	Iss string
 	Aud string
 	Sub string
-	Email_verified bool
+	Email_verified string
 	Azp string
 	Email string
 	Iat string
