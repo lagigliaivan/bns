@@ -48,11 +48,11 @@ func NewDynamoDB(endpoint, region string) (*DynamoDB, error) {
 		config = &aws.Config{Region: aws.String(region), Endpoint:&endpoint}
 	}
 
-	catalogDB := new(DynamoDB)
-	catalogDB.endpoint = endpoint
-	catalogDB.svc = dynamodb.New(session.New(config))
+	dynamoDb := new(DynamoDB)
+	dynamoDb.endpoint = endpoint
+	dynamoDb.svc = dynamodb.New(session.New(config))
 
-	return catalogDB, nil
+	return dynamoDb, nil
 }
 
 func (catDb DynamoDB) GetItem(id string) (Item){

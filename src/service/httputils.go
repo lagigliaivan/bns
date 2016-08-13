@@ -58,7 +58,7 @@ func httpDelete(user, url string) (*http.Response, error){
 
 func getServer(service Service) *httptest.Server {
 
-	router := NewPreRouter(IsAValidUserMock)
+	router := NewPreRouter(nonGoogleUserValidation)
 	service.ConfigureRouter(router.GetRouter())
 	server := httptest.NewServer(router)
 
@@ -68,17 +68,4 @@ func getServer(service Service) *httptest.Server {
 func isHTTPStatus(httpStatus int, res *http.Response, err error ) bool {
 	return !( (err != nil) || (res.StatusCode != httpStatus) )
 }
-
-func IsAValidUserMock(request *http.Request) bool{
-
-	userToken := request.Header.Get(HEADER)
-
-	if strings.Compare(userToken, users[0]) == 0 || strings.Compare(userToken, users[1]) == 0{
-		return true;
-	}else {
-		return false;
-	}
-
-}
-var users [2]string =  [...]string{"d563af2d08b4f672a11b3ed9065b7890a6412cab", "107cbb20a1d1e156beac1a9a7a331b36321300d4"}
 

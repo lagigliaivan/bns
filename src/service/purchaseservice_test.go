@@ -389,8 +389,6 @@ func Test_GET_Purchases_From_Other_User_Responds_different_purchases(t *testing.
 		t.FailNow()
 
 	}
-
-	log.Printf("GET items returned OK %s", body)
 }
 
 func Test_DELETE_A_Purchase(t *testing.T) {
@@ -449,7 +447,6 @@ func Test_DELETE_A_Purchase(t *testing.T) {
 		}
 	}
 
-	fmt.Printf("purchases %s", purchases.PurchasesByMonth)
 	if len(purchases.PurchasesByMonth) != 4 {
 		log.Printf("Error: Expected items quantity is different from the received one: %d", len(purchases.PurchasesByMonth))
 		t.FailNow()

@@ -37,7 +37,6 @@ type PurchaseService struct {
 	error                string
 	name                 string
 	db                   DB
-//	productIdsHandler    map[string] func(http.ResponseWriter,*http.Request)
 	purchasesHandler     map[string] func(http.ResponseWriter,*http.Request)
 }
 
@@ -81,7 +80,7 @@ func (service PurchaseService) ConfigureRouter(router *mux.Router) {
 
 		handler = route.HandlerFunc
 
-		router.
+	router.
 		Methods(route.Method).
 			Path(route.Pattern).
 			Name(route.Name).

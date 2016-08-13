@@ -18,8 +18,8 @@ type Mem_DB struct {
 	purchasesByUser  map[string] map[time.Month] map[string]Purchase
 }
 
-func NewMemDb() (Mem_DB) {
-	db := Mem_DB{}
+func NewMemDb() *Mem_DB {
+	db := new(Mem_DB)
 	db.items = make(map[string]Item)
 	db.purchasesByUser = make (map[string] map[time.Month] map[string]Purchase)
 	db.lockP = new(sync.RWMutex)
