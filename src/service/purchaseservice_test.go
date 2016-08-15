@@ -304,8 +304,6 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 
 	}
 
-
-
 }
 
 func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_By_Month(t *testing.T) {
@@ -453,6 +451,16 @@ func Test_DELETE_A_Purchase(t *testing.T) {
 
 	}
 }
+
+func Test(t *testing.T) {
+	sha := sha1.New()
+	io.WriteString(sha, "lagigliaivan@gmail.com")
+
+	log.Printf("user: %s", fmt.Sprintf("%x", sha.Sum(nil)))
+}
+
+//For the moment there is not a more practical way to use, later,
+//the user email as ID in DB. So, what I'm doing is to add it in a http header :(
 
 func getURL(url string) string{
 	return url + "/catalog/purchases"

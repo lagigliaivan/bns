@@ -1,4 +1,4 @@
-# goland
+# AhorraYa (Try-n-save :) )
 
 Thi project is intended to be the backend for an android app. It allows
 recording purchases by month. Later this can be used to create a user profile and then
@@ -12,11 +12,11 @@ As a whole, these two applications allow keeping records of different purchases 
 ### Creating docker image
 cd /home/ivan/dev/bns/src/services
 sudo docker build -t bns/white:0.0.4 .
-sudo docker run -d -p 8080:8080 -e DB_TYPE=LOCALDB -e DB_URL=http://192.168.0.5:8000 -e USER_VALIDATION=NON_G_USER bns/white:0.0.4
+sudo docker run -d -p 8080:8080 -e DB_TYPE=LOCALDB -e DB_URL=http://192.168.0.5:8000  bns/white:0.0.4
 
 
 **Using remote dynamo (if you are running dynamo in your machine, then AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are not needed)**
-sudo docker run -d -p 8080:8080 -e USER_VALIDATION=NON_G_USER -e AWS_ACCESS_KEY_ID=<Key provided to you by amazon> -e AWS_SECRET_ACCESS_KEY=<secret provided to you by amazon> bns/white:0.0.4
+sudo docker run -d -p 8080:8080 -e AWS_ACCESS_KEY_ID=<Key provided to you by amazon> -e AWS_SECRET_ACCESS_KEY=<secret provided to you by amazon> bns/white:0.0.4
 
 Note: Once the docker example above is run, you can use 
 curl -H "Authorization:d563af2d08b4f672a11b3ed9065b7890a6412cab" http://localhost:8080/catalog/purchases
@@ -28,9 +28,7 @@ When running the docker image some environment variables can be used to use it l
 DB_TYPE: [LOCALDB, MEMDB]
 DB_URL: If LOCALDB is used, then you can use this variable to set the dynamo db url. localhost:8000 by default, if this variable is not used.
 ANDROID_APP_ID : android app id to validate user token
-USER_VALIDATION : [NON_G_USER] 
-
-
+FACEBOOK_ACCESS_TOKEN: facebook app access token
 
 ### Docker container for Local AWS DynamoDB
 

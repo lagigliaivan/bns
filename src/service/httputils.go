@@ -14,7 +14,7 @@ func httpGet(user, url string) (*http.Response, error){
 		log.Printf("Error when creating PUT request %d.", err)
 		return nil, err
 	}
-	req.Header.Add(HEADER, user)
+	req.Header.Add(TOKEN_HEADER, user)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -32,7 +32,7 @@ func httpPost(user, url string, values Stringifiable) (*http.Response, error){
 		log.Printf("Error when creating POST request %d.", err)
 		return nil, err
 	}
-	req.Header.Add(HEADER, user)
+	req.Header.Add(TOKEN_HEADER, user)
 	resp, err := http.DefaultClient.Do(req)
 
 	return resp, err
@@ -46,7 +46,7 @@ func httpDelete(user, url string) (*http.Response, error){
 		log.Printf("Error when creating DELETE request %d.", err)
 		return nil, err
 	}
-	req.Header.Add(HEADER, user)
+	req.Header.Add(TOKEN_HEADER, user)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -58,7 +58,7 @@ func httpDelete(user, url string) (*http.Response, error){
 
 func getServer(service Service) *httptest.Server {
 
-	router := NewPreRouter(nonGoogleUserValidation)
+	router := NewPreRouter(getValidUserId)
 	service.ConfigureRouter(router.GetRouter())
 	server := httptest.NewServer(router)
 

@@ -14,33 +14,46 @@ import (
 	"crypto/sha1"
 	"io"
 	"fmt"
+	"errors"
 )
 
 const (
 	DB_TYPE = "DB_TYPE"
-	DYNAMOLOCAL = "LOCALDB"
-	MEMDB = "MEMDB"
-	ANDROID_APP_ID = "ANDROID_APP_ID"
-	USER_VALIDATION = "USER_VALIDATION"
-	NON_G_USER = "NON_G_USER"
+	DYNAMO_LOCAL_DB = "LOCALDB"
+	MEM_DB = "MEMDB"
+
 	DB_URL = "DB_URL"
 
+	ANDROID_APP_ID = "ANDROID_APP_ID"
+	FACEBOOK_ACCESS_TOKEN = "FACEBOOK_ACCESS_TOKEN"
+
+	GOOGLE = "GOOGLE"
+	FACEBOOK = "FACEBOOK"
+	MAIL = "MAIL"
 )
 
 var androidAppClientID = os.Getenv(ANDROID_APP_ID)
 
 
 var dbs map[string] func() *DB = make(map[string] func() *DB)
+var getUser map[string] func(string) (*string, error) = make(map[string] func(string) (*string, error))
 
 const(
-	HEADER = "Authorization"
+	TOKEN_HEADER = "Authorization"
+	TOKEN_TYPE_HEADER = "TokenType"
+
 	USER_ID = "User-ID"
-	GOOGLE_TOKEN_INFO_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=";
+	GOOGLE_TOKEN_INFO_URL = "https://www.googleapis.com/oauth2/v3/tokeninfo?id_token="
+	FACEBOOK_TOKEN_INFO_URL = "https://graph.facebook.com/debug_token?input_token="
 )
 
 func init() {
-	dbs[DYNAMOLOCAL] = getLocalDB
-	dbs[MEMDB] = getMemDB
+	dbs[DYNAMO_LOCAL_DB] = getLocalDB
+	dbs[MEM_DB] = getMemDB
+
+	getUser[GOOGLE] = getGoogleUserId
+	getUser[FACEBOOK] = getFacebookUserId
+	getUser[MAIL] = getMailUserId
 }
 
 func main() {
@@ -55,15 +68,7 @@ func main() {
 
 	purchasesService := NewPurchaseService(*createDb())
 
-	validateUser := isAValidGoogleUser
-
-	if strings.Compare(os.Getenv(USER_VALIDATION), NON_G_USER) == 0 {
-		log.Printf("Using simple user validation (NonGoogle sign in)")
-		log.Printf("You can use the following users to send them out in the Authorization header %s %s", users[0], users[1] )
-		validateUser = nonGoogleUserValidation
-	}
-
-	preRouter := NewPreRouter(validateUser).AddService(purchasesService)
+	preRouter := NewPreRouter(getValidUserId).AddService(purchasesService)
 
 	log.Fatal(http.ListenAndServe(":8080", preRouter))
 }
@@ -99,61 +104,108 @@ func getLocalDB() *DB{
 
 }
 
-func isAValidGoogleUser(request *http.Request) bool{
+func getValidUserId(request *http.Request) bool{
 
-	userToken := request.Header.Get(HEADER)
+	userToken := request.Header.Get(TOKEN_HEADER)
+	userTokenType := request.Header.Get(TOKEN_TYPE_HEADER)
 
 	if len(userToken) == 0 {
 
 		log.Printf("Security Header needs to be present")
 		return false
-
-	}else {
-		log.Printf("Validating token")
-		res, err := http.Get(GOOGLE_TOKEN_INFO_URL + userToken)
-
-		if isHTTPStatus(http.StatusBadRequest, res, err){
-			log.Printf("Error while validating user token")
-			return false;
-		}
-
-		googleDto := new(GoogleSignInDto)
-		body, _ := ioutil.ReadAll(res.Body)
-		if err := json.Unmarshal(body, googleDto); err != nil {
-			log.Printf("Error while parsing google user token validation response: %s", err)
-			return false
-		}
-
-		userEmail := googleDto.Email
-
-		if googleDto.Email == "" || googleDto.Aud != androidAppClientID {
-			log.Printf("Either email is empty or aud does not match appclientid")
-			return false
-		}
-
-		sha := sha1.New()
-		io.WriteString(sha, userEmail)
-
-		//For the moment there is not a more practical way to use, later,
-		//the user email as ID in DB. So, what I'm doing is to add it in a http header :(
-		request.Header.Add(USER_ID,  fmt.Sprintf("%x", sha.Sum(nil)))
-
-		return true;
 	}
 
-	return false
+	getUserId := getUser[userTokenType]
+
+	if getUserId == nil {
+		log.Printf("Either %s http header is not present or invalid. Using %s by default", TOKEN_TYPE_HEADER, MAIL)
+		getUserId = getUser[MAIL]
+	}
+
+	userId , err := getUserId(userToken)
+
+	if err != nil {
+		log.Printf("An error occurred while validating user [%s] %s ", request.RemoteAddr, userToken)
+		return false
+	}
+
+	sha := sha1.New()
+	io.WriteString(sha, *userId)
+
+	//For the moment there is not a more practical way to use, later,
+	//the user email as ID in DB. So, what I'm doing is to add it in a http header :(
+	log.Printf("[%s]Token provided was successfully validated.", userTokenType)
+	request.Header.Add(USER_ID,  fmt.Sprintf("%x", sha.Sum(nil)))
+	return true
 }
 
 var users [2]string =  [...]string{"d563af2d08b4f672a11b3ed9065b7890a6412cab", "107cbb20a1d1e156beac1a9a7a331b36321300d4"}
 
-func nonGoogleUserValidation(request *http.Request) bool{
-
-	userToken := request.Header.Get(HEADER)
+func getMailUserId(userToken string) (*string, error){
 
 	if strings.Compare(userToken, users[0]) == 0 || strings.Compare(userToken, users[1]) == 0{
-		request.Header.Add(USER_ID, userToken)
-		return true;
-	}else {
-		return false;
+		return &userToken, nil
 	}
+
+	return nil, errors.New("It's not a valid user")
+}
+
+func getGoogleUserId(userToken string) (*string, error) {
+
+	res, err := http.Get(GOOGLE_TOKEN_INFO_URL + userToken)
+
+	if isHTTPStatus(http.StatusBadRequest, res, err){
+		log.Printf("Error while validating user token")
+		return nil, err;
+	}
+
+	googleDto := new(GoogleSignInDto)
+	body, _ := ioutil.ReadAll(res.Body)
+	if err := json.Unmarshal(body, googleDto); err != nil {
+		log.Printf("Error while parsing google user token validation response: %s", err)
+		return nil, err
+	}
+
+	userEmail := googleDto.Email
+
+	if googleDto.Email == "" || googleDto.Aud != androidAppClientID {
+		log.Printf("Either email is empty or aud does not match appclientid")
+		return nil, errors.New("Either email is empty or aud does not match appclientid")
+	}
+
+	return &userEmail, nil
+
+}
+
+
+func getFacebookUserId(userToken string) (*string, error) {
+
+	accessToken := os.Getenv(FACEBOOK_ACCESS_TOKEN)
+
+	if strings.Compare(accessToken, "") == 0 {
+		return nil, errors.New("FACEBOOK_ACCESS_TOKEN was not prived as env variable, so facebook validation will not be available")
+	}
+
+	res, err := http.Get(FACEBOOK_TOKEN_INFO_URL + userToken + "&access_token=" + accessToken)
+
+	if isHTTPStatus(http.StatusBadRequest, res, err){
+		log.Printf("Error while validating user token")
+		return nil, err;
+	}
+
+	facebookDto := new(FacebookSignInDto)
+	body, _ := ioutil.ReadAll(res.Body)
+	if err := json.Unmarshal(body, facebookDto); err != nil {
+		log.Printf("Error while parsing google user token validation response: %s", err)
+		return nil, err
+	}
+
+	if facebookDto.Data.Is_valid != true {
+		log.Printf("Facebook user token is not valid")
+		return nil, errors.New("Facebook user token is not valid")
+	}
+
+	userId := facebookDto.User_id
+
+	return &userId, nil
 }

@@ -121,7 +121,6 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 		}
 		fmt.Fprintf(w, "%s", purchasesAsJson)
 	}
-
 }
 
 func (service PurchaseService) handleGetPurchasesByMonth(w http.ResponseWriter, r *http.Request) {
@@ -158,7 +157,6 @@ func (service PurchaseService) handleGetPurchasesByMonth(w http.ResponseWriter, 
 	}
 
 	fmt.Fprintf(w, "%s", purchasesAsJson)
-
 }
 
 func (service PurchaseService) handlePostPurchases(w http.ResponseWriter, r *http.Request) {
