@@ -25,11 +25,11 @@ type GoogleSignInDto struct {
 /*
 {
 "iss": "https://accounts.google.com",
-"aud": "771875379-qbdvrqrjdii0gims9upnuqcqrf6753ei.apps.googleusercontent.com",
+"aud": "771875379-fadfadafaf.apps.googleusercontent.com",
 "sub": "116430566681024790786",
 "email_verified": "true",
-"azp": "771875379-9jlivedf892m5grfq3vec95qdc1phdaa.apps.googleusercontent.com",
-"email": "lagigliaivan@gmail.com",
+"azp": "771875379-fadfadfa.apps.googleusercontent.com",
+"email": "fsdfaf@gmail.com",
 "iat": "1470880462",
 "exp": "1470884062",
 "name": "Ivan Lagiglia",
@@ -37,7 +37,7 @@ type GoogleSignInDto struct {
 "family_name": "Lagiglia",
 "locale": "es-419",
 "alg": "RS256",
-"kid": "104625465f6d4c7d214e3326913c5a5e4505699c"
+"kid": "fadfadfadfadfaf"
 }
 */
 type FacebookDataDto struct {
@@ -59,8 +59,8 @@ type FacebookSignInDto struct {
 /*
 {
 "data": {
-"app_id": "1644514075861990",
-"application": "AhorraYa",
+"app_id": "fadfafd",
+"application": "fadfafd",
 "expires_at": 1476374820,
 "is_valid": true,
 "issued_at": 1471190820,
@@ -71,6 +71,6 @@ type FacebookSignInDto struct {
 "email",
 "public_profile"
 ],
-"user_id": "115690035545503"
+"user_id": "23232323"
 }
 }*/
