@@ -11,6 +11,8 @@ import (
 	"time"
 	"strings"
 //	"github.com/aws/aws-sdk-go/service"
+	"crypto/sha1"
+	"io"
 )
 
 type Service interface {
@@ -181,7 +183,11 @@ func (service PurchaseService) handlePostPurchases(w http.ResponseWriter, r *htt
 		purchasesContainer.Purchases[k].Time = purchases.Time.UTC()
 	}
 
+	//TODO: What if savePurchases fails? Where are we doing the error handling?
 	service.savePurchases(purchasesContainer.Purchases, user)
+
+	go service.saveItems(purchasesContainer.Purchases)
+
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -230,4 +236,25 @@ func (service PurchaseService) savePurchases( purchases []Purchase, userId strin
 	for _, purchase := range purchases {
 		service.db.SavePurchase(purchase, userId)
 	}
+}
+
+func (service PurchaseService) saveItems( purchases []Purchase) map[string] string {
+
+	items := make(map[string] string, len(purchases))
+	sha := sha1.New()
+
+	for _, purchase := range purchases {
+		//service.db.SaveItem()
+
+		for _, item := range purchase.Items{
+			trimmedDescription :=  strings.Replace(strings.TrimSpace(item.Description), " ", "", -1)
+			io.WriteString(sha, trimmedDescription)
+			trimmedItemId := fmt.Sprintf("%x", sha.Sum(nil))
+			items[trimmedItemId] = trimmedDescription
+			sha.Reset()
+
+		}
+	}
+
+	return items
 }

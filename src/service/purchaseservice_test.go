@@ -452,6 +452,49 @@ func Test_DELETE_A_Purchase(t *testing.T) {
 	}
 }
 
+
+func Test_all_purchase_items_are_trimmed_and_space_removed(t *testing.T){
+
+	service := NewPurchaseService(getDB(TESTDB))
+
+	items := service.saveItems(postPurchases.Purchases)
+	log.Printf("%s",items)
+	if len(items) != 4 {
+		log.Printf("Items expected 3, obtained: %d", len(items))
+		t.FailNow()
+	}
+
+
+	val := items["83c379262dd8fc10dea3ebf7097e12ae7a8dff06"]
+
+	if val == "" {
+		log.Printf("Val expected but not prsesent")
+		t.FailNow()
+	}
+
+	val = items["71714c4009f19de8e20a6df8f7a201bdf989af5f"]
+
+	if val == "" {
+		log.Printf("Val expected but not prsesent")
+		t.FailNow()
+	}
+
+	val = items["b70ba6c3070f343131c1f646c41b1aca0c2ea11f"]
+
+	if val == "" {
+		log.Printf("Val expected but not prsesent")
+		t.FailNow()
+	}
+
+	val = items["7d45da213c946480619093d1eea4e7bd402a77b9"]
+
+	if val == "" {
+		log.Printf("Val expected but not prsesent")
+		t.FailNow()
+	}
+
+}
+
 func Test(t *testing.T) {
 	sha := sha1.New()
 	io.WriteString(sha, "lagigliaivan@gmail.com")

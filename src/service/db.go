@@ -79,7 +79,7 @@ func (catDb DynamoDB) SavePurchase( p Purchase, userId string) error {
 
 	tableName := TABLE_PURCHASES
 
-	it := buildDynamoItem(p, userId)
+	it := buildDynamoPurhchaseItem(p, userId)
 
 	putItem := dynamodb.PutItemInput{Item:it, TableName:&tableName}
 
@@ -209,7 +209,7 @@ func (catDb DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.Que
 }
 
 
-func buildDynamoItem(purchase Purchase, user string) map[string]* dynamodb.AttributeValue {
+func buildDynamoPurhchaseItem(purchase Purchase, user string) map[string]* dynamodb.AttributeValue {
 
 	shop := purchase.Shop
 
