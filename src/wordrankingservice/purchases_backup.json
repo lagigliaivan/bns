@@ -1,0 +1,544 @@
+{
+  "purchases": [
+    {
+      "id": "1470091783", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "Alimento perro 1kg", 
+          "id": "22bf543845a25b6ef59fb7870558a9eecea53972", 
+          "price": 49
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "veterinaria", 
+      "time": "2016-08-01T22:49:43Z"
+    }, 
+    {
+      "id": "1470091815", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "Pollo pechuga", 
+          "id": "fee34fea0d0bb91048a350ab21605380075e95db", 
+          "price": 75
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "Grillo", 
+      "time": "2016-08-01T22:50:15Z"
+    }, 
+    {
+      "id": "1470091849", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "Verdura", 
+          "id": "b71c4c694b630b6241ebc3ef92a896fb411f9ae7", 
+          "price": 108
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "verduleria", 
+      "time": "2016-08-01T22:50:49Z"
+    }, 
+    {
+      "id": "1470091958", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "Agua saborizada 600ml", 
+          "id": "e450f29a1e265c041032a5fb38882128d0fd21f0", 
+          "price": 13
+        }, 
+        {
+          "category": "MERCADERIA", 
+          "description": "Chicle topline", 
+          "id": "99cab8664ebef2109dce6407feb8437da5506b60", 
+          "price": 5
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "kiosko", 
+      "time": "2016-08-01T22:52:38Z"
+    }, 
+    {
+      "id": "1470103095", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "Leche sancor descremada sach\u00e9", 
+          "id": "3515e53ac48a3c88e65efb853a9c30e482403d62", 
+          "price": 17
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "Almacen", 
+      "time": "2016-08-02T01:58:15Z"
+    }, 
+    {
+      "id": "1470134914", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "Manteca la Seren\u00edsima 130gr", 
+          "id": "7cae0f5f4ed22f36d5968118948e19882bd12ad8", 
+          "price": 13
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "Almac\u00e9n", 
+      "time": "2016-08-02T10:48:34Z"
+    }, 
+    {
+      "id": "1470165354", 
+      "items": [
+        {
+          "category": "OTROS", 
+          "description": "Tarjeta visa", 
+          "id": "e44b105fa1d18dc8b7a033cad8a0193bd69cf785", 
+          "price": 307.36
+        }, 
+        {
+          "category": "SERVICIOS", 
+          "description": "Movistar", 
+          "id": "250a90330e9bfbf25d921cfc23e646ce267f90dd", 
+          "price": 271.14
+        }, 
+        {
+          "category": "SERVICIOS", 
+          "description": "Aguas cordobesas", 
+          "id": "bb9904a0b4ae37af842f8a257f58213d93d1bc99", 
+          "price": 116.9
+        }, 
+        {
+          "category": "IMPUESTOS", 
+          "description": "Municipalidad de C\u00f3rdoba", 
+          "id": "c9096fad3b7f3f6bbbbeb244cf69906495284773", 
+          "price": 193
+        }, 
+        {
+          "category": "OTROS", 
+          "description": "Seguro auto", 
+          "id": "d4cbd4a5ebc187a5cdec2c88dee6fbc8071c4b99", 
+          "price": 809
+        }, 
+        {
+          "category": "SERVICIOS", 
+          "description": "Ecogas", 
+          "id": "933a09d95d73991dea78d70dc81d499d010ebb76", 
+          "price": 57.34
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "pagomiscuentad", 
+      "time": "2016-08-02T19:15:54Z"
+    }, 
+    {
+      "id": "1470192700", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "Vino fuego negro", 
+          "id": "179c175d205590fedc01ba0f91c757d2a1931626", 
+          "price": 70
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "vineria esquina casa", 
+      "time": "2016-08-03T02:51:40Z"
+    }, 
+    {
+      "id": "1470279287", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "Pan", 
+          "id": "8c9ce33191cd11f4df017eec0a178e17dde2bb68", 
+          "price": 15.11
+        }, 
+        {
+          "category": "MERCADERIA", 
+          "description": "Queso sancor", 
+          "id": "b40d5cf745ade72b2256359a7f37067fbc73c715", 
+          "price": 52.9
+        }, 
+        {
+          "category": "MERCADERIA", 
+          "description": "Vino familia gascon", 
+          "id": "cdbe9b45530dd8adcf9bb66dfd5fdcdfb20da71a", 
+          "price": 94.9
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "mariano max", 
+      "time": "2016-08-04T02:54:47Z"
+    }, 
+    {
+      "id": "1470514875", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "Vino tinto elementos", 
+          "id": "cf6dc0c32dd646e60cd0313eee7ad99c8e4d940a", 
+          "price": 69.9
+        }, 
+        {
+          "category": "MERCADERIA", 
+          "description": "Queso cremoso sue\u00f1o", 
+          "id": "48319a60b4f1510d2f224bdb466f5e8cb604d46e", 
+          "price": 11.5
+        }, 
+        {
+          "category": "MERCADERIA", 
+          "description": "Jam\u00f3n cocido piamontesa 150gt", 
+          "id": "dce7c45f5eebfac0a4990c5909986f54b7b56924", 
+          "price": 25.11
+        }, 
+        {
+          "category": "MERCADERIA", 
+          "description": "Rollo cocina cartabella", 
+          "id": "9e9fdf9d3b9b0ca706a23b819e5b54d40f1b199c", 
+          "price": 20.47
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "Almacor", 
+      "time": "2016-08-06T20:21:15Z"
+    }, 
+    {
+      "id": "1470529876", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "manteca la caba\u00f1a 200gr", 
+          "id": "ac89876ede16a5f579ee8c874bd4e80bd18fb3ee", 
+          "price": 21.37
+        }, 
+        {
+          "category": "MERCADERIA", 
+          "description": "costeleta almacor", 
+          "id": "8000c386381808ee850446ef153e42d1822cc55b", 
+          "price": 30.42
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "almacor", 
+      "time": "2016-08-07T00:31:16Z"
+    }, 
+    {
+      "id": "1470582526", 
+      "items": [
+        {
+          "category": "OTROS", 
+          "description": "gas auto matias", 
+          "id": "167d5b6a22ca6e54255c49dcaa192c31a69ed19c", 
+          "price": 50
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "No especificado", 
+      "time": "2016-08-07T15:08:46Z"
+    }, 
+    {
+      "id": "1470616805", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "Mortadela paladini 200gr", 
+          "id": "0e5947173523add4b414572da0cc448164722aab", 
+          "price": 22.92
+        }, 
+        {
+          "category": "MERCADERIA", 
+          "description": "Queso roquefort 114gr", 
+          "id": "5c5a6ff4ad4d5a4c62baf966249a1c6829c5456d", 
+          "price": 28.87
+        }, 
+        {
+          "category": "MERCADERIA", 
+          "description": "Queso Holanda 200gr", 
+          "id": "70f2443d4d6ba460146f3f03d85ccaf20cbf8140", 
+          "price": 29.8
+        }, 
+        {
+          "category": "MERCADERIA", 
+          "description": "Pan salvado 358gr", 
+          "id": "d0406dba22d58f8793ace1eb82c77e0f8de3a50c", 
+          "price": 8.41
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "Libertad", 
+      "time": "2016-08-08T00:40:05Z"
+    }, 
+    {
+      "id": "1470704528", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "verdura", 
+          "id": "c63cd472abf9002e72962ae8eb5f037d92507578", 
+          "price": 36
+        }, 
+        {
+          "category": "MERCADERIA", 
+          "description": "huevos 1doc", 
+          "id": "532923453c8bcda3fa61e4a90ef0f0934d016795", 
+          "price": 32
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "verduleria abajo", 
+      "time": "2016-08-09T01:02:08Z"
+    }, 
+    {
+      "id": "1470779693", 
+      "items": [
+        {
+          "category": "OTROS", 
+          "description": "Nafta shell super", 
+          "id": "5525884e82a90114ec583b05868154e3000c573f", 
+          "price": 790.14
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "shell juan b justo", 
+      "time": "2016-08-09T21:54:53Z"
+    }, 
+    {
+      "id": "1470780257", 
+      "items": [
+        {
+          "category": "OTROS", 
+          "description": "Cochera", 
+          "id": "0db4f18c5c62dbabb3343e9a3b788229ff40fb5b", 
+          "price": 1100
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "Cochera", 
+      "time": "2016-08-09T22:04:17Z"
+    }, 
+    {
+      "id": "1470780288", 
+      "items": [
+        {
+          "category": "OTROS", 
+          "description": "Gimnasio bjj", 
+          "id": "1d9bf2cba112375e20850790644a3c24579e59e9", 
+          "price": 480
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "Gimnasio", 
+      "time": "2016-08-09T22:04:48Z"
+    }, 
+    {
+      "id": "1470780806", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "Alimento laila", 
+          "id": "7c9a4938132546cd298549517fc4fc23bae47f94", 
+          "price": 100
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "No especificado", 
+      "time": "2016-08-09T22:13:26Z"
+    }, 
+    {
+      "id": "1470794296", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "carne 2 bifes", 
+          "id": "963c7f8625a0da13f9e6209b7c9cdca1d53f410d", 
+          "price": 40
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "el grillo", 
+      "time": "2016-08-10T01:58:16Z"
+    }, 
+    {
+      "id": "1470871326", 
+      "items": [
+        {
+          "category": "OTROS", 
+          "description": "Expensas", 
+          "id": "2e4a6091d76ddb95c3854f7581bc933d067d7fd6", 
+          "price": 832
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "No especificado", 
+      "time": "2016-08-10T23:22:06Z"
+    }, 
+    {
+      "id": "1470872320", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "Vino misterio", 
+          "id": "690b15d4f8d1d4e866cc5250916cb9aafebd18b1", 
+          "price": 80
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "vineria don ciriaco", 
+      "time": "2016-08-10T23:38:40Z"
+    }, 
+    {
+      "id": "1470960037", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "Carne tapa de asado", 
+          "id": "b672c3011133a805c41000e42e8f89ba967212f7", 
+          "price": 91
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "El grillo", 
+      "time": "2016-08-12T00:00:37Z"
+    }, 
+    {
+      "id": "1470965846", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "lechuga", 
+          "id": "827c7065857c9958809807a898128ab455fe1161", 
+          "price": 13
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "verduleria abajo", 
+      "time": "2016-08-12T01:37:26Z"
+    }, 
+    {
+      "id": "1471046070", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "vino altos las hormigas", 
+          "id": "9ac8202765149f532d2a7a82f85861350256f5f5", 
+          "price": 150
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "don Nicanor", 
+      "time": "2016-08-12T23:54:30Z"
+    }, 
+    {
+      "id": "1471046218", 
+      "items": [
+        {
+          "category": "MERCADERIA", 
+          "description": "jam\u00f3n cocido Paladini 150gr", 
+          "id": "81d7f612f6c332d3f1967ac452f62023030c69e9", 
+          "price": 17.5
+        }, 
+        {
+          "category": "MERCADERIA", 
+          "description": "queso roquefort", 
+          "id": "a72d58f6c8ae889a5e7a2bf8c65259d47b71e7b5", 
+          "price": 20.9
+        }, 
+        {
+          "category": "MERCADERIA", 
+          "description": "queso cremoso manfrey", 
+          "id": "13866c94380c18546dee3e3b0468e3767ec8c898", 
+          "price": 36.81
+        }, 
+        {
+          "category": "MERCADERIA", 
+          "description": "vinagre favinco", 
+          "id": "153a9eb2796aa197a95d61183a6de59622ff5e22", 
+          "price": 15.77
+        }
+      ], 
+      "location": {
+        "Lat": 0, 
+        "Long": 0
+      }, 
+      "shop": "almacor", 
+      "time": "2016-08-12T23:56:58Z"
+    }
+  ]
+}
+

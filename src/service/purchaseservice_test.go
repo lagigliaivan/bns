@@ -22,7 +22,7 @@ const (
 	DYNAMODB = 1
 	MEMORYDB = 2
 
-	TESTDB = DYNAMODB    //Change here to test services by using either mem or dynamo db
+	TESTDB = MEMORYDB    //Change here to test services by using either mem or dynamo db
 )
 
 func init() {
@@ -444,9 +444,25 @@ func Test_DELETE_A_Purchase(t *testing.T) {
 	}
 }
 
+func Test_items_ids_are_generated_from_their_trimmed_and_lower_case_description(t *testing.T){
 
-func Test_all_purchase_items_are_trimmed_and_space_removed(t *testing.T){
 
+	 itemsIds := [...]string { "83c379262dd8fc10dea3ebf7097e12ae7a8dff06",
+		              	   "71714c4009f19de8e20a6df8f7a201bdf989af5f",
+	                           "b70ba6c3070f343131c1f646c41b1aca0c2ea11f",
+	 	                   "7d45da213c946480619093d1eea4e7bd402a77b9"}
+
+
+
+	containsId := func (itemsDescriptions []ItemDescription, valueToFind string) bool{
+		for _, v := range itemsDescriptions{
+			if strings.Compare(v.ItemId, valueToFind) == 0 {
+				return true
+			}
+		}
+
+		return false
+	}
 
 	purchases := getIdentifiablePurchases(postPurchases.Purchases)
 	items := getItemsDescriptions(purchases)
@@ -458,38 +474,17 @@ func Test_all_purchase_items_are_trimmed_and_space_removed(t *testing.T){
 		t.FailNow()
 	}
 
+	for _, id := range itemsIds {
 
-	/*val := items["83c379262dd8fc10dea3ebf7097e12ae7a8dff06"]
-
-	if val == "" || strings.Compare(val, "second product") != 0 {
-		log.Printf("Val expected but not prsesent")
-		t.FailNow()
+		if !containsId(items, id) {
+			log.Printf("Val expected but not prsesent")
+			t.FailNow()
+		}
 	}
-
-	val = items["71714c4009f19de8e20a6df8f7a201bdf989af5f"]
-
-	if val == "" || strings.Compare(val, "third product") != 0{
-		log.Printf("Val expected but not prsesent")
-		t.FailNow()
-	}
-
-	val = items["b70ba6c3070f343131c1f646c41b1aca0c2ea11f"]
-
-	if val == "" || strings.Compare(val, "first product") != 0{
-		log.Printf("Val expected but not prsesent")
-		t.FailNow()
-	}
-
-	val = items["7d45da213c946480619093d1eea4e7bd402a77b9"]
-
-	if val == "" || strings.Compare(val, "fourth product") != 0{
-		log.Printf("Val expected but not prsesent")
-		t.FailNow()
-	}*/
 
 }
 
-func Test_get_items(t *testing.T)  {
+func Test_that_items_descriptions_are_being_saved(t *testing.T)  {
 
 	service := NewPurchaseService(getDB(TESTDB))
 	server := getServer(service)
@@ -518,9 +513,39 @@ func Test_get_items(t *testing.T)  {
 		t.FailNow()
 	}
 
-	log.Printf("%s" , itemsDescriptions)
+	count := 0
 
+	for _, _ = range *itemsDescriptions {
+		count++
+	}
+
+	if count != 4 {
+		log.Printf("Expected size 4 but %d", count)
+	}
+
+	containsDescriptions := func (itemsDescriptions []ItemDescription, valueToFind string) bool{
+		for _, v := range itemsDescriptions{
+			if strings.Compare(v.Description, valueToFind) == 0 {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	for _, purchase := range postPurchases.Purchases {
+		for _, item := range purchase.Items{
+			if !containsDescriptions( *itemsDescriptions ,item.Description) {
+				log.Printf("Items descriptions was not saved")
+				t.FailNow()
+			}
+		}
+	}
+
+	log.Printf("%s" , itemsDescriptions)
 }
+
+
 //For the moment there is not a more practical way to use, later,
 //the user email as ID in DB. So, what I'm doing is to add it in a http header :(
 
