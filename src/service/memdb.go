@@ -14,16 +14,24 @@ type items map[string] Item
 type Mem_DB struct {
 	lockI *sync.RWMutex
 	lockP  *sync.RWMutex
+	lockItemDesc *sync.RWMutex
+
 	items items
 	purchasesByUser  map[string] map[time.Month] map[string]Purchase
+	user_itemsDescriptions  map[string] []ItemDescription
+
 }
 
 func NewMemDb() *Mem_DB {
+
 	db := new(Mem_DB)
 	db.items = make(map[string]Item)
 	db.purchasesByUser = make (map[string] map[time.Month] map[string]Purchase)
+	db.user_itemsDescriptions = make(map[string] []ItemDescription)
 	db.lockP = new(sync.RWMutex)
 	db.lockI = new(sync.RWMutex)
+	db.lockItemDesc = new(sync.RWMutex)
+
 	return  db
 }
 
@@ -130,4 +138,30 @@ func (db Mem_DB) DeletePurchase(userId string, id string) {
 		}
 	}
 
+}
+
+func (db Mem_DB) SaveItemsDescriptions(userId string, itemsDescriptions []ItemDescription)  error {
+
+	db.lockItemDesc.Lock()
+	defer db.lockItemDesc.Unlock()
+
+	descriptions := db.user_itemsDescriptions[userId]
+
+	if descriptions == nil {
+		descriptions = []ItemDescription{}
+	}
+
+	for _, itemsDescription := range itemsDescriptions {
+		//descriptions[itemsDescription.ItemId] = itemsDescription.Description
+
+		descriptions = append(descriptions, ItemDescription{ItemId:itemsDescription.ItemId, Description:itemsDescription.Description})
+	}
+	db.user_itemsDescriptions[userId] = descriptions
+
+	return nil
+}
+
+func (db Mem_DB) GetItemsDescriptions (user string) ([]ItemDescription, error) {
+
+	return db.user_itemsDescriptions[user], nil
 }

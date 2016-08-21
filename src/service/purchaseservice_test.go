@@ -22,7 +22,7 @@ const (
 	DYNAMODB = 1
 	MEMORYDB = 2
 
-	TESTDB = MEMORYDB    //Change here to test services by using either mem or dynamo db
+	TESTDB = DYNAMODB    //Change here to test services by using either mem or dynamo db
 )
 
 func init() {
@@ -65,22 +65,18 @@ var (
 	itemsPurchaseA = []Item{
 
 		{
-			Id: "1",
 			Description: "first product",
 			Price: 2.0,
 		},
 		{
-			Id: "2",
 			Description: "second product",
 			Price: 34.0,
 		},
 		{
-			Id: "3",
 			Description: "third product",
 			Price: 332.0,
 		},
 		{
-			Id: "4",
 			Description: "fourth product",
 			Price: 22.0,
 		},
@@ -89,22 +85,18 @@ var (
 	itemsPurchaseB = []Item{
 
 		{
-			Id: "100",
 			Description: "first product",
 			Price: 122.0,
 		},
 		{
-			Id: "200",
 			Description: "second product",
 			Price: 314.0,
 		},
 		{
-			Id: "300",
 			Description: "third product",
 			Price: 3212.0,
 		},
 		{
-			Id: "400",
 			Description: "fourth product",
 			Price: 212.0,
 		},
@@ -455,9 +447,11 @@ func Test_DELETE_A_Purchase(t *testing.T) {
 
 func Test_all_purchase_items_are_trimmed_and_space_removed(t *testing.T){
 
-	service := NewPurchaseService(getDB(TESTDB))
 
-	items := service.saveItems(postPurchases.Purchases)
+	purchases := getIdentifiablePurchases(postPurchases.Purchases)
+	items := getItemsDescriptions(purchases)
+
+
 	log.Printf("%s",items)
 	if len(items) != 4 {
 		log.Printf("Items expected 3, obtained: %d", len(items))
@@ -465,43 +459,68 @@ func Test_all_purchase_items_are_trimmed_and_space_removed(t *testing.T){
 	}
 
 
-	val := items["83c379262dd8fc10dea3ebf7097e12ae7a8dff06"]
+	/*val := items["83c379262dd8fc10dea3ebf7097e12ae7a8dff06"]
 
-	if val == "" {
+	if val == "" || strings.Compare(val, "second product") != 0 {
 		log.Printf("Val expected but not prsesent")
 		t.FailNow()
 	}
 
 	val = items["71714c4009f19de8e20a6df8f7a201bdf989af5f"]
 
-	if val == "" {
+	if val == "" || strings.Compare(val, "third product") != 0{
 		log.Printf("Val expected but not prsesent")
 		t.FailNow()
 	}
 
 	val = items["b70ba6c3070f343131c1f646c41b1aca0c2ea11f"]
 
-	if val == "" {
+	if val == "" || strings.Compare(val, "first product") != 0{
 		log.Printf("Val expected but not prsesent")
 		t.FailNow()
 	}
 
 	val = items["7d45da213c946480619093d1eea4e7bd402a77b9"]
 
-	if val == "" {
+	if val == "" || strings.Compare(val, "fourth product") != 0{
 		log.Printf("Val expected but not prsesent")
+		t.FailNow()
+	}*/
+
+}
+
+func Test_get_items(t *testing.T)  {
+
+	service := NewPurchaseService(getDB(TESTDB))
+	server := getServer(service)
+	defer server.Close()
+
+	res, err := httpPost(user1, getURL(server.URL), postPurchases)
+
+	if !isHTTPStatus(http.StatusCreated, res, err){
+		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
 		t.FailNow()
 	}
 
+	res, err = httpGet(user1, server.URL + "/catalog/items")
+
+	if err != nil {
+		log.Printf("Error %s", err.Error())
+		t.FailNow()
+	}
+
+	itemsDescriptions := new ([]ItemDescription)
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err := json.Unmarshal(body, itemsDescriptions); err != nil {
+
+		log.Printf("Error when reading response %s", err)
+		t.FailNow()
+	}
+
+	log.Printf("%s" , itemsDescriptions)
+
 }
-
-func Test(t *testing.T) {
-	sha := sha1.New()
-	io.WriteString(sha, "lagigliaivan@gmail.com")
-
-	log.Printf("user: %s", fmt.Sprintf("%x", sha.Sum(nil)))
-}
-
 //For the moment there is not a more practical way to use, later,
 //the user email as ID in DB. So, what I'm doing is to add it in a http header :(
 

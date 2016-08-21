@@ -75,6 +75,12 @@ func (service PurchaseService) ConfigureRouter(router *mux.Router) {
 			"/purchases/{id}",
 			service.handleDeletePurchase,
 		},
+		Route{
+			"get_items_description",
+			"GET",
+			"/items",
+			service.handleGetItemsDescription,
+		},
 	}
 
 	for _, route := range routes {
@@ -174,19 +180,13 @@ func (service PurchaseService) handlePostPurchases(w http.ResponseWriter, r *htt
 		return
 	}
 
-	for k, purchases := range purchasesContainer.Purchases {
+	purchases := getIdentifiablePurchases(purchasesContainer.Purchases)
 
-		if strings.Compare(purchases.Id, "") == 0 {
-			purchasesContainer.Purchases[k].Id = fmt.Sprintf("%d", purchases.Time.UTC().Unix())
-		}
 
-		purchasesContainer.Purchases[k].Time = purchases.Time.UTC()
-	}
+	//TODO: What if savePurchases fails? Where are we handling the error?
+	service.savePurchases(user, purchases)
 
-	//TODO: What if savePurchases fails? Where are we doing the error handling?
-	service.savePurchases(purchasesContainer.Purchases, user)
-
-	go service.saveItems(purchasesContainer.Purchases)
+	go service.saveItemsDescriptions(user, purchases)
 
 	w.WriteHeader(http.StatusCreated)
 }
@@ -230,7 +230,8 @@ func (service PurchaseService) getPurchasesByMonth(user string, year int) map[ti
 	return  sortedPurchases;
 }
 
-func (service PurchaseService) savePurchases( purchases []Purchase, userId string)  {
+func (service PurchaseService) savePurchases( userId string, purchases []Purchase)  {
+
 	log.Printf("Saving items in  DB")
 
 	for _, purchase := range purchases {
@@ -238,23 +239,88 @@ func (service PurchaseService) savePurchases( purchases []Purchase, userId strin
 	}
 }
 
-func (service PurchaseService) saveItems( purchases []Purchase) map[string] string {
+func (service PurchaseService) saveItemsDescriptions(userId string, purchases []Purchase){
 
-	items := make(map[string] string, len(purchases))
-	sha := sha1.New()
+	items_descriptions := getItemsDescriptions(purchases)
+
+	service.db.SaveItemsDescriptions(userId, items_descriptions)
+}
+
+
+func (service PurchaseService) handleGetItemsDescription(w http.ResponseWriter, r *http.Request) {
+
+	user := r.Header.Get(USER_ID)
+
+	itemsDescriptions, _ := service.db.GetItemsDescriptions(user)
+
+
+	itemsDescriptionsAsJson, err := json.Marshal(itemsDescriptions)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("Error when creating the reponse, I'm sorry. %s", err)
+	}
+
+	fmt.Fprintf(w, "%s", itemsDescriptionsAsJson)
+}
+
+func getItemsDescriptions( purchases []Purchase) []ItemDescription {
+
+	items_descriptions := make(map[string] string)
+	itemsDescriptions := []ItemDescription{}
 
 	for _, purchase := range purchases {
-		//service.db.SaveItem()
 
 		for _, item := range purchase.Items{
-			trimmedDescription :=  strings.Replace(strings.TrimSpace(item.Description), " ", "", -1)
-			io.WriteString(sha, trimmedDescription)
-			trimmedItemId := fmt.Sprintf("%x", sha.Sum(nil))
-			items[trimmedItemId] = trimmedDescription
-			sha.Reset()
-
+			items_descriptions[item.Id] = strings.ToLower(item.Description)
 		}
 	}
 
-	return items
+	for k, v := range items_descriptions{
+		itemsDescriptions = append(itemsDescriptions, ItemDescription{ItemId:k, Description:v})
+	}
+
+
+	return itemsDescriptions
+}
+
+
+func getIdentifiablePurchases(purchases []Purchase) []Purchase{
+
+	identifiable := purchases
+
+	for k, purchase := range identifiable {
+
+
+		if strings.Compare(purchase.Id, "") == 0 {
+
+			if purchase.Time.IsZero() {
+				purchase.Time = time.Now()
+			}
+
+			identifiable[k].Id = fmt.Sprintf("%d", purchase.Time.UTC().Unix())
+		}
+
+		identifiable[k].Time = purchase.Time.UTC()
+
+		for k, item := range purchase.Items {
+			purchase.Items[k].Id = trimAndSha(item.Description);
+		}
+	}
+
+	return identifiable
+}
+
+func trimAndSha(value string) string {
+
+	sha := sha1.New()
+	defer sha.Reset()
+
+	//trim and remove spaces
+	trimmedAndLowDescription :=  strings.Replace(strings.TrimSpace(value), " ", "", -1)
+	// convert to lower case
+	trimmedAndLowDescription = strings.ToLower(trimmedAndLowDescription)
+	io.WriteString(sha, trimmedAndLowDescription)
+
+	return fmt.Sprintf("%x", sha.Sum(nil))
 }

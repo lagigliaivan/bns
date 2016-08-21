@@ -36,6 +36,7 @@ func (item Item) ToJsonString() string{
 	return string(itemAsJson)
 }
 
+
 type ItemContainer struct {
 
 	Items []Item  `json:"items"`
@@ -153,4 +154,11 @@ func NewPoint(lat, long float64) Point {
 func (point Point) toString() string {
 	return fmt.Sprintf("%s %s", point.Lat, point.Long)
 
+}
+
+
+type ItemDescription struct {
+
+	ItemId string `json:"itemid"`
+	Description string `json:"description"`
 }
