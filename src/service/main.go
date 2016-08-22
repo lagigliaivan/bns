@@ -152,6 +152,10 @@ func getMailUserId(userToken string) (*string, error){
 
 func getGoogleUserId(userToken string) (*string, error) {
 
+	if strings.Compare(userToken, "") == 0{
+		return nil, errors.New("user token cannot be emtpy, sorry.")
+	}
+	
 	res, err := http.Get(GOOGLE_TOKEN_INFO_URL + userToken)
 
 	if isHTTPStatus(http.StatusBadRequest, res, err){
