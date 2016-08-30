@@ -161,4 +161,5 @@ type ItemDescription struct {
 
 	ItemId string `json:"itemid"`
 	Description string `json:"description"`
+	Quantity string `json:quantity`
 }

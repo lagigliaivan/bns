@@ -163,7 +163,6 @@ func (db DynamoDB) DeletePurchase(user string, id string)  {
 
 }
 
-
 func (db DynamoDB) SaveItemsDescriptions(userId string, itemsDescriptions []ItemDescription )  error {
 
 	tableName := TABLE_ITEMS_DESCRIPTIONS
@@ -172,15 +171,32 @@ func (db DynamoDB) SaveItemsDescriptions(userId string, itemsDescriptions []Item
 
 		it := buildDynamoItemDescriptionItem(itemDescription.ItemId, itemDescription.Description, userId)
 
-		putItem := dynamodb.PutItemInput{Item:it, TableName:&tableName}
+		updateItem := dynamodb.UpdateItemInput{
+			Key:it,
+			TableName:&tableName,
 
-		_, err := db.svc.PutItem(&putItem)
+			UpdateExpression:aws.String("SET itemcount = if_not_exists(itemcount, :init) + :incr, description = :descr"),
+			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				":incr": {
+					N:  aws.String("1"),
+				},
+				":init": {
+					N:  aws.String("0"),
+				},
+				":descr": {
+					S:  aws.String(itemDescription.Description),
+				},
+			},
+
+		}
+
+		_, err := db.svc.UpdateItem(&updateItem)
 
 		if err != nil {
 			log.Println(err)
 			return err
 		}
-		log.Printf("Saving item for user:%s itemid:%s description:%s", userId, itemDescription.ItemId, itemDescription.Description)
+		//log.Printf("Saving item for user:%s itemid:%s description:%s", userId, itemDescription.ItemId, itemDescription.Description)
 	}
 
 
@@ -309,10 +325,10 @@ func buildDynamoItemDescriptionItem(itemId string, description string, user stri
 		},
 		"itemid": {
 			S: aws.String(itemId),
-		},
+		},/*
 		"description": {
 			S: aws.String(description),
-		},
+		},*/
 	}
 
 	return it
@@ -352,7 +368,9 @@ func getItemsDescription(awsResponse *dynamodb.QueryOutput) []ItemDescription {
 
 	for _, item := range awsResponse.Items{
 
-		itemDesc := ItemDescription{ItemId:*(item["itemid"].S), Description:*(item["description"].S)}
+		itemDesc := ItemDescription{ItemId:*(item["itemid"].S), Description:*(item["description"].S), Quantity:*(item["itemcount"].N)}
+		log.Printf("item: %s", itemDesc)
+		//itemDesc := ItemDescription{ItemId:*(item["itemid"].S),Quantity:*(item["itemcount"].N)}
 		itemsDescriptions = append(itemsDescriptions, itemDesc)
 
 	}

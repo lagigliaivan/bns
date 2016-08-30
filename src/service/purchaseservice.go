@@ -186,7 +186,7 @@ func (service PurchaseService) handlePostPurchases(w http.ResponseWriter, r *htt
 	//TODO: What if savePurchases fails? Where are we handling the error?
 	service.savePurchases(user, purchases)
 
-	go service.saveItemsDescriptions(user, purchases)
+	service.saveItemsDescriptions(user, purchases)
 
 	w.WriteHeader(http.StatusCreated)
 }
