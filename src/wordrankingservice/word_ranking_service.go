@@ -8,6 +8,7 @@ import (
 	"os"
 	"io/ioutil"
 	"encoding/json"
+	"strconv"
 )
 
 const (
@@ -68,7 +69,7 @@ func (service WordRankingService) handlePostWordRankingCalculation (w http.Respo
 func (service WordRankingService) calculateWordRankingFor (userId string){
 
 
-	file, err := os.Open("./purchases_backup.json") // For read access.
+	file, err := os.Open("./items.json") // For read access.
 
 	if err != nil {
 		log.Printf("mock data file could not be opened.")
@@ -78,9 +79,9 @@ func (service WordRankingService) calculateWordRankingFor (userId string){
 
 	body, err := ioutil.ReadAll(file)
 
-	purchaseContainer := new (PurchaseContainer)
+	items := new ([]ItemDescription)
 
-	if err := json.Unmarshal(body, purchaseContainer); err != nil {
+	if err := json.Unmarshal(body, &items); err != nil {
 
 		log.Printf("Error when reading response %s", err)
 		return
@@ -90,18 +91,18 @@ func (service WordRankingService) calculateWordRankingFor (userId string){
 	wordsRanking := make (map[string] int)
 
 
-	for _, purchase := range purchaseContainer.Purchases {
+	for _, item := range *items {
+		itemRepetition, _ := strconv.Atoi(item.Quantity)
+		words := strings.Split(item.Description, " ")
 
-		for _, item := range purchase.Items {
+		for _, word := range words {
 
-			words := strings.Split(item.Description, " ")
-
-			for _, word := range words {
-
-				toLow := strings.ToLower(word)
-				wordsRanking[toLow] = wordsRanking[toLow] + 1
+			toLowCases := strings.ToLower(word)
+			if len(toLowCases) > 2 {
+				wordsRanking[toLowCases] = wordsRanking[toLowCases] + (1 * itemRepetition)
 			}
 		}
+
 
 	}
 

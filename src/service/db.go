@@ -196,7 +196,6 @@ func (db DynamoDB) SaveItemsDescriptions(userId string, itemsDescriptions []Item
 			log.Println(err)
 			return err
 		}
-		//log.Printf("Saving item for user:%s itemid:%s description:%s", userId, itemDescription.ItemId, itemDescription.Description)
 	}
 
 

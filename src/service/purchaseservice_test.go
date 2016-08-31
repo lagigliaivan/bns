@@ -497,6 +497,8 @@ func Test_that_items_descriptions_are_being_saved(t *testing.T)  {
 		t.FailNow()
 	}
 
+	time.Sleep(1000 * time.Millisecond)
+
 	res, err = httpGet(user1, server.URL + "/catalog/items")
 
 	if err != nil {
@@ -513,7 +515,7 @@ func Test_that_items_descriptions_are_being_saved(t *testing.T)  {
 		t.FailNow()
 	}
 
-	/*count := 0
+	count := 0
 
 	for _, _ = range *itemsDescriptions {
 		count++
@@ -522,8 +524,7 @@ func Test_that_items_descriptions_are_being_saved(t *testing.T)  {
 	if count != 4 {
 		log.Printf("Expected size 4 but %d", count)
 	}
-*/
-	/*containsDescriptions := func (itemsDescriptions []ItemDescription, valueToFind string) bool{
+	containsDescriptions := func (itemsDescriptions []ItemDescription, valueToFind string) bool{
 		for _, v := range itemsDescriptions{
 			if strings.Compare(v.Description, valueToFind) == 0 {
 				return true
@@ -540,9 +541,9 @@ func Test_that_items_descriptions_are_being_saved(t *testing.T)  {
 				t.FailNow()
 			}
 		}
-	}*/
+	}
 
-	log.Printf("%s" , itemsDescriptions)
+	log.Printf("%s" , body)
 }
 
 
