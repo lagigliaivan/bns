@@ -142,8 +142,6 @@ func (service PurchaseService) handleGetPurchaseById(w http.ResponseWriter, r *h
 
 	user := r.Header.Get(USER_ID)
 
-
-	//params := r.URL.Query()
 	vars := mux.Vars(r)
 	id := vars["id"]
 
@@ -162,7 +160,7 @@ func (service PurchaseService) handleGetPurchaseById(w http.ResponseWriter, r *h
 		log.Printf("Error while marshalling GetPurchase response")
 		return
 	}
-	
+
 	fmt.Fprintf(w, "%s", purchaseAsJson)
 }
 
