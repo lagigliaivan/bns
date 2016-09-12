@@ -103,6 +103,13 @@ func (db Mem_DB) GetPurchases(userId string) []Purchase  {
 	return purchases
 }
 
+func (db Mem_DB) GetPurchase(userId string, purchaseId string) Purchase  {
+
+	purchase := Purchase{}
+
+	return purchase
+}
+
 func (db Mem_DB) GetPurchasesByMonth(userId string, year int) map[time.Month] []Purchase  {
 
 	purchases := make(map[time.Month] []Purchase)

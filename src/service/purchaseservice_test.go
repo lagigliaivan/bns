@@ -22,7 +22,7 @@ const (
 	DYNAMODB = 1
 	MEMORYDB = 2
 
-	TESTDB = DYNAMODB    //Change here to test services by using either mem or dynamo db
+	TESTDB = MEMORYDB    //Change here to test services by using either mem or dynamo db
 )
 
 func init() {
@@ -298,6 +298,76 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 
 }
 
+
+func Test_GET_A_Purchase_By_Id_Returns_It_If_It_Exists(t *testing.T) {
+
+
+	server := getServer(NewPurchaseService(getDB(TESTDB)))
+	defer server.Close()
+
+	res, err := httpPost(user1, getURL(server.URL), postPurchases)
+
+	if !isHTTPStatus(http.StatusCreated, res, err){
+		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
+		t.FailNow()
+	}
+
+	res, err = httpGet(user1, getURL(server.URL))
+
+	if !isHTTPStatus(http.StatusOK, res, err){
+		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
+		t.FailNow()
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		log.Fatal("Error")
+		t.FailNow()
+	}
+
+	purchases := new(PurchaseContainer)
+
+	if err := json.Unmarshal(body, purchases); err != nil {
+
+		log.Printf("Error when reading response %s", err)
+		t.FailNow()
+	}
+
+	for _, v := range (*purchases).Purchases {
+
+		res, err = httpGet(user1, getURL(server.URL) + "/" + v.Id)
+		if err != nil {
+			log.Fatal("Error")
+			t.FailNow()
+		}
+
+		if !isHTTPStatus(http.StatusOK, res, err){
+			log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
+			t.FailNow()
+		}
+
+		purchase := new(Purchase)
+
+		if err := json.Unmarshal(body, purchase); err != nil {
+
+			log.Printf("Error when reading response %s", err)
+			t.FailNow()
+		}
+
+		if err != nil {
+			log.Fatal("Error")
+			t.FailNow()
+		}
+
+		if purchase.Id !=  v.Id{
+			log.Printf("Error, returned purchase id does not match the expected one.")
+			t.FailNow()
+		}
+
+	}
+}
+
 func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_By_Month(t *testing.T) {
 
 	server := getServer(NewPurchaseService(getDB(TESTDB)))
@@ -464,7 +534,7 @@ func Test_items_ids_are_generated_from_their_trimmed_and_lower_case_description(
 		return false
 	}
 
-	purchases := getIdentifiablePurchases(postPurchases.Purchases)
+	purchases := addPurchasesIds(postPurchases.Purchases)
 	items := getItemsDescriptions(purchases)
 
 

@@ -64,6 +64,12 @@ func (service PurchaseService) ConfigureRouter(router *mux.Router) {
 			service.handleGetPurchases,
 		},
 		Route{
+			"get_purchases",
+			"GET",
+			"/purchases/{id}",
+			service.handleGetPurchaseById,
+		},
+		Route{
 			"post_purchases",
 			"POST",
 			"/purchases",
@@ -131,6 +137,29 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 	}
 }
 
+
+func (service PurchaseService) handleGetPurchaseById(w http.ResponseWriter, r *http.Request) {
+
+	user := r.Header.Get(USER_ID)
+	params := r.URL.Query()
+
+
+	purchasesSortedByMonth := service.getPurchasesSortedByMonth(user, year)
+
+	purchase := Purchase{Id:"12345"}
+
+	purchaseAsJson, err := json.Marshal(purchase)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("Error")
+		return
+	}
+
+	log.Printf("Returning purchase id")
+	fmt.Fprintf(w, "%s", purchaseAsJson)
+}
+
 func (service PurchaseService) handleGetPurchasesByMonth(w http.ResponseWriter, r *http.Request) {
 
 	user := r.Header.Get(USER_ID)
@@ -142,15 +171,15 @@ func (service PurchaseService) handleGetPurchasesByMonth(w http.ResponseWriter, 
 		year = params["year"]
 	}*/
 
-	var purchasesByMonth map[time.Month] []Purchase
+	var purchasesSortedByMonth map[time.Month] []Purchase
 
 
-	purchasesByMonth = service.getPurchasesByMonth(user, year)
+	purchasesSortedByMonth = service.getPurchasesSortedByMonth(user, year)
 
 	pByMonthContainer := PurchasesByMonthContainer{PurchasesByMonth: make([]PurchasesByMonth, 0)}
 	pByMonth := PurchasesByMonth{}
 
-	for month, purchases := range purchasesByMonth {
+	for month, purchases := range purchasesSortedByMonth {
 		pByMonth.Month = month.String()
 		pByMonth.Purchases = purchases
 		pByMonthContainer.PurchasesByMonth = append(pByMonthContainer.PurchasesByMonth,pByMonth)
@@ -180,7 +209,7 @@ func (service PurchaseService) handlePostPurchases(w http.ResponseWriter, r *htt
 		return
 	}
 
-	purchases := getIdentifiablePurchases(purchasesContainer.Purchases)
+	purchases := addPurchasesIds(purchasesContainer.Purchases)
 
 
 	//TODO: What if savePurchases fails? Where are we handling the error?
@@ -209,7 +238,14 @@ func (service PurchaseService) getPurchases(userId string) []Purchase {
 	return  purchases;
 }
 
-func (service PurchaseService) getPurchasesByMonth(user string, year int) map[time.Month] []Purchase {
+func (service PurchaseService) getPurchase(userId string, purchesId strint) []Purchase {
+	log.Printf("Getting purchase from DB")
+	purchases := service.db.GetPurchase(userId, purchesId)
+	return  purchases;
+}
+
+
+func (service PurchaseService) getPurchasesSortedByMonth(user string, year int) map[time.Month] []Purchase {
 
 	log.Printf("Getting purchases from DB")
 
@@ -285,7 +321,7 @@ func getItemsDescriptions( purchases []Purchase) []ItemDescription {
 }
 
 
-func getIdentifiablePurchases(purchases []Purchase) []Purchase{
+func addPurchasesIds(purchases []Purchase) []Purchase{
 
 	identifiable := purchases
 

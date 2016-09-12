@@ -26,6 +26,7 @@ type DB interface {
 
 	SavePurchase(Purchase, string) error
 	GetPurchases(string) []Purchase
+	GetPurchase(string, string) Purchase
 	GetPurchasesByMonth(string, int) map[time.Month] []Purchase
 
 	DeletePurchase(string, string)
@@ -74,9 +75,20 @@ func (db DynamoDB) SaveItem(Item) int {
 	return 0
 }
 
-func (db DynamoDB) GetPurchase(time time.Time) Purchase  {
+func (db DynamoDB) GetPurchase(user string, purchaseId string) Purchase  {
 
-	return Purchase{}
+	it, err := db.getPurchaseFromAWS(user, purchaseId)
+
+	if err != nil {
+		log.Println(err)
+		return Purchase{}
+	}
+	purchases := getPurchases(it)
+
+	if len(purchases) == 0 {
+		return Purchase{}
+	}
+	return purchases[0]
 }
 
 func (db DynamoDB) SavePurchase( p Purchase, userId string) error {
@@ -251,6 +263,36 @@ func (db DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.QueryO
 	return resp, nil
 }
 
+
+func (db DynamoDB) getPurchaseFromAWS(user string, purchaseId string) ( *dynamodb.QueryOutput, error) {
+
+	log.Println("Querying AWS Dynamodb")
+
+
+	params := &dynamodb.QueryInput{
+		TableName: aws.String(TABLE_PURCHASES),
+		ConsistentRead: aws.Bool(true),
+		ExpressionAttributeValues: map[string] *dynamodb.AttributeValue {
+			":v1": {
+				S:    aws.String(user),
+			},
+			":v2": {
+				N:    aws.String(purchaseId),
+			},
+		},
+		KeyConditionExpression: aws.String("id = :v1 AND dt = :v2"),
+	}
+
+	resp, err := db.svc.Query(params)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+
+	return resp, nil
+}
+
 func (db DynamoDB) GetItemsDescriptions (user string) ( []ItemDescription, error) {
 
 
@@ -324,14 +366,12 @@ func buildDynamoItemDescriptionItem(itemId string, description string, user stri
 		},
 		"itemid": {
 			S: aws.String(itemId),
-		},/*
-		"description": {
-			S: aws.String(description),
-		},*/
+		},
 	}
 
 	return it
 }
+
 
 
 func getPurchases(awsResponse *dynamodb.QueryOutput) []Purchase {
