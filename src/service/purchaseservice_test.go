@@ -22,7 +22,7 @@ const (
 	DYNAMODB = 1
 	MEMORYDB = 2
 
-	TESTDB = MEMORYDB    //Change here to test services by using either mem or dynamo db
+	TESTDB = DYNAMODB    //Change here to test services by using either mem or dynamo db
 )
 
 func init() {
@@ -347,6 +347,7 @@ func Test_GET_A_Purchase_By_Id_Returns_It_If_It_Exists(t *testing.T) {
 			t.FailNow()
 		}
 
+		body, err := ioutil.ReadAll(res.Body)
 		purchase := new(Purchase)
 
 		if err := json.Unmarshal(body, purchase); err != nil {
@@ -361,7 +362,7 @@ func Test_GET_A_Purchase_By_Id_Returns_It_If_It_Exists(t *testing.T) {
 		}
 
 		if purchase.Id !=  v.Id{
-			log.Printf("Error, returned purchase id does not match the expected one.")
+			log.Printf("Error, returned purchase id %s does not match the expected one %s.", purchase.Id, v.Id)
 			t.FailNow()
 		}
 
@@ -587,7 +588,7 @@ func Test_that_items_descriptions_are_being_saved(t *testing.T)  {
 
 	count := 0
 
-	for _, _ = range *itemsDescriptions {
+	for range *itemsDescriptions {
 		count++
 	}
 
