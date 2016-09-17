@@ -105,9 +105,21 @@ func (db Mem_DB) GetPurchases(userId string) []Purchase  {
 
 func (db Mem_DB) GetPurchase(userId string, purchaseId string) Purchase  {
 
-	purchase := Purchase{}
+	db.lockP.Lock()
+	defer db.lockP.Unlock()
 
-	return purchase
+
+	for _, ps := range db.purchasesByUser[userId] {
+		for _, purchase := range ps {
+
+			if strings.Compare(purchase.Id, purchaseId) == 0 {
+				purchaseToReturn := purchase
+				return purchaseToReturn
+			}
+		}
+	}
+
+	return Purchase{}
 }
 
 func (db Mem_DB) GetPurchasesByMonth(userId string, year int) map[time.Month] []Purchase  {

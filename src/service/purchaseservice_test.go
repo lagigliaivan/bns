@@ -29,11 +29,11 @@ func init() {
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	sha := sha1.New()
-	io.WriteString(sha, "mayname:password@gmail.com.ar")
+	io.WriteString(sha, "mayname@gmail.com.ar")
 	user1 = fmt.Sprintf("%x", sha.Sum(nil))
 
 	sha.Reset()
-	io.WriteString(sha, "mayname2:password@gmail.com.ar")
+	io.WriteString(sha, "mayname2@gmail.com.ar")
 	user2 = fmt.Sprintf("%x", sha.Sum(nil))
 
 }
@@ -142,7 +142,7 @@ func Test_GET_Purchases_WITH_NO_TOKEN_Returns_An_Error(t *testing.T) {
 	server := getServer(NewPurchaseService(getDB(TESTDB)))
 	defer server.Close()
 
-	res, err := http.Get(getURL(server.URL))
+	res, err := http.Get(getURL(server.URL, user1))
 
 	if !isHTTPStatus(http.StatusForbidden, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusForbidden)
@@ -157,14 +157,14 @@ func Test_GET_Purchases_Returns_A_List_Of_Purchases_By_User(t *testing.T) {
 	server := getServer(NewPurchaseService(getDB(TESTDB)))
 	defer server.Close()
 
-	res, err := httpPost(user1, getURL(server.URL), postPurchases)
+	res, err := httpPost(user1, getURL(server.URL, user1), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
 		t.FailNow()
 	}
 
-	res, err = httpGet(user1, getURL(server.URL))
+	res, err = httpGet(user1, getURL(server.URL, user1))
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -208,7 +208,7 @@ func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) 
 	defer server.Close()
 
 
-	res, err := httpPost(user1, getURL(server.URL), postPurchases)
+	res, err := httpPost(user1, getURL(server.URL, user1), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
@@ -216,7 +216,7 @@ func Test_GET_Purchases_Returns_A_Purchase_With_Latitude_and_Long(t *testing.T) 
 	}
 
 
-	res, err = httpGet(user1, getURL(server.URL))
+	res, err = httpGet(user1, getURL(server.URL, user1))
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -261,14 +261,14 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 	server := getServer(NewPurchaseService(getDB(TESTDB)))
 	defer server.Close()
 
-	res, err := httpPost(user1, getURL(server.URL), postPurchases)
+	res, err := httpPost(user1, getURL(server.URL, user1), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
 		t.FailNow()
 	}
 
-	res, err = httpGet(user1, getURL(server.URL) + "?groupBy=month")
+	res, err = httpGet(user1, getURL(server.URL, user1) + "?groupBy=month")
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -305,14 +305,14 @@ func Test_GET_A_Purchase_By_Id_Returns_It_If_It_Exists(t *testing.T) {
 	server := getServer(NewPurchaseService(getDB(TESTDB)))
 	defer server.Close()
 
-	res, err := httpPost(user1, getURL(server.URL), postPurchases)
+	res, err := httpPost(user1, getURL(server.URL, user1), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
 		t.FailNow()
 	}
 
-	res, err = httpGet(user1, getURL(server.URL))
+	res, err = httpGet(user1, getURL(server.URL, user1))
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -336,7 +336,7 @@ func Test_GET_A_Purchase_By_Id_Returns_It_If_It_Exists(t *testing.T) {
 
 	for _, v := range (*purchases).Purchases {
 
-		res, err = httpGet(user1, getURL(server.URL) + "/" + v.Id)
+		res, err = httpGet(user1, getURL(server.URL, user1) + "/" + v.Id)
 		if err != nil {
 			log.Fatal("Error")
 			t.FailNow()
@@ -346,6 +346,8 @@ func Test_GET_A_Purchase_By_Id_Returns_It_If_It_Exists(t *testing.T) {
 			log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
 			t.FailNow()
 		}
+
+		body, err := ioutil.ReadAll(res.Body)
 
 		purchase := new(Purchase)
 
@@ -360,8 +362,8 @@ func Test_GET_A_Purchase_By_Id_Returns_It_If_It_Exists(t *testing.T) {
 			t.FailNow()
 		}
 
-		if purchase.Id !=  v.Id{
-			log.Printf("Error, returned purchase id does not match the expected one.")
+		if strings.Compare(purchase.Id, v.Id) != 0{
+			log.Printf("Error, returned purchase id: %s does not match the expected one %s.", purchase.Id, v.Id)
 			t.FailNow()
 		}
 
@@ -373,7 +375,7 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 	server := getServer(NewPurchaseService(getDB(TESTDB)))
 	defer server.Close()
 
-	res, err := httpPost(user1, getURL(server.URL), postPurchases)
+	res, err := httpPost(user1, getURL(server.URL, user1), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
@@ -381,7 +383,7 @@ func Test_GET_Purchases_Grouped_By_ANYTHING_Returns_A_List_Of_Purchases_Grouped_
 	}
 
 
-	res, err = httpGet(user1, getURL(server.URL) + "?groupBy=ANYTHING")
+	res, err = httpGet(user1, getURL(server.URL, user1) + "?groupBy=ANYTHING")
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -415,14 +417,14 @@ func Test_GET_Purchases_From_Other_User_Responds_different_purchases(t *testing.
 	server := getServer(NewPurchaseService(getDB(TESTDB)))
 	defer server.Close()
 
-	res, err := httpPost(user1, getURL(server.URL), postPurchases)
+	res, err := httpPost(user1, getURL(server.URL, user1), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
 		t.FailNow()
 	}
 
-	res, err = httpGet(user2, getURL(server.URL) + "?groupBy=month")
+	res, err = httpGet(user2, getURL(server.URL, user2) + "?groupBy=month")
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -456,14 +458,14 @@ func Test_DELETE_A_Purchase(t *testing.T) {
 	server := getServer(NewPurchaseService(getDB(TESTDB)))
 	defer server.Close()
 
-	res, err := httpPost(user1, getURL(server.URL), postPurchases)
+	res, err := httpPost(user1, getURL(server.URL, user1), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
 		t.FailNow()
 	}
 
-	purchaseToDelete := getURL(server.URL) + "/" + fmt.Sprintf("%d", timeToTest.Unix());
+	purchaseToDelete := getURL(server.URL, user1) + "/" + fmt.Sprintf("%d", timeToTest.Unix());
 
 	res, err = httpDelete(user1, purchaseToDelete)
 
@@ -472,7 +474,7 @@ func Test_DELETE_A_Purchase(t *testing.T) {
 		t.FailNow()
 	}
 
-	res, err = httpGet(user1, getURL(server.URL) + "?groupBy=month")
+	res, err = httpGet(user1, getURL(server.URL, user1) + "?groupBy=month")
 
 	if !isHTTPStatus(http.StatusOK, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
@@ -560,7 +562,7 @@ func Test_that_items_descriptions_are_being_saved(t *testing.T)  {
 	server := getServer(service)
 	defer server.Close()
 
-	res, err := httpPost(user1, getURL(server.URL), postPurchases)
+	res, err := httpPost(user1, getURL(server.URL, user1), postPurchases)
 
 	if !isHTTPStatus(http.StatusCreated, res, err){
 		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
@@ -620,7 +622,7 @@ func Test_that_items_descriptions_are_being_saved(t *testing.T)  {
 //For the moment there is not a more practical way to use, later,
 //the user email as ID in DB. So, what I'm doing is to add it in a http header :(
 
-func getURL(url string) string{
-	return url + "/catalog/purchases"
+func getURL(url string, userid string) string{
+	return url + "/catalog/users/" + userid + "/purchases"
 }
 

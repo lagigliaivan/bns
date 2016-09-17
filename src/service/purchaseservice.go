@@ -60,31 +60,31 @@ func (service PurchaseService) ConfigureRouter(router *mux.Router) {
 		Route{
 			"get_purchases",
 			"GET",
-			"/purchases",
+			"/users/{userid}/purchases",
 			service.handleGetPurchases,
 		},
 		Route{
 			"get_purchases",
 			"GET",
-			"/purchases/{id}",
+			"/users/{userid}/purchases/{id}",
 			service.handleGetPurchaseById,
 		},
 		Route{
 			"post_purchases",
 			"POST",
-			"/purchases",
+			"/users/{userid}/purchases",
 			service.handlePostPurchases,
 		},
 		Route{
 			"delete_purchase",
 			"DELETE",
-			"/purchases/{id}",
+			"/users/{userid}/purchases/{id}",
 			service.handleDeletePurchase,
 		},
 		Route{
 			"get_items_description",
 			"GET",
-			"/items",
+			"/users/{userid}/items",
 			service.handleGetItemsDescription,
 		},
 	}
@@ -141,12 +141,11 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 func (service PurchaseService) handleGetPurchaseById(w http.ResponseWriter, r *http.Request) {
 
 	user := r.Header.Get(USER_ID)
-	params := r.URL.Query()
 
+	vars := mux.Vars(r)
+	purchaseId := vars["id"]
 
-	purchasesSortedByMonth := service.getPurchasesSortedByMonth(user, year)
-
-	purchase := Purchase{Id:"12345"}
+	purchase := service.getPurchase(user, purchaseId)
 
 	purchaseAsJson, err := json.Marshal(purchase)
 
@@ -156,7 +155,6 @@ func (service PurchaseService) handleGetPurchaseById(w http.ResponseWriter, r *h
 		return
 	}
 
-	log.Printf("Returning purchase id")
 	fmt.Fprintf(w, "%s", purchaseAsJson)
 }
 
@@ -238,10 +236,10 @@ func (service PurchaseService) getPurchases(userId string) []Purchase {
 	return  purchases;
 }
 
-func (service PurchaseService) getPurchase(userId string, purchesId strint) []Purchase {
+func (service PurchaseService) getPurchase(userId string, purchaseId string) Purchase {
 	log.Printf("Getting purchase from DB")
-	purchases := service.db.GetPurchase(userId, purchesId)
-	return  purchases;
+	purchase := service.db.GetPurchase(userId, purchaseId)
+	return  purchase;
 }
 
 
