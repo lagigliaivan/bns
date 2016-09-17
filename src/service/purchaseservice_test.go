@@ -573,7 +573,7 @@ func Test_that_items_descriptions_are_being_saved(t *testing.T)  {
 
 	time.Sleep(1000 * time.Millisecond)
 
-	res, err = httpGet(user1, server.URL + "/catalog/items")
+	res, err = httpGet(user1, server.URL + "/catalog/users/" + user1 + "/items")
 
 	if err != nil {
 		log.Printf("Error %s", err.Error())
