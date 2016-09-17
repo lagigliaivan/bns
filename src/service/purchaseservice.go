@@ -142,16 +142,23 @@ func (service PurchaseService) handleGetPurchaseById(w http.ResponseWriter, r *h
 
 	user := r.Header.Get(USER_ID)
 
-	vars := mux.Vars(r)
-	purchaseId := vars["id"]
 
-	purchase := service.getPurchase(user, purchaseId)
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	purchase := service.getPurchase(user, id)
+
+	if purchase.Id == "" {
+		w.WriteHeader(http.StatusNotFound)
+		log.Printf("Purchase id: %s not found", id)
+		return
+	}
 
 	purchaseAsJson, err := json.Marshal(purchase)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("Error")
+		log.Printf("Error while marshalling GetPurchase response")
 		return
 	}
 
@@ -161,8 +168,6 @@ func (service PurchaseService) handleGetPurchaseById(w http.ResponseWriter, r *h
 func (service PurchaseService) handleGetPurchasesByMonth(w http.ResponseWriter, r *http.Request) {
 
 	user := r.Header.Get(USER_ID)
-	//params := r.URL.Query()
-
 	year := time.Now().Year()
 
 	/*if params["year"] != nil {
@@ -236,7 +241,9 @@ func (service PurchaseService) getPurchases(userId string) []Purchase {
 	return  purchases;
 }
 
+
 func (service PurchaseService) getPurchase(userId string, purchaseId string) Purchase {
+
 	log.Printf("Getting purchase from DB")
 	purchase := service.db.GetPurchase(userId, purchaseId)
 	return  purchase;

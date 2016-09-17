@@ -349,6 +349,7 @@ func Test_GET_A_Purchase_By_Id_Returns_It_If_It_Exists(t *testing.T) {
 
 		body, err := ioutil.ReadAll(res.Body)
 
+
 		purchase := new(Purchase)
 
 		if err := json.Unmarshal(body, purchase); err != nil {
@@ -361,6 +362,7 @@ func Test_GET_A_Purchase_By_Id_Returns_It_If_It_Exists(t *testing.T) {
 			log.Fatal("Error")
 			t.FailNow()
 		}
+
 
 		if strings.Compare(purchase.Id, v.Id) != 0{
 			log.Printf("Error, returned purchase id: %s does not match the expected one %s.", purchase.Id, v.Id)
@@ -515,7 +517,7 @@ func Test_DELETE_A_Purchase(t *testing.T) {
 
 	}
 }
-
+/*
 func Test_items_ids_are_generated_from_their_trimmed_and_lower_case_description(t *testing.T){
 
 
@@ -554,7 +556,7 @@ func Test_items_ids_are_generated_from_their_trimmed_and_lower_case_description(
 		}
 	}
 
-}
+}*/
 
 func Test_that_items_descriptions_are_being_saved(t *testing.T)  {
 
@@ -589,7 +591,7 @@ func Test_that_items_descriptions_are_being_saved(t *testing.T)  {
 
 	count := 0
 
-	for _, _ = range *itemsDescriptions {
+	for range *itemsDescriptions {
 		count++
 	}
 

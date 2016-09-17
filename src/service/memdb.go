@@ -6,6 +6,7 @@ import (
 	"time"
 	"fmt"
 	"strings"
+	"strconv"
 )
 
 type items map[string] Item
@@ -105,21 +106,18 @@ func (db Mem_DB) GetPurchases(userId string) []Purchase  {
 
 func (db Mem_DB) GetPurchase(userId string, purchaseId string) Purchase  {
 
-	db.lockP.Lock()
-	defer db.lockP.Unlock()
-
-
-	for _, ps := range db.purchasesByUser[userId] {
-		for _, purchase := range ps {
-
-			if strings.Compare(purchase.Id, purchaseId) == 0 {
-				purchaseToReturn := purchase
-				return purchaseToReturn
-			}
-		}
+	unixTime, err := strconv.ParseInt(purchaseId, 10, 64)
+	if err != nil {
+		panic(err)
 	}
+	tm := time.Unix(unixTime, 0)
 
-	return Purchase{}
+
+	purchase := db.purchasesByUser[userId][tm.Month()][purchaseId]
+
+	log.Printf("purchase: %s", purchase)
+	return purchase
+
 }
 
 func (db Mem_DB) GetPurchasesByMonth(userId string, year int) map[time.Month] []Purchase  {
