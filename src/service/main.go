@@ -139,7 +139,7 @@ func getValidUserId(request *http.Request) bool{
 	return true
 }
 
-var users [2]string =  [...]string{"d563af2d08b4f672a11b3ed9065b7890a6412cab", "107cbb20a1d1e156beac1a9a7a331b36321300d4"}
+var users [2]string =  [...]string{"ce9e901ac338e02ce5ba652816718e6e54fed4cf", "a9aca56773bf9aa5af6955e49ea89a4eac762b8d"}
 
 func getMailUserId(userToken string) (*string, error){
 

@@ -13,15 +13,20 @@ import (
 )
 const (
 	TABLE_PURCHASES = "Purchases"
+	TABLE_ITEMS_DESCRIPTIONS = "ItemsDescriptions"
 )
 
 type DB interface {
 	GetItem(string) Item
 	SaveItem(Item) int
+	SaveItemsDescriptions(string, []ItemDescription) error
+	GetItemsDescriptions(string) ([]ItemDescription, error)
+
 	GetItems() []Item
 
 	SavePurchase(Purchase, string) error
 	GetPurchases(string) []Purchase
+	GetPurchase(string, string) Purchase
 	GetPurchasesByMonth(string, int) map[time.Month] []Purchase
 
 	DeletePurchase(string, string)
@@ -55,35 +60,46 @@ func NewDynamoDB(endpoint, region string) (*DynamoDB, error) {
 	return dynamoDb, nil
 }
 
-func (catDb DynamoDB) GetItem(id string) (Item){
+func (db DynamoDB) GetItem(id string) (Item){
 	item := Item{}
 	item.Id = id
 	return item
 }
 
-func (catDb DynamoDB) GetItems() []Item{
+func (db DynamoDB) GetItems() []Item{
 	return nil
 }
 
-func (catDb DynamoDB) SaveItem(Item) int {
+func (db DynamoDB) SaveItem(Item) int {
 
 	return 0
 }
 
-func (catDb DynamoDB) GetPurchase(time time.Time) Purchase  {
+func (db DynamoDB) GetPurchase(user string, purchaseId string) Purchase  {
 
-	return Purchase{}
+	it, err := db.getPurchaseFromAWS(user, purchaseId)
+
+	if err != nil {
+		log.Println(err)
+		return Purchase{}
+	}
+	purchases := getPurchases(it)
+
+	if len(purchases) == 0 {
+		return Purchase{}
+	}
+	return purchases[0]
 }
 
-func (catDb DynamoDB) SavePurchase( p Purchase, userId string) error {
+func (db DynamoDB) SavePurchase( p Purchase, userId string) error {
 
 	tableName := TABLE_PURCHASES
 
-	it := buildDynamoItem(p, userId)
+	it := buildDynamoPurchaseItem(p, userId)
 
 	putItem := dynamodb.PutItemInput{Item:it, TableName:&tableName}
 
-	_, err := catDb.svc.PutItem(&putItem)
+	_, err := db.svc.PutItem(&putItem)
 
 	if err != nil {
 		log.Println(err)
@@ -93,9 +109,9 @@ func (catDb DynamoDB) SavePurchase( p Purchase, userId string) error {
 	return nil
 }
 
-func (catDb DynamoDB) GetPurchases(user string) []Purchase  {
+func (db DynamoDB) GetPurchases(user string) []Purchase  {
 
-	resp, err := catDb.getPurchasesFromAWS(user, time.Now().Year())
+	resp, err := db.getPurchasesFromAWS(user, time.Now().Year())
 
 	if err != nil {
 		log.Printf("Error while querying DB %s\n", err)
@@ -107,10 +123,10 @@ func (catDb DynamoDB) GetPurchases(user string) []Purchase  {
 	return purchases
 }
 
-func (catDb DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month][]Purchase  {
+func (db DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month][]Purchase  {
 
 
-	resp, err := catDb.getPurchasesFromAWS(user, year)
+	resp, err := db.getPurchasesFromAWS(user, year)
 
 	if err != nil {
 		log.Printf("Error while querying DB %s\n", err)
@@ -133,7 +149,7 @@ func (catDb DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month]
 	return purchasesByMonth
 }
 
-func (catDb DynamoDB) DeletePurchase(user string, id string)  {
+func (db DynamoDB) DeletePurchase(user string, id string)  {
 
 	params := &dynamodb.DeleteItemInput{
 
@@ -148,10 +164,10 @@ func (catDb DynamoDB) DeletePurchase(user string, id string)  {
 		TableName:aws.String(TABLE_PURCHASES),
 	}
 
-	_, err := catDb.svc.DeleteItem(params)
+	_, err := db.svc.DeleteItem(params)
 
 	if err != nil {
-		// Print the error, cast err to awserr.Error to get the Code and
+		// Print the error, cast err to aws err.Error to get the Code and
 		// Message from an error.
 		fmt.Println(err.Error())
 		return
@@ -159,7 +175,48 @@ func (catDb DynamoDB) DeletePurchase(user string, id string)  {
 
 }
 
-func (catDb DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.QueryOutput, error) {
+func (db DynamoDB) SaveItemsDescriptions(userId string, itemsDescriptions []ItemDescription )  error {
+
+	tableName := TABLE_ITEMS_DESCRIPTIONS
+
+	for _, itemDescription := range itemsDescriptions {
+
+		it := buildDynamoItemDescriptionItem(itemDescription.ItemId, itemDescription.Description, userId)
+
+		updateItem := dynamodb.UpdateItemInput{
+			Key:it,
+			TableName:&tableName,
+
+			UpdateExpression:aws.String("SET itemcount = if_not_exists(itemcount, :init) + :incr, description = :descr"),
+			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+				":incr": {
+					N:  aws.String("1"),
+				},
+				":init": {
+					N:  aws.String("0"),
+				},
+				":descr": {
+					S:  aws.String(itemDescription.Description),
+				},
+			},
+
+		}
+
+		_, err := db.svc.UpdateItem(&updateItem)
+
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+
+		log.Printf("Saving itemId: %s itemDescription: %s", itemDescription.ItemId, itemDescription.Description)
+	}
+
+
+	return nil
+}
+
+func (db DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.QueryOutput, error) {
 
 	log.Println("Querying AWS Dynamodb")
 
@@ -198,7 +255,7 @@ func (catDb DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.Que
 		KeyConditionExpression: aws.String("id = :v1 AND dt BETWEEN :v2 AND :v3 "),
 	}
 
-	resp, err := catDb.svc.Query(params)
+	resp, err := db.svc.Query(params)
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -209,7 +266,62 @@ func (catDb DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.Que
 }
 
 
-func buildDynamoItem(purchase Purchase, user string) map[string]* dynamodb.AttributeValue {
+func (db DynamoDB) getPurchaseFromAWS(user string, purchaseId string) ( *dynamodb.QueryOutput, error) {
+
+	log.Println("Querying AWS Dynamodb")
+
+
+	params := &dynamodb.QueryInput{
+		TableName: aws.String(TABLE_PURCHASES),
+		ConsistentRead: aws.Bool(true),
+		ExpressionAttributeValues: map[string] *dynamodb.AttributeValue {
+			":v1": {
+				S:    aws.String(user),
+			},
+			":v2": {
+				N:    aws.String(purchaseId),
+			},
+		},
+		KeyConditionExpression: aws.String("id = :v1 AND dt = :v2"),
+	}
+
+	resp, err := db.svc.Query(params)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (db DynamoDB) GetItemsDescriptions (user string) ( []ItemDescription, error) {
+
+
+	params := &dynamodb.QueryInput{
+		TableName: aws.String(TABLE_ITEMS_DESCRIPTIONS),
+		ConsistentRead: aws.Bool(true),
+		ExpressionAttributeValues: map[string] *dynamodb.AttributeValue {
+			":v1": {
+				S:    aws.String(user),
+			},
+		},
+		KeyConditionExpression: aws.String("userid = :v1"),
+	}
+
+	log.Printf("Quering items for user: %s", user)
+
+	resp, err := db.svc.Query(params)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+
+	items := getItemsDescription(resp)
+	return items, nil
+}
+
+func buildDynamoPurchaseItem(purchase Purchase, user string) map[string]* dynamodb.AttributeValue {
 
 	shop := purchase.Shop
 
@@ -247,6 +359,22 @@ func buildDynamoItem(purchase Purchase, user string) map[string]* dynamodb.Attri
 	return it
 }
 
+func buildDynamoItemDescriptionItem(itemId string, description string, user string) map[string]* dynamodb.AttributeValue {
+
+	it := map[string]* dynamodb.AttributeValue {
+
+		"userid": {
+			S: aws.String(user),
+		},
+		"itemid": {
+			S: aws.String(itemId),
+		},
+	}
+
+	return it
+}
+
+
 
 func getPurchases(awsResponse *dynamodb.QueryOutput) []Purchase {
 
@@ -273,4 +401,20 @@ func getPurchases(awsResponse *dynamodb.QueryOutput) []Purchase {
 	}
 
 	return purchases
+}
+
+func getItemsDescription(awsResponse *dynamodb.QueryOutput) []ItemDescription {
+
+	var itemsDescriptions []ItemDescription
+
+	for _, item := range awsResponse.Items{
+
+		itemDesc := ItemDescription{ItemId:*(item["itemid"].S), Description:*(item["description"].S), Quantity:*(item["itemcount"].N)}
+		log.Printf("item: %s", itemDesc)
+		//itemDesc := ItemDescription{ItemId:*(item["itemid"].S),Quantity:*(item["itemcount"].N)}
+		itemsDescriptions = append(itemsDescriptions, itemDesc)
+
+	}
+
+	return itemsDescriptions
 }

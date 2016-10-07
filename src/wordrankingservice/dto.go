@@ -1,4 +1,4 @@
-package main
+package wordrankingservice
 
 import (
 	"encoding/json"
@@ -161,5 +161,5 @@ type ItemDescription struct {
 
 	ItemId string `json:"itemid"`
 	Description string `json:"description"`
-	Quantity string `json:quantity`
+	Quantity string `json:"Quantity"`
 }

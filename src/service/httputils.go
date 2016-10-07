@@ -28,6 +28,7 @@ func httpPost(user, url string, values Stringifiable) (*http.Response, error){
 
 	body := strings.NewReader(values.ToJsonString())
 	req, err := http.NewRequest(http.MethodPost, url, body)
+	log.Printf("url: %s", url)
 	if err != nil {
 		log.Printf("Error when creating POST request %d.", err)
 		return nil, err
