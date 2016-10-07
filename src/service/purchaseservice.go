@@ -1,16 +1,17 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
-	"net/http"
-	"log"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"encoding/json"
+	"log"
+	"net/http"
 	"sort"
-	"time"
 	"strings"
-//	"github.com/aws/aws-sdk-go/service"
+	"time"
+
+	"github.com/gorilla/mux"
+	//	"github.com/aws/aws-sdk-go/service"
 	"crypto/sha1"
 	"io"
 )
@@ -23,7 +24,6 @@ func getPathParams(r *http.Request) map[string]string {
 	return mux.Vars(r)
 }
 
-
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
@@ -32,14 +32,15 @@ const (
 	GROUP_BY = "groupBy"
 	//MONTH = "month"
 )
-type GetPathParams func (*http.Request) map[string]string
+
+type GetPathParams func(*http.Request) map[string]string
 
 type PurchaseService struct {
 	getRequestParameters GetPathParams
 	error                string
 	name                 string
 	db                   DB
-	purchasesHandler     map[string] func(http.ResponseWriter,*http.Request)
+	purchasesHandler     map[string]func(http.ResponseWriter, *http.Request)
 }
 
 func NewPurchaseService(db DB) *PurchaseService {
@@ -51,9 +52,9 @@ func NewPurchaseService(db DB) *PurchaseService {
 
 	return service
 }
+
 //This method sets what resources are going to be managed by the router
 func (service PurchaseService) ConfigureRouter(router *mux.Router) {
-
 
 	routes := Routes{
 
@@ -94,8 +95,8 @@ func (service PurchaseService) ConfigureRouter(router *mux.Router) {
 
 		handler = route.HandlerFunc
 
-	router.
-		Methods(route.Method).
+		router.
+			Methods(route.Method).
 			Path(route.Pattern).
 			Name(route.Name).
 			Handler(handler)
@@ -108,7 +109,6 @@ func (service PurchaseService) handleDefaultError(w http.ResponseWriter, r *http
 	fmt.Fprint(w, "The request method is not supported for the requested resource")
 }
 
-
 func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http.Request) {
 
 	user := r.Header.Get(USER_ID)
@@ -118,7 +118,7 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 
 		service.handleGetPurchasesByMonth(w, r)
 
-	}else {
+	} else {
 		container := NewPurchaseContainer()
 		purchases := service.getPurchases(user)
 
@@ -137,11 +137,9 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 	}
 }
 
-
 func (service PurchaseService) handleGetPurchaseById(w http.ResponseWriter, r *http.Request) {
 
 	user := r.Header.Get(USER_ID)
-
 
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -174,8 +172,7 @@ func (service PurchaseService) handleGetPurchasesByMonth(w http.ResponseWriter, 
 		year = params["year"]
 	}*/
 
-	var purchasesSortedByMonth map[time.Month] []Purchase
-
+	var purchasesSortedByMonth map[time.Month][]Purchase
 
 	purchasesSortedByMonth = service.getPurchasesSortedByMonth(user, year)
 
@@ -185,7 +182,7 @@ func (service PurchaseService) handleGetPurchasesByMonth(w http.ResponseWriter, 
 	for month, purchases := range purchasesSortedByMonth {
 		pByMonth.Month = month.String()
 		pByMonth.Purchases = purchases
-		pByMonthContainer.PurchasesByMonth = append(pByMonthContainer.PurchasesByMonth,pByMonth)
+		pByMonthContainer.PurchasesByMonth = append(pByMonthContainer.PurchasesByMonth, pByMonth)
 	}
 
 	purchasesAsJson, err := json.Marshal(pByMonthContainer)
@@ -214,7 +211,6 @@ func (service PurchaseService) handlePostPurchases(w http.ResponseWriter, r *htt
 
 	purchases := addPurchasesIds(purchasesContainer.Purchases)
 
-
 	//TODO: What if savePurchases fails? Where are we handling the error?
 	service.savePurchases(user, purchases)
 
@@ -223,8 +219,7 @@ func (service PurchaseService) handlePostPurchases(w http.ResponseWriter, r *htt
 	w.WriteHeader(http.StatusCreated)
 }
 
-
-func (service PurchaseService) handleDeletePurchase (w http.ResponseWriter, r *http.Request) {
+func (service PurchaseService) handleDeletePurchase(w http.ResponseWriter, r *http.Request) {
 
 	user := r.Header.Get(USER_ID)
 	vars := getPathParams(r)
@@ -238,19 +233,17 @@ func (service PurchaseService) handleDeletePurchase (w http.ResponseWriter, r *h
 func (service PurchaseService) getPurchases(userId string) []Purchase {
 	log.Printf("Getting items from DB")
 	purchases := service.db.GetPurchases(userId)
-	return  purchases;
+	return purchases
 }
-
 
 func (service PurchaseService) getPurchase(userId string, purchaseId string) Purchase {
 
 	log.Printf("Getting purchase from DB")
 	purchase := service.db.GetPurchase(userId, purchaseId)
-	return  purchase;
+	return purchase
 }
 
-
-func (service PurchaseService) getPurchasesSortedByMonth(user string, year int) map[time.Month] []Purchase {
+func (service PurchaseService) getPurchasesSortedByMonth(user string, year int) map[time.Month][]Purchase {
 
 	log.Printf("Getting purchases from DB")
 
@@ -264,14 +257,14 @@ func (service PurchaseService) getPurchasesSortedByMonth(user string, year int) 
 
 	sortedPurchases := make(map[time.Month][]Purchase, len(keys))
 
-	for _,key := range keys {
-		sortedPurchases[time.Month(key)] = purchases[time.Month(key)];
+	for _, key := range keys {
+		sortedPurchases[time.Month(key)] = purchases[time.Month(key)]
 	}
 
-	return  sortedPurchases;
+	return sortedPurchases
 }
 
-func (service PurchaseService) savePurchases( userId string, purchases []Purchase)  {
+func (service PurchaseService) savePurchases(userId string, purchases []Purchase) {
 
 	log.Printf("Saving items in  DB")
 
@@ -280,20 +273,18 @@ func (service PurchaseService) savePurchases( userId string, purchases []Purchas
 	}
 }
 
-func (service PurchaseService) saveItemsDescriptions(userId string, purchases []Purchase){
+func (service PurchaseService) saveItemsDescriptions(userId string, purchases []Purchase) {
 
 	items_descriptions := getItemsDescriptions(purchases)
 
 	service.db.SaveItemsDescriptions(userId, items_descriptions)
 }
 
-
 func (service PurchaseService) handleGetItemsDescription(w http.ResponseWriter, r *http.Request) {
 
 	user := r.Header.Get(USER_ID)
 
 	itemsDescriptions, _ := service.db.GetItemsDescriptions(user)
-
 
 	itemsDescriptionsAsJson, err := json.Marshal(itemsDescriptions)
 
@@ -305,33 +296,30 @@ func (service PurchaseService) handleGetItemsDescription(w http.ResponseWriter, 
 	fmt.Fprintf(w, "%s", itemsDescriptionsAsJson)
 }
 
-func getItemsDescriptions( purchases []Purchase) []ItemDescription {
+func getItemsDescriptions(purchases []Purchase) []ItemDescription {
 
-	items_descriptions := make(map[string] string)
+	items_descriptions := make(map[string]string)
 	itemsDescriptions := []ItemDescription{}
 
 	for _, purchase := range purchases {
 
-		for _, item := range purchase.Items{
+		for _, item := range purchase.Items {
 			items_descriptions[item.Id] = strings.ToLower(item.Description)
 		}
 	}
 
-	for k, v := range items_descriptions{
-		itemsDescriptions = append(itemsDescriptions, ItemDescription{ItemId:k, Description:v})
+	for k, v := range items_descriptions {
+		itemsDescriptions = append(itemsDescriptions, ItemDescription{ItemId: k, Description: v})
 	}
-
 
 	return itemsDescriptions
 }
 
-
-func addPurchasesIds(purchases []Purchase) []Purchase{
+func addPurchasesIds(purchases []Purchase) []Purchase {
 
 	identifiable := purchases
 
 	for k, purchase := range identifiable {
-
 
 		if strings.Compare(purchase.Id, "") == 0 {
 
@@ -345,7 +333,7 @@ func addPurchasesIds(purchases []Purchase) []Purchase{
 		identifiable[k].Time = purchase.Time.UTC()
 
 		for k, item := range purchase.Items {
-			purchase.Items[k].Id = trimAndSha(item.Description);
+			purchase.Items[k].Id = trimAndSha(item.Description)
 		}
 	}
 
@@ -358,7 +346,7 @@ func trimAndSha(value string) string {
 	defer sha.Reset()
 
 	//trim and remove spaces
-	trimmedAndLowDescription :=  strings.Replace(strings.TrimSpace(value), " ", "", -1)
+	trimmedAndLowDescription := strings.Replace(strings.TrimSpace(value), " ", "", -1)
 	// convert to lower case
 	trimmedAndLowDescription = strings.ToLower(trimmedAndLowDescription)
 	io.WriteString(sha, trimmedAndLowDescription)
