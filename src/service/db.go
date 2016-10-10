@@ -25,11 +25,10 @@ type DB interface {
 	GetItems() []Item
 
 	SavePurchase(Purchase, string) error
-	GetPurchases(string) []Purchase
-	GetPurchase(string, string) Purchase
-	GetPurchasesByMonth(string, int) map[time.Month] []Purchase
+	GetPurchases(userId string, dateFrom string, dateTo string) []Purchase
+	GetPurchase(userId string, purchaseId string) Purchase
 
-	DeletePurchase(string, string)
+	DeletePurchase(userId string, purchaseId string)
 
 }
 
@@ -109,9 +108,15 @@ func (db DynamoDB) SavePurchase( p Purchase, userId string) error {
 	return nil
 }
 
-func (db DynamoDB) GetPurchases(user string) []Purchase  {
+func (db DynamoDB) GetPurchases(user string, from string, to string) []Purchase  {
 
-	resp, err := db.getPurchasesFromAWS(user, time.Now().Year())
+	dateTo := to
+
+	if strings.Compare(to, "") == 0 {
+		dateTo = fmt.Sprintf("%d%s", time.Now().Year(), "-12-31T23:59:00Z")
+	}
+
+	resp, err := db.getPurchasesFromAWS(user, from, dateTo)
 
 	if err != nil {
 		log.Printf("Error while querying DB %s\n", err)
@@ -123,10 +128,12 @@ func (db DynamoDB) GetPurchases(user string) []Purchase  {
 	return purchases
 }
 
-func (db DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month][]Purchase  {
+/*func (db DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month][]Purchase  {
 
+	from := fmt.Sprintf("%d%s", year, "-01-00T00:00:00Z")
+	to := fmt.Sprintf("%d%s", year, "-12-31T23:59:00Z")
 
-	resp, err := db.getPurchasesFromAWS(user, year)
+	resp, err := db.getPurchasesFromAWS(user, from, to)
 
 	if err != nil {
 		log.Printf("Error while querying DB %s\n", err)
@@ -147,7 +154,7 @@ func (db DynamoDB) GetPurchasesByMonth(user string, year int) map[time.Month][]P
 	}
 
 	return purchasesByMonth
-}
+}*/
 
 func (db DynamoDB) DeletePurchase(user string, id string)  {
 
@@ -216,12 +223,9 @@ func (db DynamoDB) SaveItemsDescriptions(userId string, itemsDescriptions []Item
 	return nil
 }
 
-func (db DynamoDB) getPurchasesFromAWS(user string, year int) ( *dynamodb.QueryOutput, error) {
+func (db DynamoDB) getPurchasesFromAWS(user string, from string, to string) ( *dynamodb.QueryOutput, error) {
 
 	log.Println("Querying AWS Dynamodb")
-
-	from := fmt.Sprintf("%d%s", year, "-01-00T00:00:00Z")
-	to := fmt.Sprintf("%d%s", year, "-12-31T23:59:00Z")
 
 	fromInMillis, err := time.Parse(time.RFC3339, from)
 
@@ -411,7 +415,6 @@ func getItemsDescription(awsResponse *dynamodb.QueryOutput) []ItemDescription {
 
 		itemDesc := ItemDescription{ItemId:*(item["itemid"].S), Description:*(item["description"].S), Quantity:*(item["itemcount"].N)}
 		log.Printf("item: %s", itemDesc)
-		//itemDesc := ItemDescription{ItemId:*(item["itemid"].S),Quantity:*(item["itemcount"].N)}
 		itemsDescriptions = append(itemsDescriptions, itemDesc)
 
 	}

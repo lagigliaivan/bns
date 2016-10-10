@@ -88,7 +88,7 @@ func (db Mem_DB) SavePurchase( p Purchase, userId string) error {
 	return nil
 }
 
-func (db Mem_DB) GetPurchases(userId string) []Purchase  {
+func (db Mem_DB) GetPurchases(userId string, from string, to string) []Purchase  {
 
 	purchases := make([]Purchase, 0)
 
@@ -97,7 +97,22 @@ func (db Mem_DB) GetPurchases(userId string) []Purchase  {
 
 	for _, ps := range db.purchasesByUser[userId] {
 		for k := range ps {
-			purchases = append(purchases, ps[k])
+
+                        f, err := time.Parse(time.RFC3339, from)
+                        if err != nil {
+                                log.Printf("Error while parsing date:%s", err)
+                                return []Purchase{}
+                        }
+
+                        t, err := time.Parse(time.RFC3339, to)
+                        if err != nil {
+                                log.Printf("Error while parsing date:%s", err)
+                                return []Purchase{}
+                        }
+
+			if ps[k].Time.After(f) && ps[k].Time.Before(t) {
+				purchases = append(purchases, ps[k])
+			}
 		}
 	}
 
@@ -118,23 +133,6 @@ func (db Mem_DB) GetPurchase(userId string, purchaseId string) Purchase  {
 	log.Printf("purchase: %s", purchase)
 	return purchase
 
-}
-
-func (db Mem_DB) GetPurchasesByMonth(userId string, year int) map[time.Month] []Purchase  {
-
-	purchases := make(map[time.Month] []Purchase)
-	for t, p_by_month := range db.purchasesByUser[userId] {
-
-		for _, p := range p_by_month {
-			purchases[t] = append(purchases[t], p)
-		}
-	}
-
-	return purchases
-}
-
-func (db Mem_DB) GetPurchasesByUser(user string) []Purchase  {
-	return []Purchase{}
 }
 
 func (db Mem_DB) DeletePurchase(userId string, id string) {

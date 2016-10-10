@@ -20,7 +20,7 @@ const (
 	DYNAMODB = 1
 	MEMORYDB = 2
 
-	TESTDB = MEMORYDB //Change here to test services by using either mem or dynamo db
+	TESTDB = DYNAMODB //Change here to test services by using either mem or dynamo db
 )
 
 func init() {
@@ -105,28 +105,28 @@ var (
 	setOfPurchases = []Purchase{
 
 		{
-			Time:     timeToTest,
+			Time:     timeToTest,   //12-01
 			Location: NewPoint(-31.4165791, -64.1855098),
 			Shop:     "Libertad",
 			Items:    itemsPurchaseA,
 		},
 		{
-			Time:  timeToTest.AddDate(0, 0, 1),
+			Time:  timeToTest.AddDate(0, 0, 1), //13-01
 			Items: itemsPurchaseB,
 			Shop:  "Libertad",
 		},
 		{
-			Time:  timeToTest.AddDate(0, 1, 1),
+			Time:  timeToTest.AddDate(0, 1, 1), //14-02
 			Items: itemsPurchaseB,
 			Shop:  "Libertad",
 		},
 		{
-			Time:  timeToTest.AddDate(0, 2, 1),
+			Time:  timeToTest.AddDate(0, 2, 1), //15-04
 			Items: itemsPurchaseA,
 			Shop:  "Libertad",
 		},
 		{
-			Time:  timeToTest.AddDate(0, 3, 1),
+			Time:  timeToTest.AddDate(0, 3, 1), //16-07
 			Items: itemsPurchaseA,
 			Shop:  "Libertad",
 		},
@@ -286,7 +286,6 @@ func Test_GET_Purchases_Grouped_By_Month_Returns_A_List_Of_Purchases_Groups(t *t
 		t.FailNow()
 
 	}
-
 }
 
 func Test_GET_A_Purchase_By_Id_Returns_It_If_It_Exists(t *testing.T) {
@@ -606,8 +605,73 @@ func Test_that_items_descriptions_are_being_saved(t *testing.T) {
 	log.Printf("%s", body)
 }
 
-func Test_that_items_are_returned_by_user(t *testing.T) {
+func Test_that_purchases_are_returned_between_dates(t *testing.T) {
 
+	service := NewPurchaseService(getDB(TESTDB))
+	server := getServer(service)
+	defer server.Close()
+
+
+	res, err := httpPost(user1, getURL(server.URL, user1), postPurchases)
+
+	if !isHTTPStatus(http.StatusCreated, res, err) {
+		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
+		t.FailNow()
+	}
+
+        dateToTest, _ := time.Parse(time.RFC3339, tt)
+
+        from := getDateParam("from", dateToTest)
+
+        dateToTest = dateToTest.AddDate(0,1,0)
+
+        to := getDateParam("to", dateToTest)
+
+        url := fmt.Sprintf("%s?%s&%s", getURL(server.URL, user1), from, to)
+
+	res, err = httpGet(user1, url)
+
+        if !isHTTPStatus(http.StatusOK, res, err) {
+                log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
+                t.FailNow()
+        }
+
+        body, err := ioutil.ReadAll(res.Body)
+
+        if err != nil {
+                log.Fatal("Error")
+                t.FailNow()
+        }
+
+        purchases := new(PurchasesByMonthContainer)
+
+        if err := json.Unmarshal(body, purchases); err != nil {
+
+                log.Printf("Error when reading response %s", err)
+                t.FailNow()
+        }
+        log.Printf("purchases :%s", purchases.PurchasesByMonth)
+        if len(purchases.PurchasesByMonth) != 1 {
+                log.Printf("Error: Expected items quantity is different from the received one: %d", len(purchases.PurchasesByMonth))
+                t.FailNow()
+        }
+        count := 0
+        for _, ps := range purchases.PurchasesByMonth {
+
+                for range ps.Purchases {
+                      count++
+              }
+        }
+
+        if count != 2 {
+                log.Printf("Error: Expected items quantity is different from the received one: %d", count)
+                t.FailNow()
+        }
+}
+
+
+func getDateParam(paramName string, date time.Time) string {
+        return fmt.Sprintf(paramName + "=%d-%0.2d-%0.2d", date.Year(),date.Month(), date.Day())
 }
 
 //For the moment there is not a more practical way to use, later,
