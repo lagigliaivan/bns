@@ -117,43 +117,44 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 	user := r.Header.Get(USER_ID)
 	params := r.URL.Query()
 
-	if paramIsPresent(params, GROUP_BY) || paramIsPresent(params, DATE_FROM){
+	year := time.Now().Year()
 
-		dateFrom := getParam(params, DATE_FROM)
-		dateTo := getParam(params, DATE_TO)
-		year := time.Now().Year()
+	if paramIsPresent(params, GROUP_BY) {
 
-		if !paramIsPresent(params, DATE_FROM) {
-			dateFrom = fmt.Sprintf("%d%s", year , "-01-00T00:00:00Z")
-			dateTo = fmt.Sprintf("%d%s", year, "-12-31T23:59:00Z")
+		from := getDefaultDateFrom(year)
+		to := getDefaultDateTo(year)
 
-		} else {
+		purchases := service.getPurchases(user, from, to)
 
-			dateTimeFrom, err := time.Parse(time.RFC3339, dateFrom + "T00:00:00Z")
+		purchasesSortedByMonth := sortPurchasesByMonth(purchases)
 
-			if err != nil {
-				w.WriteHeader(http.StatusBadRequest)
-				log.Printf("Error %s", err)
-				return
-			}
-			dateFrom = dateTimeFrom.Format(time.RFC3339)
+		pByMonthContainer, _ := getPurchasesByMonthContainer(purchasesSortedByMonth)
+		purchasesAsJson, err := json.Marshal(pByMonthContainer)
 
-			if !paramIsPresent(params, DATE_TO){
-				dateTo = fmt.Sprintf("%d%s", year, "-12-31T23:59:00Z")
-			}else {
-				dateTimeFrom, err = time.Parse(time.RFC3339, dateTo + "T23:59:00Z")
-			}
-
-			if err != nil {
-				w.WriteHeader(http.StatusBadRequest)
-				log.Printf("Error %s", err)
-				return
-			}
-			dateTo = dateTimeFrom.Format(time.RFC3339)
-
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			log.Printf("Error %s", err)
+			return
 		}
 
-		pByMonthContainer, _ := service.getPurchasesByMonth(user, dateFrom, dateTo)
+		fmt.Fprintf(w, "%s", purchasesAsJson)
+
+	} else if paramIsPresent(params, DATE_FROM) && dateFormatValid(getParam(params, DATE_FROM) + "T00:00:00Z"){
+
+		from := getParam(params, DATE_FROM) + "T00:00:00Z"
+		var to string
+
+		if paramIsPresent(params, DATE_TO) && dateFormatValid(getParam(params, DATE_TO) + "T23:59:00Z"){
+			to = getParam(params, DATE_TO) + "T23:59:00Z"
+		}else {
+			to = getDefaultDateTo(year)
+		}
+
+		purchases := service.getPurchases(user, from, to)
+
+		purchasesSortedByMonth := sortPurchasesByMonth(purchases)
+
+		pByMonthContainer, _ := getPurchasesByMonthContainer(purchasesSortedByMonth)
 		purchasesAsJson, err := json.Marshal(pByMonthContainer)
 
 		if err != nil {
@@ -165,17 +166,13 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 		fmt.Fprintf(w, "%s", purchasesAsJson)
 
 	} else {
-		container := NewPurchaseContainer()
 
-		year := time.Now().Year()
-		from := fmt.Sprintf("%d%s", year , "-01-00T00:00:00Z")
-		to := fmt.Sprintf("%d%s", year, "-12-31T23:59:00Z")
+		from := getDefaultDateFrom(year)
+		to := getDefaultDateTo(year)
 
 		purchases := service.getPurchases(user, from, to)
 
-		for _, purchase := range purchases {
-			container.Add(purchase)
-		}
+		container := getPurchaseContainer(purchases)
 
 		purchasesAsJson, err := json.Marshal(container)
 
@@ -186,6 +183,16 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 		}
 		fmt.Fprintf(w, "%s", purchasesAsJson)
 	}
+}
+
+func getPurchaseContainer(purchases []Purchase) PurchaseContainer {
+	container := NewPurchaseContainer()
+
+	for _, purchase := range purchases {
+		container.Add(purchase)
+	}
+
+	return container
 }
 
 func (service PurchaseService) handleGetPurchaseById(w http.ResponseWriter, r *http.Request) {
@@ -214,13 +221,7 @@ func (service PurchaseService) handleGetPurchaseById(w http.ResponseWriter, r *h
 	fmt.Fprintf(w, "%s", purchaseAsJson)
 }
 
-func (service PurchaseService) getPurchasesByMonth(user string,from string, to string) (PurchasesByMonthContainer, error){
-
-	log.Printf("from:%s , to:%s", from, to)
-
-	var purchasesSortedByMonth map[time.Month][]Purchase
-
-	purchasesSortedByMonth = service.sortPurchasesByMonth(user, from, to)
+func  getPurchasesByMonthContainer(purchasesSortedByMonth  map[time.Month][]Purchase) (PurchasesByMonthContainer, error){
 
 	pByMonthContainer := PurchasesByMonthContainer{PurchasesByMonth: make([]PurchasesByMonth, 0)}
 	pByMonth := PurchasesByMonth{}
@@ -282,17 +283,15 @@ func (service PurchaseService) getPurchase(userId string, purchaseId string) Pur
 	return purchase
 }
 
-func (service PurchaseService) sortPurchasesByMonth(user string, from string, to string) map[time.Month][]Purchase {
+func sortPurchasesByMonth(purchases []Purchase) map[time.Month][]Purchase {
 
 	log.Printf("Getting purchases from DB")
 
-	purchasesOfYear := service.db.GetPurchases(user, from, to)
+	purchasesByMonth := groupPurchasesByMonth(purchases)
 
-	purchases := sortPurchasesByMonth(purchasesOfYear)
+	keys := make([]int, 0, len(purchasesByMonth))
 
-	keys := make([]int, 0, len(purchases))
-
-	for key := range purchases {
+	for key := range purchasesByMonth {
 		keys = append(keys, int(key))
 	}
 	sort.Ints(keys)
@@ -300,7 +299,7 @@ func (service PurchaseService) sortPurchasesByMonth(user string, from string, to
 	sortedPurchases := make(map[time.Month][]Purchase, len(keys))
 
 	for _, key := range keys {
-		sortedPurchases[time.Month(key)] = purchases[time.Month(key)]
+		sortedPurchases[time.Month(key)] = purchasesByMonth[time.Month(key)]
 	}
 
 	return sortedPurchases
@@ -422,12 +421,28 @@ func getParam(params url.Values, param string) string {
 	return value
 }
 
-func formatDate(){
+func dateFormatValid(date string) bool{
+
+	if _, err := time.Parse(time.RFC3339, date); err != nil {
+
+		return false
+	}
+
+	return true
+}
+
+func getDefaultDateFrom(year int) string{
+	return fmt.Sprintf("%d%s", year , "-01-00T00:00:00Z")
 
 }
 
-
-func sortPurchasesByMonth( purchases []Purchase ) map[time.Month][]Purchase{
+func getDefaultDateTo(year int) string {
+	return fmt.Sprintf("%d%s", year, "-12-31T23:59:00Z")
+}
+/**
+Given a group or purchases, then they are grouped by month and returned, but not sorted.
+ */
+func groupPurchasesByMonth( purchases []Purchase ) map[time.Month][]Purchase{
 
 	purchasesByMonth := make(map[time.Month][]Purchase)
 

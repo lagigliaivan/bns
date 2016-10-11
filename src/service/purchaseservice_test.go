@@ -20,7 +20,7 @@ const (
 	DYNAMODB = 1
 	MEMORYDB = 2
 
-	TESTDB = DYNAMODB //Change here to test services by using either mem or dynamo db
+	TESTDB = MEMORYDB //Change here to test services by using either mem or dynamo db
 )
 
 func init() {
