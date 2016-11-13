@@ -214,9 +214,8 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 		fmt.Fprintf(w, "%s", purchasesAsJson)
 	}
 }
-func getHandler(i int) interface{} {
 
-}
+
 func isPresent(params url.Values, value string) int {
 
         intRepresentation := NV
