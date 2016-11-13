@@ -9,12 +9,11 @@ import (
 	"sort"
 	"strings"
 	"time"
-
 	"github.com/gorilla/mux"
-	//	"github.com/aws/aws-sdk-go/service"
 	"crypto/sha1"
 	"io"
 	"net/url"
+    //    "github.com/aws/aws-sdk-go/service"
 )
 
 type Service interface {
@@ -25,16 +24,37 @@ func getPathParams(r *http.Request) map[string]string {
 	return mux.Vars(r)
 }
 
+const (
+        GROUP_BY = "groupBy"
+        ORDER_ASC = "orderAsc"
+        ORDER_DESC = "orderDesc"
+        DATE_FROM = "from"
+        DATE_TO = "to"
+
+        //Do not change the order.
+        NV = iota
+        GB
+        OA
+        OD
+        DF
+        DT
+
+)
+
+var queryParams map[string]int = make(map[string]int)
+
 func init() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+        log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+        queryParams[GROUP_BY] = GB
+        queryParams[ORDER_ASC] = OA
+        queryParams[ORDER_DESC] = OD
+        queryParams[DATE_FROM] = DF
+        queryParams[DATE_TO] = DT
+
 }
 
-const (
-	GROUP_BY = "groupBy"
-	DATE_FROM = "from"
-	DATE_TO = "to"
-	//MONTH = "month"
-)
 
 type GetPathParams func(*http.Request) map[string]string
 
@@ -44,6 +64,7 @@ type PurchaseService struct {
 	name                 string
 	db                   DB
 	purchasesHandler     map[string]func(http.ResponseWriter, *http.Request)
+
 }
 
 func NewPurchaseService(db DB) *PurchaseService {
@@ -53,7 +74,7 @@ func NewPurchaseService(db DB) *PurchaseService {
 	service.db = db
 	service.error = "ERROR"
 
-	return service
+        return service
 }
 
 //This method sets what resources are going to be managed by the router
@@ -119,6 +140,15 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 
 	year := time.Now().Year()
 
+        /*
+	handlerId := isPresent(params, ORDER_ASC) | isPresent(params, ORDER_DESC) | isPresent(params, DATE_FROM) | isPresent(params, DATE_TO) | isPresent(params, GROUP_BY)
+
+        handler := getHandler(handlerId)
+
+        handler()
+        log.Printf("Handler:%d", handler)
+        */
+
 	if paramIsPresent(params, GROUP_BY) {
 
 		from := getDefaultDateFrom(year)
@@ -183,6 +213,22 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 		}
 		fmt.Fprintf(w, "%s", purchasesAsJson)
 	}
+}
+func getHandler(i int) interface{} {
+
+}
+func isPresent(params url.Values, value string) int {
+
+        intRepresentation := NV
+
+        param := params[value]
+
+        if param != nil && len(param) != 0 {
+                if strings.Compare(param[0], "") != 0 {
+                        intRepresentation = queryParams[value]
+                }
+        }
+        return intRepresentation
 }
 
 func getPurchaseContainer(purchases []Purchase) PurchaseContainer {
