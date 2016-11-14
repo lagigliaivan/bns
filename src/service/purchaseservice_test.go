@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+
 )
 
 var user1 string
@@ -72,7 +73,7 @@ var (
 		},
 		{
 			Description: "third product",
-			Price:       332.0,
+			Price:       332.50,
 		},
 		{
 			Description: "fourth product",
@@ -92,7 +93,7 @@ var (
 		},
 		{
 			Description: "third product",
-			Price:       3212.0,
+			Price:       3212.22,
 		},
 		{
 			Description: "fourth product",
@@ -673,6 +674,55 @@ func Test_that_purchases_are_returned_between_dates(t *testing.T) {
 func getDateParam(paramName string, date time.Time) string {
         return fmt.Sprintf(paramName + "=%d-%0.2d-%0.2d", date.Year(),date.Month(), date.Day())
 }
+
+
+
+func Test_that_amount_month_avg_is_returned_by_user(t *testing.T) {
+
+	service := NewPurchaseService(getDB(TESTDB))
+	server := getServer(service)
+	defer server.Close()
+
+
+
+	res, err := httpPost(user1, getURL(server.URL, user1), postPurchases)
+
+	if !isHTTPStatus(http.StatusCreated, res, err) {
+		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusCreated)
+		t.FailNow()
+	}
+
+
+	res, err = httpGet(user1, getURL(server.URL, user1) + "/metrics")
+
+	if !isHTTPStatus(http.StatusOK, res, err) {
+		log.Printf(STATUS_ERROR_MESSAGE, http.MethodGet, server.URL, res.StatusCode, http.StatusOK)
+		t.FailNow()
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		log.Fatal("Error")
+		t.FailNow()
+	}
+
+	metrics := new(Metrics)
+
+	if err := json.Unmarshal(body, metrics); err != nil {
+
+		log.Printf("Error when reading response %s", err)
+		t.FailNow()
+	}
+
+	if err !=  nil || metrics.Accumulated < 8891.94 || metrics.Accumulated >= 8891.95 || metrics.Month_avg < 2222.97 || metrics.Month_avg >= 2222.99 {
+		log.Printf("Err: %s or metrics seem not to be the expected ones: avg:%f acc:%f",err, metrics.Month_avg, metrics.Accumulated)
+		t.FailNow()
+	}
+
+	log.Printf("metrics avg:%0.2f accum:%0.2f", metrics.Month_avg, metrics.Accumulated)
+}
+
 
 //For the moment there is not a more practical way to use, later,
 //the user email as ID in DB. So, what I'm doing is to add it in a http header :(

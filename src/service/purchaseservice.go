@@ -13,7 +13,7 @@ import (
 	"crypto/sha1"
 	"io"
 	"net/url"
-    //    "github.com/aws/aws-sdk-go/service"
+        "strconv"
 )
 
 type Service interface {
@@ -88,6 +88,12 @@ func (service PurchaseService) ConfigureRouter(router *mux.Router) {
 			"/users/{userid}/purchases",
 			service.handleGetPurchases,
 		},
+                Route{
+                        "get_purchases",
+                        "GET",
+                        "/users/{userid}/purchases/metrics",
+                        service.handleGetMetrics,
+                },
 		Route{
 			"get_purchase_by_id",
 			"GET",
@@ -216,7 +222,8 @@ func (service PurchaseService) handleGetPurchases(w http.ResponseWriter, r *http
 }
 
 
-func isPresent(params url.Values, value string) int {
+
+/*func isPresent(params url.Values, value string) int {
 
         intRepresentation := NV
 
@@ -228,16 +235,37 @@ func isPresent(params url.Values, value string) int {
                 }
         }
         return intRepresentation
-}
+}*/
 
 func getPurchaseContainer(purchases []Purchase) PurchaseContainer {
-	container := NewPurchaseContainer()
+        container := NewPurchaseContainer()
 
-	for _, purchase := range purchases {
-		container.Add(purchase)
-	}
+        for _, purchase := range purchases {
+                container.Add(purchase)
+        }
 
-	return container
+        return container
+}
+
+func (service PurchaseService) handleGetMetrics(w http.ResponseWriter, r *http.Request) {
+
+        user := r.Header.Get(USER_ID)
+
+        from := fmt.Sprintf("%d%s", time.Now().Year(), "-01-00T00:00:00Z")
+        to := time.Now().Format(time.RFC3339)
+
+        metrics := service.getMetrics(user,from, to)
+
+        metricsAsJson, err := json.Marshal(metrics)
+
+        if err != nil {
+                w.WriteHeader(http.StatusBadRequest)
+                log.Printf("Error while marshalling GetPurchase response")
+                return
+        }
+
+        fmt.Fprintf(w, "%s", metricsAsJson)
+
 }
 
 func (service PurchaseService) handleGetPurchaseById(w http.ResponseWriter, r *http.Request) {
@@ -355,6 +383,8 @@ func (service PurchaseService) savePurchases(userId string, purchases []Purchase
 	log.Printf("Saving items in  DB")
 
 	for _, purchase := range purchases {
+
+                purchase.TotalAmount = calculateTotalAmount(purchase)
 		service.db.SavePurchase(purchase, userId)
 	}
 }
@@ -380,6 +410,50 @@ func (service PurchaseService) handleGetItemsDescription(w http.ResponseWriter, 
 	}
 
 	fmt.Fprintf(w, "%s", itemsDescriptionsAsJson)
+}
+
+
+func (service PurchaseService) getMetrics(userId string, from string, to string) Metrics{
+
+
+        purchases := service.getPurchases(userId, from, to)
+
+        sortedPurchases := sortPurchasesByMonth(purchases)
+
+        accumulated := calculateTotalAccumulated(purchases)
+
+        avg := accumulated / float64(len(sortedPurchases))
+
+        avgTrunc, _ := strconv.ParseFloat(fmt.Sprintf("%0.02f", avg), 32)
+        accumulatedTrunc, _ := strconv.ParseFloat(fmt.Sprintf("%0.02f", accumulated), 32)
+
+        metrics := Metrics{Month_avg: avgTrunc, Accumulated: accumulatedTrunc}
+
+
+        return metrics
+}
+
+func calculateTotalAccumulated(purchases []Purchase) float64 {
+
+        total := 0.0
+
+        for _, purchase := range purchases{
+                total += purchase.TotalAmount
+
+        }
+
+        return total
+}
+
+func calculateTotalAmount(purchase Purchase) float64 {
+
+        total := 0.0
+
+        for _, item := range purchase.Items {
+                total+=item.Price
+        }
+
+        return total
 }
 
 func getItemsDescriptions(purchases []Purchase) []ItemDescription {

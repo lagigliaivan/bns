@@ -17,7 +17,7 @@ type Container interface {
 type Item struct {
 	Id          string  `json:"id"`
 	Description string  `json:"description"`
-	Price       float32 `json:"price"`
+	Price       float64 `json:"price"`
 	Category    string  `json:"category"`
 }
 
@@ -84,6 +84,7 @@ type Purchase struct {
 	Items    [] Item `json:"items"`
 	Location Point `json:"location"`
 	Shop     string `json:"shop"`
+        TotalAmount float64 `json:"total_amount"`
 }
 
 type PurchaseContainer struct {
@@ -162,4 +163,9 @@ type ItemDescription struct {
 	ItemId string `json:"itemid"`
 	Description string `json:"description"`
 	Quantity string `json:quantity`
+}
+
+type Metrics struct {
+	Month_avg float64 `json:"month_avg"`
+	Accumulated float64 `json:"accumulated"`
 }

@@ -10,6 +10,7 @@ import (
 	"log"
 	"strings"
 	"errors"
+        "strconv"
 )
 const (
 	TABLE_PURCHASES = "Purchases"
@@ -355,6 +356,9 @@ func buildDynamoPurchaseItem(purchase Purchase, user string) map[string]* dynamo
 		"location":{
 			S: aws.String(purchase.Location.toString()),
 		},
+		"total_amount":{
+			S: aws.String(fmt.Sprintf("%0.2f",purchase.TotalAmount)),
+		},
 		"items":{
 			S: aws.String(itemsContainer.ToJsonString()),
 		},
@@ -399,7 +403,12 @@ func getPurchases(awsResponse *dynamodb.QueryOutput) []Purchase {
 			return []Purchase{}
 		}
 
-		purchase := Purchase{Id: *(p["dt"].N), Time:t, Shop:*(p["shop"].S), Items:itemsContainer.Items}
+                total := 0.0
+                if p["total_amount"] != nil {
+                        total, _ = strconv.ParseFloat(*(p["total_amount"].S), 64)
+                }
+
+		purchase := Purchase{Id: *(p["dt"].N), Time:t, Shop:*(p["shop"].S), TotalAmount:total, Items:itemsContainer.Items}
 
 		purchases = append(purchases, purchase)
 	}
